@@ -108,6 +108,7 @@ class ProductTour {
     this._rafId = null;
     this._inView = false;
     this._lastUpdateAt = 0;
+    this._lastChapterChangeAt = 0;
 
     this.chapterEls.forEach((el) => {
       const scene = productScenes.find((s) => s.id === el.dataset.chapter);
@@ -450,16 +451,41 @@ class ProductTour {
     // the very first placement (activeIndex still -1, nothing rendered yet
     // to glide from) and not a reduced-motion session (guarded earlier by
     // start() never reaching the cinematic path at all in that case).
-    const animateFrame = this.activeIndex >= 0;
+    const isChapterChange = this.activeIndex >= 0;
+    const now = performance.now();
+    // Several chapters here span only a few percent of the total scroll
+    // range (see productScenes above), so one fast flick/fling can cross
+    // two or more of them well inside the 700ms (--dur-slow) the text
+    // crossfade and frame FLIP each take. Left alone, that stacks a new
+    // crossfade/FLIP on top of one still mid-flight — chapter B's text
+    // fading in while chapter C's already starting, and _flipFrame()
+    // reading chapter B's still-interpolating (not yet settled) box as the
+    // "from" state for C's move — which is what actually reads as glitchy:
+    // oversized/misplaced video, two chapters' text ghosted over each
+    // other. Snapping instantly here is invisible at that scroll speed
+    // (there's no time to see it as a jump anyway) and avoids the pile-up;
+    // normal-speed scrolling never crosses the threshold below.
+    const rapid = isChapterChange && now - this._lastChapterChangeAt < 350;
+    this._lastChapterChangeAt = now;
+
     this.activeIndex = idx;
     const scene = productScenes[idx];
+
+    if (rapid) this.chapterEls.forEach((el) => { el.style.transition = "none"; });
     this.chapterEls.forEach((el) => {
       el.classList.toggle("is-active", el.dataset.chapter === scene.id);
     });
+    if (rapid) {
+      // Force the "none" above to actually apply before handing transitions
+      // back to the normal CSS rule for the next (hopefully slower) change.
+      void this.wrapperEl.offsetWidth;
+      this.chapterEls.forEach((el) => { el.style.transition = ""; });
+    }
+
     if (this.railEl) {
       Array.from(this.railEl.children).forEach((dot, i) => dot.classList.toggle("is-active", i === idx));
     }
-    this._sizeFrame(scene, animateFrame);
+    this._sizeFrame(scene, isChapterChange && !rapid);
   }
 
   /**
