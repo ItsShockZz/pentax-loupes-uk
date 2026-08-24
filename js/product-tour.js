@@ -34,6 +34,8 @@ const smoothstep = (t) => {
   return x * x * (3 - 2 * x);
 };
 
+const VIDEO_SRC = "videos/tour-master.mp4";
+
 /* ---------------------------------------------------------------------- */
 /* Scene config                                                            */
 /*                                                                          */
@@ -122,12 +124,15 @@ class ProductTour {
     if (this.reducedMotion) {
       // Static-but-real: park on a representative frame instead of
       // scrubbing. The plain stacked layout (no `.tour--cinematic`) already
-      // keeps every chapter visible and sequential.
+      // keeps every chapter visible and sequential. One seek near the start
+      // doesn't need the full-file blob load below — that's only there to
+      // make *repeated, arbitrary-direction* seeking reliable.
       this.videoEl.addEventListener(
         "loadedmetadata",
         () => this._primeVideo(() => (this.videoEl.currentTime = productScenes[0].videoStart + 1)),
         { once: true }
       );
+      this.videoEl.src = VIDEO_SRC;
       this.videoEl.load();
       return;
     }
@@ -135,13 +140,47 @@ class ProductTour {
     this.wrapperEl.classList.add("tour--cinematic");
     if (this.railEl) this.railEl.removeAttribute("hidden");
 
-    this.videoEl.addEventListener("loadedmetadata", () => this._primeVideo(), { once: true });
-    this.videoEl.load();
-    this.videoEl.pause();
+    this._loadVideoSource();
 
     this._bindScroll();
     this._observeViewport();
     this._setActiveChapter(0);
+  }
+
+  /**
+   * Loads the tour video as an in-memory blob instead of letting the
+   * <video> stream it progressively over the network. Verified directly
+   * against the source file (not guessed): the "overview" chapter's own
+   * videoStart–videoEnd range is a completely different shot — a blue
+   * hinge/knob macro close-up — from what was actually rendering there,
+   * which matched the *next* chapter's ("optics") opening frame instead.
+   * That's the same class of quirk the header comment already documents
+   * for this codebase (a <video> silently not honoring a `currentTime`
+   * write) — it just isn't limited to the one-time initial probe
+   * _primeVideo() guards against; a seek back to an earlier, no-longer-
+   * buffered byte range mid-scroll can land on a stale frame the same way.
+   * Once the whole file is a blob URL, every seek — forward or backward —
+   * is served from memory rather than depending on the browser's network/
+   * buffer state for that particular byte range, so it can't stall or go
+   * stale. Falls back to plain progressive streaming (the old behavior) if
+   * the fetch itself fails, so the tour still works, just without that
+   * guarantee.
+   */
+  _loadVideoSource() {
+    const bindAndLoad = (src) => {
+      this.videoEl.addEventListener("loadedmetadata", () => this._primeVideo(), { once: true });
+      this.videoEl.src = src;
+      this.videoEl.load();
+      this.videoEl.pause();
+    };
+
+    fetch(VIDEO_SRC)
+      .then((res) => {
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        return res.blob();
+      })
+      .then((blob) => bindAndLoad(URL.createObjectURL(blob)))
+      .catch(() => bindAndLoad(VIDEO_SRC));
   }
 
   /**
