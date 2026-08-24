@@ -375,7 +375,18 @@ class ProductTour {
     let idx = productScenes.findIndex((s) => progress >= s.start && progress < s.end);
     if (idx === -1) idx = progress >= 1 ? productScenes.length - 1 : 0;
     const scene = productScenes[idx];
-    const local = smoothstep((progress - scene.start) / (scene.end - scene.start));
+    // Linear, not smoothstep: smoothstep's derivative is ~0 at t=0/t=1, so
+    // right where a chapter *starts* — the exact moment its text/frame
+    // transition fires — the video was barely advancing off videoStart for
+    // a good stretch of scroll (verified: 20% into a chapter's scroll range,
+    // smoothstep had only covered ~40% as much of the shot as linear would
+    // have). On chapters that only span a few percent of the total scroll
+    // range, that reads as "the clip stayed the same" through the whole
+    // transition — the bug reported. A 1:1 scroll-to-seek mapping is also
+    // what the header comment's own reference point (Apple's product-page
+    // scroll-scrub) actually uses; easing the *seek* fights the "tied to
+    // your scroll" feel that makes scrubbing read as responsive.
+    const local = clamp((progress - scene.start) / (scene.end - scene.start));
 
     if (idx !== this.activeIndex) this._setActiveChapter(idx);
 
