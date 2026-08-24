@@ -540,18 +540,24 @@ h1, h2, h3, h4, p { margin: 0; }
      sizing, not a hypothetical one. */
   max-height: none;
   aspect-ratio: auto;
-  /* No transition here on purpose: width/height/left/top are layout-
-     triggering properties, not GPU-composited ones like transform/opacity,
-     and _sizeFrame() re-sets all four every single chapter change during
-     continuous scroll. Animating them was the real cause of both the
-     reported lag (forcing a full layout recalc on ~every rendered frame
-     for 700ms after every chapter change, stacked on top of the video's
-     own per-frame currentTime seeks) and the reported wrong-size/overlap
-     — mid-transition the box passes through in-between geometry that was
-     never verified non-overlapping, only the two rest states were. An
-     instant snap has no in-between state to get wrong, and is also just
-     faster. The chapter copy's own opacity/transform fade (see
-     .tour__chapter.is-active below) still carries the "smooth" feel. */
+  /* width/height/left/top are still set instantly by _sizeFrame() (layout-
+     triggering properties, re-set every chapter change during continuous
+     scroll — animating those directly was tried and caused a real,
+     measured lag: a full layout recalc on ~every rendered frame for 700ms
+     after every chapter change, stacked on the video's own per-frame
+     currentTime seeks). The move between chapters is instead animated by
+     _flipFrame() in product-tour.js as a FLIP: it reads the old rendered
+     box, then expresses the jump to the new instantly-set box as a
+     `transform` (translate + scale) and transitions *that* back to
+     identity. transform is GPU-composited and never triggers layout, so
+     it's cheap even back-to-back, and it's what actually fixes the video
+     snapping straight to the opposite edge of the screen while the
+     outgoing chapter's text was still mid-fade there (a real, reported
+     glitch on every left/right alignment flip, not a hypothetical one).
+     Kept in sync with .tour__chapter.is-active's own fade below by sharing
+     the same --dur-slow/--ease. */
+  transition: transform var(--dur-slow) var(--ease);
+  will-change: transform;
 }
 .tour--cinematic .tour__chapters {
   position: absolute;

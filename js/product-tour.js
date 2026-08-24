@@ -34,6 +34,8 @@ const smoothstep = (t) => {
   return x * x * (3 - 2 * x);
 };
 
+const VIDEO_SRC = "videos/tour-master.mp4";
+
 /* ---------------------------------------------------------------------- */
 /* Scene config                                                            */
 /*                                                                          */
@@ -106,6 +108,7 @@ class ProductTour {
     this._rafId = null;
     this._inView = false;
     this._lastUpdateAt = 0;
+    this._lastChapterChangeAt = 0;
 
     this.chapterEls.forEach((el) => {
       const scene = productScenes.find((s) => s.id === el.dataset.chapter);
@@ -122,12 +125,15 @@ class ProductTour {
     if (this.reducedMotion) {
       // Static-but-real: park on a representative frame instead of
       // scrubbing. The plain stacked layout (no `.tour--cinematic`) already
-      // keeps every chapter visible and sequential.
+      // keeps every chapter visible and sequential. One seek near the start
+      // doesn't need the full-file blob load below — that's only there to
+      // make *repeated, arbitrary-direction* seeking reliable.
       this.videoEl.addEventListener(
         "loadedmetadata",
         () => this._primeVideo(() => (this.videoEl.currentTime = productScenes[0].videoStart + 1)),
         { once: true }
       );
+      this.videoEl.src = VIDEO_SRC;
       this.videoEl.load();
       return;
     }
@@ -135,13 +141,47 @@ class ProductTour {
     this.wrapperEl.classList.add("tour--cinematic");
     if (this.railEl) this.railEl.removeAttribute("hidden");
 
-    this.videoEl.addEventListener("loadedmetadata", () => this._primeVideo(), { once: true });
-    this.videoEl.load();
-    this.videoEl.pause();
+    this._loadVideoSource();
 
     this._bindScroll();
     this._observeViewport();
     this._setActiveChapter(0);
+  }
+
+  /**
+   * Loads the tour video as an in-memory blob instead of letting the
+   * <video> stream it progressively over the network. Verified directly
+   * against the source file (not guessed): the "overview" chapter's own
+   * videoStart–videoEnd range is a completely different shot — a blue
+   * hinge/knob macro close-up — from what was actually rendering there,
+   * which matched the *next* chapter's ("optics") opening frame instead.
+   * That's the same class of quirk the header comment already documents
+   * for this codebase (a <video> silently not honoring a `currentTime`
+   * write) — it just isn't limited to the one-time initial probe
+   * _primeVideo() guards against; a seek back to an earlier, no-longer-
+   * buffered byte range mid-scroll can land on a stale frame the same way.
+   * Once the whole file is a blob URL, every seek — forward or backward —
+   * is served from memory rather than depending on the browser's network/
+   * buffer state for that particular byte range, so it can't stall or go
+   * stale. Falls back to plain progressive streaming (the old behavior) if
+   * the fetch itself fails, so the tour still works, just without that
+   * guarantee.
+   */
+  _loadVideoSource() {
+    const bindAndLoad = (src) => {
+      this.videoEl.addEventListener("loadedmetadata", () => this._primeVideo(), { once: true });
+      this.videoEl.src = src;
+      this.videoEl.load();
+      this.videoEl.pause();
+    };
+
+    fetch(VIDEO_SRC)
+      .then((res) => {
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        return res.blob();
+      })
+      .then((blob) => bindAndLoad(URL.createObjectURL(blob)))
+      .catch(() => bindAndLoad(VIDEO_SRC));
   }
 
   /**
@@ -278,8 +318,12 @@ class ProductTour {
    * opposite the copy; center chapters shrink and top-anchor it, opening a
    * dedicated band underneath for the copy.
    */
-  _sizeFrame(scene) {
+  _sizeFrame(scene, animate = false) {
     if (!this.frameWrapEl) return;
+    // Captured before width/height/left/top are overwritten below, so
+    // _flipFrame() (called at the bottom of this method) has an accurate
+    // "from" box to animate away from.
+    const firstRect = animate ? this.frameWrapEl.getBoundingClientRect() : null;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const isMobile = vw <= 900;
@@ -350,6 +394,8 @@ class ProductTour {
     this.frameWrapEl.style.height = `${Math.round(h)}px`;
     this.frameWrapEl.style.left = `${Math.round(left)}px`;
     this.frameWrapEl.style.top = `${Math.round(top)}px`;
+
+    if (firstRect) this._flipFrame(this.frameWrapEl, firstRect);
   }
 
   _requestFrame() {
@@ -369,7 +415,18 @@ class ProductTour {
     let idx = productScenes.findIndex((s) => progress >= s.start && progress < s.end);
     if (idx === -1) idx = progress >= 1 ? productScenes.length - 1 : 0;
     const scene = productScenes[idx];
-    const local = smoothstep((progress - scene.start) / (scene.end - scene.start));
+    // Linear, not smoothstep: smoothstep's derivative is ~0 at t=0/t=1, so
+    // right where a chapter *starts* — the exact moment its text/frame
+    // transition fires — the video was barely advancing off videoStart for
+    // a good stretch of scroll (verified: 20% into a chapter's scroll range,
+    // smoothstep had only covered ~40% as much of the shot as linear would
+    // have). On chapters that only span a few percent of the total scroll
+    // range, that reads as "the clip stayed the same" through the whole
+    // transition — the bug reported. A 1:1 scroll-to-seek mapping is also
+    // what the header comment's own reference point (Apple's product-page
+    // scroll-scrub) actually uses; easing the *seek* fights the "tied to
+    // your scroll" feel that makes scrubbing read as responsive.
+    const local = clamp((progress - scene.start) / (scene.end - scene.start));
 
     if (idx !== this.activeIndex) this._setActiveChapter(idx);
 
@@ -390,15 +447,75 @@ class ProductTour {
   }
 
   _setActiveChapter(idx) {
+    // Only animate the frame's move for an actual chapter *change* — not
+    // the very first placement (activeIndex still -1, nothing rendered yet
+    // to glide from) and not a reduced-motion session (guarded earlier by
+    // start() never reaching the cinematic path at all in that case).
+    const isChapterChange = this.activeIndex >= 0;
+    const now = performance.now();
+    // Several chapters here span only a few percent of the total scroll
+    // range (see productScenes above), so one fast flick/fling can cross
+    // two or more of them well inside the 700ms (--dur-slow) the text
+    // crossfade and frame FLIP each take. Left alone, that stacks a new
+    // crossfade/FLIP on top of one still mid-flight — chapter B's text
+    // fading in while chapter C's already starting, and _flipFrame()
+    // reading chapter B's still-interpolating (not yet settled) box as the
+    // "from" state for C's move — which is what actually reads as glitchy:
+    // oversized/misplaced video, two chapters' text ghosted over each
+    // other. Snapping instantly here is invisible at that scroll speed
+    // (there's no time to see it as a jump anyway) and avoids the pile-up;
+    // normal-speed scrolling never crosses the threshold below.
+    const rapid = isChapterChange && now - this._lastChapterChangeAt < 350;
+    this._lastChapterChangeAt = now;
+
     this.activeIndex = idx;
     const scene = productScenes[idx];
+
+    if (rapid) this.chapterEls.forEach((el) => { el.style.transition = "none"; });
     this.chapterEls.forEach((el) => {
       el.classList.toggle("is-active", el.dataset.chapter === scene.id);
     });
+    if (rapid) {
+      // Force the "none" above to actually apply before handing transitions
+      // back to the normal CSS rule for the next (hopefully slower) change.
+      void this.wrapperEl.offsetWidth;
+      this.chapterEls.forEach((el) => { el.style.transition = ""; });
+    }
+
     if (this.railEl) {
       Array.from(this.railEl.children).forEach((dot, i) => dot.classList.toggle("is-active", i === idx));
     }
-    this._sizeFrame(scene);
+    this._sizeFrame(scene, isChapterChange && !rapid);
+  }
+
+  /**
+   * FLIP (First-Last-Invert-Play): `firstRect` is the frame's rendered box
+   * captured by _sizeFrame() just before it overwrote width/height/left/
+   * top; `el` already has the new box applied by the time this runs. This
+   * expresses the jump between old and new as a `transform`, which the CSS
+   * transition on `.tour--cinematic .tour__frame-wrap` then animates back
+   * to identity. See the CSS comment for why this — not a transition on
+   * width/height/left/top directly — is what makes the video glide to its
+   * new spot instead of snapping there while the outgoing chapter's text
+   * is still fading out at the old one.
+   */
+  _flipFrame(el, firstRect) {
+    const lastRect = el.getBoundingClientRect();
+    const dx = firstRect.left - lastRect.left;
+    const dy = firstRect.top - lastRect.top;
+    const sx = firstRect.width / lastRect.width;
+    const sy = firstRect.height / lastRect.height;
+    if (!dx && !dy && sx === 1 && sy === 1) return;
+
+    el.style.transition = "none";
+    el.style.transformOrigin = "top left";
+    el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    // Force a reflow so the "from" transform above actually paints before
+    // the "to" transform below is applied — without this the browser can
+    // coalesce both writes into one and never animate anything.
+    void el.offsetWidth;
+    el.style.transition = "";
+    el.style.transform = "";
   }
 }
 

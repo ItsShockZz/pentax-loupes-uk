@@ -94,13 +94,19 @@
         <video
           class="tour__video"
           id="tour-video"
-          src="videos/tour-master.mp4"
           poster="images/poster-tour-master.jpg"
           muted
           playsinline
           preload="auto"
           aria-label="PENTAX Loupes product footage"
         ></video>
+        <!-- No `src` here on purpose: product-tour.js assigns it (as a
+             blob URL for the interactive tour, or this same file directly
+             for the reduced-motion fallback) — see _loadVideoSource() in
+             product-tour.js. Setting it here too would make the browser's
+             own preload and that JS-driven fetch both download the file,
+             doubling the network transfer for no benefit. The `poster`
+             above already covers the no-JS/pre-load view. -->
       </div>
     </div>
 
