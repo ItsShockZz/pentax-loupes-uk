@@ -85,7 +85,7 @@ const productScenes = [
   { id: "working-distance", start: 0.7161, end: 0.7636, videoStart: 29.958, videoEnd: 31.833, align: "right" },
   { id: "magnification", start: 0.7636, end: 0.8185, videoStart: 31.833, videoEnd: 34.0, align: "left" },
   { id: "colour", start: 0.8185, end: 0.9346, videoStart: 34.0, videoEnd: 38.583, align: "right" },
-  { id: "illumination", start: 0.9346, end: 1.0, videoStart: 38.583, videoEnd: 41.167, align: "left" },
+  { id: "illumination", start: 0.9346, end: 1.0, videoStart: 38.583, videoEnd: 41.0, align: "left" },
 ];
 
 /* ---------------------------------------------------------------------- */
