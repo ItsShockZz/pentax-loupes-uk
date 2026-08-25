@@ -335,12 +335,8 @@ class ProductTour {
    * opposite the copy; center chapters shrink and top-anchor it, opening a
    * dedicated band underneath for the copy.
    */
-  _sizeFrame(scene, animate = false) {
+  _sizeFrame(scene) {
     if (!this.frameWrapEl) return;
-    // Captured before width/height/left/top are overwritten below, so
-    // _flipFrame() (called at the bottom of this method) has an accurate
-    // "from" box to animate away from.
-    const firstRect = animate ? this.frameWrapEl.getBoundingClientRect() : null;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const isMobile = vw <= 900;
@@ -411,8 +407,6 @@ class ProductTour {
     this.frameWrapEl.style.height = `${Math.round(h)}px`;
     this.frameWrapEl.style.left = `${Math.round(left)}px`;
     this.frameWrapEl.style.top = `${Math.round(top)}px`;
-
-    if (firstRect) this._flipFrame(this.frameWrapEl, firstRect);
   }
 
   _requestFrame() {
@@ -504,37 +498,7 @@ class ProductTour {
     if (this.railEl) {
       Array.from(this.railEl.children).forEach((dot, i) => dot.classList.toggle("is-active", i === idx));
     }
-    this._sizeFrame(scene, isChapterChange && !rapid);
-  }
-
-  /**
-   * FLIP (First-Last-Invert-Play): `firstRect` is the frame's rendered box
-   * captured by _sizeFrame() just before it overwrote width/height/left/
-   * top; `el` already has the new box applied by the time this runs. This
-   * expresses the jump between old and new as a `transform`, which the CSS
-   * transition on `.tour--cinematic .tour__frame-wrap` then animates back
-   * to identity. See the CSS comment for why this — not a transition on
-   * width/height/left/top directly — is what makes the video glide to its
-   * new spot instead of snapping there while the outgoing chapter's text
-   * is still fading out at the old one.
-   */
-  _flipFrame(el, firstRect) {
-    const lastRect = el.getBoundingClientRect();
-    const dx = firstRect.left - lastRect.left;
-    const dy = firstRect.top - lastRect.top;
-    const sx = firstRect.width / lastRect.width;
-    const sy = firstRect.height / lastRect.height;
-    if (!dx && !dy && sx === 1 && sy === 1) return;
-
-    el.style.transition = "none";
-    el.style.transformOrigin = "top left";
-    el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-    // Force a reflow so the "from" transform above actually paints before
-    // the "to" transform below is applied — without this the browser can
-    // coalesce both writes into one and never animate anything.
-    void el.offsetWidth;
-    el.style.transition = "";
-    el.style.transform = "";
+    this._sizeFrame(scene);
   }
 }
 
