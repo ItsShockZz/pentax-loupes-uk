@@ -247,9 +247,26 @@ class ProductTour {
 
   _scrollToScene(index) {
     const scene = productScenes[index];
+    this.scrollToMoment(scene.id, scene.videoStart);
+  }
+
+  /**
+   * Scrolls so the pinned tour lands on a specific moment (seconds within
+   * videos/tour-master.mp4), not just a chapter's start — e.g. the
+   * "colour" chapter is one continuous scroll range that happens to
+   * contain three back-to-back real shots (black, red, silvergold), so a
+   * caller like the colour swatch buttons in main.js can jump to whichever
+   * one was clicked, not just the chapter's opening frame. Public: called
+   * from outside this class.
+   */
+  scrollToMoment(chapterId, videoTime) {
+    const scene = productScenes.find((s) => s.id === chapterId);
+    if (!scene || scene.videoStart == null || scene.videoEnd == null) return;
+    const local = clamp((videoTime - scene.videoStart) / (scene.videoEnd - scene.videoStart));
     const rect = this.wrapperEl.getBoundingClientRect();
     const total = this.wrapperEl.offsetHeight - window.innerHeight;
-    const y = window.scrollY + rect.top + scene.start * total + 1;
+    const progress = scene.start + local * (scene.end - scene.start);
+    const y = window.scrollY + rect.top + progress * total + 1;
     window.scrollTo({ top: y, behavior: this.reducedMotion ? "auto" : "smooth" });
   }
 
@@ -318,12 +335,8 @@ class ProductTour {
    * opposite the copy; center chapters shrink and top-anchor it, opening a
    * dedicated band underneath for the copy.
    */
-  _sizeFrame(scene, animate = false) {
+  _sizeFrame(scene) {
     if (!this.frameWrapEl) return;
-    // Captured before width/height/left/top are overwritten below, so
-    // _flipFrame() (called at the bottom of this method) has an accurate
-    // "from" box to animate away from.
-    const firstRect = animate ? this.frameWrapEl.getBoundingClientRect() : null;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const isMobile = vw <= 900;
@@ -394,8 +407,6 @@ class ProductTour {
     this.frameWrapEl.style.height = `${Math.round(h)}px`;
     this.frameWrapEl.style.left = `${Math.round(left)}px`;
     this.frameWrapEl.style.top = `${Math.round(top)}px`;
-
-    if (firstRect) this._flipFrame(this.frameWrapEl, firstRect);
   }
 
   _requestFrame() {
@@ -447,24 +458,26 @@ class ProductTour {
   }
 
   _setActiveChapter(idx) {
-    // Only animate the frame's move for an actual chapter *change* — not
-    // the very first placement (activeIndex still -1, nothing rendered yet
-    // to glide from) and not a reduced-motion session (guarded earlier by
-    // start() never reaching the cinematic path at all in that case).
+    // The frame itself (_sizeFrame below) always snaps to its new
+    // position/size instantly — no animation. An earlier version animated
+    // that move with a FLIP transform to avoid a jump-cut feel, but on
+    // this page that read as the video visibly sliding left/right between
+    // chapters, most noticeably where two alignment flips sit close
+    // together (e.g. magnification → colour → illumination); an instant
+    // change with the text crossfade carrying the "smooth" feel (below) is
+    // what this page is meant to look like.
     const isChapterChange = this.activeIndex >= 0;
     const now = performance.now();
     // Several chapters here span only a few percent of the total scroll
     // range (see productScenes above), so one fast flick/fling can cross
     // two or more of them well inside the 700ms (--dur-slow) the text
-    // crossfade and frame FLIP each take. Left alone, that stacks a new
-    // crossfade/FLIP on top of one still mid-flight — chapter B's text
-    // fading in while chapter C's already starting, and _flipFrame()
-    // reading chapter B's still-interpolating (not yet settled) box as the
-    // "from" state for C's move — which is what actually reads as glitchy:
-    // oversized/misplaced video, two chapters' text ghosted over each
-    // other. Snapping instantly here is invisible at that scroll speed
-    // (there's no time to see it as a jump anyway) and avoids the pile-up;
-    // normal-speed scrolling never crosses the threshold below.
+    // crossfade takes. Left alone, that stacks a new crossfade on top of
+    // one still mid-flight — chapter B's text still fading in while
+    // chapter C's already starting — which reads as multiple chapters'
+    // text ghosted over each other. Snapping instantly here is invisible
+    // at that scroll speed (there's no time to see it as a jump anyway)
+    // and avoids the pile-up; normal-speed scrolling never crosses the
+    // threshold below.
     const rapid = isChapterChange && now - this._lastChapterChangeAt < 350;
     this._lastChapterChangeAt = now;
 
@@ -485,37 +498,7 @@ class ProductTour {
     if (this.railEl) {
       Array.from(this.railEl.children).forEach((dot, i) => dot.classList.toggle("is-active", i === idx));
     }
-    this._sizeFrame(scene, isChapterChange && !rapid);
-  }
-
-  /**
-   * FLIP (First-Last-Invert-Play): `firstRect` is the frame's rendered box
-   * captured by _sizeFrame() just before it overwrote width/height/left/
-   * top; `el` already has the new box applied by the time this runs. This
-   * expresses the jump between old and new as a `transform`, which the CSS
-   * transition on `.tour--cinematic .tour__frame-wrap` then animates back
-   * to identity. See the CSS comment for why this — not a transition on
-   * width/height/left/top directly — is what makes the video glide to its
-   * new spot instead of snapping there while the outgoing chapter's text
-   * is still fading out at the old one.
-   */
-  _flipFrame(el, firstRect) {
-    const lastRect = el.getBoundingClientRect();
-    const dx = firstRect.left - lastRect.left;
-    const dy = firstRect.top - lastRect.top;
-    const sx = firstRect.width / lastRect.width;
-    const sy = firstRect.height / lastRect.height;
-    if (!dx && !dy && sx === 1 && sy === 1) return;
-
-    el.style.transition = "none";
-    el.style.transformOrigin = "top left";
-    el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-    // Force a reflow so the "from" transform above actually paints before
-    // the "to" transform below is applied — without this the browser can
-    // coalesce both writes into one and never animate anything.
-    void el.offsetWidth;
-    el.style.transition = "";
-    el.style.transform = "";
+    this._sizeFrame(scene);
   }
 }
 
