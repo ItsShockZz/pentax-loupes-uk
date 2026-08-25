@@ -540,24 +540,17 @@ h1, h2, h3, h4, p { margin: 0; }
      sizing, not a hypothetical one. */
   max-height: none;
   aspect-ratio: auto;
-  /* width/height/left/top are still set instantly by _sizeFrame() (layout-
-     triggering properties, re-set every chapter change during continuous
-     scroll — animating those directly was tried and caused a real,
-     measured lag: a full layout recalc on ~every rendered frame for 700ms
-     after every chapter change, stacked on the video's own per-frame
-     currentTime seeks). The move between chapters is instead animated by
-     _flipFrame() in product-tour.js as a FLIP: it reads the old rendered
-     box, then expresses the jump to the new instantly-set box as a
-     `transform` (translate + scale) and transitions *that* back to
-     identity. transform is GPU-composited and never triggers layout, so
-     it's cheap even back-to-back, and it's what actually fixes the video
-     snapping straight to the opposite edge of the screen while the
-     outgoing chapter's text was still mid-fade there (a real, reported
-     glitch on every left/right alignment flip, not a hypothetical one).
-     Kept in sync with .tour__chapter.is-active's own fade below by sharing
-     the same --dur-slow/--ease. */
-  transition: transform var(--dur-slow) var(--ease);
-  will-change: transform;
+  /* No transition here on purpose: width/height/left/top are layout-
+     triggering properties, and _sizeFrame() re-sets all four every single
+     chapter change during continuous scroll. An earlier version animated
+     this move with a FLIP transform (GPU-composited, so cheap even
+     back-to-back) instead of snapping instantly — technically smooth, but
+     on this page it read as the video visibly sliding left/right between
+     chapters, most noticeable wherever two alignment flips sit close
+     together (e.g. magnification → colour → illumination), which is worse
+     than the plain instant snap it replaced. Back to an instant snap; the
+     chapter copy's own opacity/transform fade (see .tour__chapter.is-active
+     below) carries the "smooth" feel on its own. */
 }
 .tour--cinematic .tour__chapters {
   position: absolute;
@@ -602,6 +595,17 @@ h1, h2, h3, h4, p { margin: 0; }
 .tour--cinematic .tour__chapter h2 { font-size: clamp(1.25rem, 1.7vw, 1.6rem); margin-bottom: 10px; }
 .tour--cinematic .tour__chapter p { font-size: 0.9rem; }
 .tour--cinematic .tour__chapter-index { font-size: 0.7rem; margin-bottom: 10px; }
+
+/* .colour-swatch.is-selected grows to scale(1.18) and paints a glow with a
+   24px blur radius (see the rule above) — fine in the base layout's wider
+   spacing, but in the tour's tighter 360px/0.9rem column the caption
+   paragraph right above the swatches (only its own ~1em default bottom
+   margin apart) sat close enough that the selected swatch's glow visually
+   overlapped the last line of that text — a real, reported overlap, not a
+   hypothetical one. Enough top margin to comfortably clear the glow radius
+   fixes it without touching the base (non-cinematic) layout, which wasn't
+   affected. */
+.tour--cinematic .colour-swatches { margin-top: 36px; }
 
 @media (prefers-reduced-motion: reduce) {
   .tour--cinematic .tour__chapter { transition: opacity var(--dur-fast) linear; }

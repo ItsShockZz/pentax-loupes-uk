@@ -182,10 +182,18 @@ function initMagnificationSelectors() {
 /* ---------------------------------------------------------------------- */
 /* Colour selector — the tour footage is filmed in specific real colours,  */
 /* so this updates the selected label/state rather than trying to recolour */
-/* video frames on the fly.                                                */
+/* video frames on the fly. Three of the four swatches DO have a matching  */
+/* real shot in the footage (verified directly against the video, not      */
+/* guessed) within the "colour" chapter's own scroll range — pressing one  */
+/* of those additionally scrolls the tour to that exact moment, so the     */
+/* video actually shows the colour just picked. "blue" has no matching     */
+/* shot in this edit, so pressing it only updates the label, same as       */
+/* before.                                                                 */
 /* ---------------------------------------------------------------------- */
 
-function initColourSelectors() {
+const COLOUR_VIDEO_MOMENTS = { black: 35.0, red: 36.75, silvergold: 38.0 };
+
+function initColourSelectors(tour) {
   const groups = document.querySelectorAll("[data-colour-selector]");
   groups.forEach((group) => {
     const buttons = group.querySelectorAll("[data-colour]");
@@ -206,6 +214,9 @@ function initColourSelectors() {
         });
         if (labelEl) labelEl.textContent = colour.label;
         track("colour_select", { colour: colour.id });
+
+        const moment = COLOUR_VIDEO_MOMENTS[id];
+        if (tour && moment != null) tour.scrollToMoment("colour", moment);
       });
     });
   });
@@ -365,14 +376,16 @@ document.addEventListener("DOMContentLoaded", () => {
   initNav();
   bindFaq();
   initTestimonials();
-  initColourSelectors();
   initDemoForm();
   initScrollReveals();
   initMagRows();
 
+  // Created before initColourSelectors() so its buttons can jump the tour
+  // to a specific colour's real footage moment (see COLOUR_VIDEO_MOMENTS).
+  let tour = null;
   const wrapperEl = document.getElementById("tour");
   if (wrapperEl) {
-    const tour = new PentaxProductTour.ProductTour({
+    tour = new PentaxProductTour.ProductTour({
       wrapperEl,
       railEl: document.getElementById("tour-rail"),
       videoEl: document.getElementById("tour-video"),
@@ -380,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tour.start();
   }
 
+  initColourSelectors(tour);
   initMagnificationSelectors();
 
   document.querySelectorAll("[data-track='specialist_contact']").forEach((el) =>
