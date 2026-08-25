@@ -108,7 +108,6 @@ class ProductTour {
     this._rafId = null;
     this._inView = false;
     this._lastUpdateAt = 0;
-    this._lastChapterChangeAt = 0;
 
     this.chapterEls.forEach((el) => {
       const scene = productScenes.find((s) => s.id === el.dataset.chapter);
@@ -459,41 +458,39 @@ class ProductTour {
 
   _setActiveChapter(idx) {
     // The frame itself (_sizeFrame below) always snaps to its new
-    // position/size instantly — no animation. An earlier version animated
-    // that move with a FLIP transform to avoid a jump-cut feel, but on
-    // this page that read as the video visibly sliding left/right between
-    // chapters, most noticeably where two alignment flips sit close
-    // together (e.g. magnification → colour → illumination); an instant
-    // change with the text crossfade carrying the "smooth" feel (below) is
-    // what this page is meant to look like.
-    const isChapterChange = this.activeIndex >= 0;
-    const now = performance.now();
-    // Several chapters here span only a few percent of the total scroll
-    // range (see productScenes above), so one fast flick/fling can cross
-    // two or more of them well inside the 700ms (--dur-slow) the text
-    // crossfade takes. Left alone, that stacks a new crossfade on top of
-    // one still mid-flight — chapter B's text still fading in while
-    // chapter C's already starting — which reads as multiple chapters'
-    // text ghosted over each other. Snapping instantly here is invisible
-    // at that scroll speed (there's no time to see it as a jump anyway)
-    // and avoids the pile-up; normal-speed scrolling never crosses the
-    // threshold below.
-    const rapid = isChapterChange && now - this._lastChapterChangeAt < 350;
-    this._lastChapterChangeAt = now;
-
+    // position/size instantly — no animation; an earlier version animated
+    // that move with a FLIP transform, but on this page that read as the
+    // video visibly sliding left/right between chapters, most noticeably
+    // where two alignment flips sit close together.
+    //
+    // Instant video + a *symmetric* 700ms crossfade on the text is exactly
+    // what caused the overlap this page actually shipped with: on an
+    // alignment flip (the common case — see productScenes above), the
+    // video's new position lands exactly where the OUTGOING chapter's text
+    // still is, and that text was still fading out there for up to 700ms.
+    // The fix is asymmetric, not a timing threshold: the outgoing chapter
+    // is hidden instantly (in lockstep with the video's own instant snap),
+    // while the incoming chapter still gets the normal CSS-defined 700ms
+    // fade-in for the "smooth" feel. Since at most one chapter is ever
+    // mid-fade-in at a time — a still-fading-in chapter that loses
+    // is-active before finishing is itself hidden instantly, the moment it
+    // does — this also can't pile up into multiple chapters' text ghosted
+    // together during a fast scroll/fling, without needing a separate
+    // rapid-scroll timing guard.
     this.activeIndex = idx;
     const scene = productScenes[idx];
 
-    if (rapid) this.chapterEls.forEach((el) => { el.style.transition = "none"; });
     this.chapterEls.forEach((el) => {
-      el.classList.toggle("is-active", el.dataset.chapter === scene.id);
+      const shouldBeActive = el.dataset.chapter === scene.id;
+      if (!shouldBeActive && el.classList.contains("is-active")) {
+        el.style.transition = "none";
+        el.classList.remove("is-active");
+        void el.offsetWidth; // force the "none" above to actually apply
+        el.style.transition = "";
+      } else {
+        el.classList.toggle("is-active", shouldBeActive);
+      }
     });
-    if (rapid) {
-      // Force the "none" above to actually apply before handing transitions
-      // back to the normal CSS rule for the next (hopefully slower) change.
-      void this.wrapperEl.offsetWidth;
-      this.chapterEls.forEach((el) => { el.style.transition = ""; });
-    }
 
     if (this.railEl) {
       Array.from(this.railEl.children).forEach((dot, i) => dot.classList.toggle("is-active", i === idx));
