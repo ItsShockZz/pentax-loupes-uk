@@ -33,8 +33,8 @@ const magnifications = [
 ];
 
 // Working distance 25–70 cm, pupillary distance 52–78 mm: referenced in prose
-// throughout index.html (chapters 5/6, "Built around you", magnification
-// range spec strip). No JS reads these values, so they're not duplicated
+// throughout index.html (the tour's Fit chapter, "Built around you", the
+// magnification spec strip). No JS reads these values, so they're not duplicated
 // here as a config object — see the FAQ note further down about why purely
 // presentational numbers are authored directly in the markup.
 

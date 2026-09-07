@@ -1,26 +1,38 @@
 /**
  * product-tour.js
- * Scroll-driven cinematic tour (spec chapters 0–10), scrubbed across one
- * continuous piece of real PENTAX Loupes product footage — client-edited
- * and supplied as a single video, not a collection of separate clips.
+ * Scroll-driven product tour, scrubbed across one continuous piece of real
+ * PENTAX Loupes product footage (videos/tour-master.mp4, 41s, client-edited).
  *
- * Because it's one file, the tour drives a single <video> element: each
- * chapter owns a short time range *within* that file (`videoStart`/
- * `videoEnd`), and scroll position within the chapter maps to a seek inside
- * that range — the video jumps between ranges as chapters change and scrubs
- * smoothly within a chapter, the same "scroll scrubs a video" technique
- * used on Apple product pages. Using one element (instead of the multi-clip
- * approach an earlier build used) also sidesteps a real Chrome quirk found
- * during development: a <video> that's never been rendered/played can
- * report readyState 4 while silently ignoring `currentTime` writes for
- * seconds at a time. A single, always-visible, always-active video never
- * hits that state.
+ * The tour drives a single <video> element: each chapter owns a short time
+ * range within the file (`videoStart`/`videoEnd`), and scroll position within
+ * the chapter maps to a seek inside that range. Using one element (instead of
+ * the multi-clip approach an earlier build used) sidesteps a real Chrome
+ * quirk found during development: a <video> that's never been rendered/played
+ * can report readyState 4 while silently ignoring `currentTime` writes for
+ * seconds at a time. A single, always-visible, always-active video never hits
+ * that state.
+ *
+ * LAYOUT IS FIXED, ON PURPOSE. An earlier build alternated the video and the
+ * copy left/right per chapter, which read as the whole screen jumping side to
+ * side eleven times per scroll-through — the exact complaint that triggered
+ * this rewrite. Now the copy always sits in one left-hand column and the
+ * video always sits in one right-hand slot; the ONLY thing that changes
+ * between chapters is the copy crossfading and the footage itself.
+ *
+ * SEEKING IS SMOOTHED, ON PURPOSE. Wheel scrolling arrives in ~100px steps,
+ * and mapping those raw steps straight into `currentTime` made the footage
+ * visibly stutter between wheel notches. `_update()` keeps a `_displayTime`
+ * that eases toward the scroll-derived target each animation frame (short
+ * time constant, so it still feels tied to the scroll), skips writes smaller
+ * than half a frame, and never issues a new seek while the previous one is
+ * still in flight — piling seeks on top of each other is what made the old
+ * version "lag out" on slower machines.
  *
  * Architecture: a single tall wrapper (`.tour`) holds a `position: sticky`
  * stage (`.tour__stage`) plus one `.tour__chapter` panel per chapter, each
- * with its own copy already present in the DOM (crawlable, works without
- * JS — the video's `poster` frame is a real frame from the footage, so
- * there's always something to see even before/without scripting).
+ * with its copy already present in the DOM (crawlable, works without JS —
+ * the video's `poster` frame is a real frame from the footage, so there's
+ * always something to see even before/without scripting).
  */
 
 /* ---------------------------------------------------------------------- */
@@ -29,65 +41,63 @@
 
 const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const lerp = (a, b, t) => a + (b - a) * t;
-const smoothstep = (t) => {
-  const x = clamp(t);
-  return x * x * (3 - 2 * x);
-};
 
-const VIDEO_SRC = "videos/tour-master.mp4";
+const VIDEO_SRC = "videos/tour-master.mp4?v=20260826";
 
 /* ---------------------------------------------------------------------- */
 /* Scene config                                                            */
 /*                                                                          */
-/* `start`/`end` are fractions of the pinned scroll range. `videoStart`/   */
-/* `videoEnd` are seconds *within* videos/tour-master.mp4.                 */
+/* `start`/`end` are fractions of the pinned scroll range. `videoStart`/    */
+/* `videoEnd` are seconds within videos/tour-master.mp4 (41.0s total).      */
 /*                                                                          */
-/* videos/tour-master.mp4 is the client's own re-edit, transcoded straight */
-/* through with no trim, reorder, or crop — same 1920x1080/24fps, same     */
-/* 41.1667s length, frame-for-frame identical to the source .mov. Chapter  */
-/* text/copy is unchanged and is being revised separately, on direction.   */
+/* Six chapters, each mapped to footage that actually shows what the copy   */
+/* talks about — verified frame by frame against the file, not guessed:     */
 /*                                                                          */
-/* "intro" is a cold open: just the first shot in the edit (a rotating,    */
-/* settling reveal, warm top-lit), ending right as the edit cuts to the    */
-/* tighter hinge/knob macro crop — plays full-screen with no text at all.  */
-/* There's no matching element in index.html for it, so                    */
-/* `_setActiveChapter` naturally leaves every real chapter panel hidden    */
-/* while it's active. `align: "full"` (handled in `_sizeFrame`) is what    */
-/* actually makes it full-screen; it isn't a real chapter otherwise.       */
+/*   overview       0.000–10.167  dark rotating reveal → hinge macro        */
+/*   optics        10.167–14.667  rotating beauty shot, lenses to camera    */
+/*   posture       14.667–17.542  clinician wearing them, looking ahead     */
+/*   fit           17.542–22.583  nose pad head-on, lens macro, adjuster    */
+/*   magnification 29.958–34.000  straight-on product, then looking through */
+/*   colour        34.000–41.000  colourway run: blue, red, gold, black,    */
+/*                                blue (each swatch button seeks to its own */
+/*                                real shot — see COLOUR_VIDEO_MOMENTS in   */
+/*                                main.js)                                  */
 /*                                                                          */
-/* Every `videoStart`/`videoEnd` boundary below — including the intro's —  */
-/* lands exactly on a real cut in the edit, found with ffmpeg's scene-     */
-/* detection filter (`select='gt(scene,N)'`), not guessed or evenly split.  */
-/* That's on purpose: an earlier version split the remaining video evenly  */
-/* across chapters by time alone, which meant a chapter's video could      */
-/* start partway through one shot and cut to a totally different one       */
-/* before its text changed — the "settle" shot cutting to a sharp branded  */
-/* eyepiece close-up under the same "01 — OPTICS" text was flagged as a    */
-/* real example. Every chapter below now gets exactly one complete shot,   */
-/* start to finish, and the next chapter always starts on a fresh one — no */
-/* shot is ever split across a text change, and no two adjacent chapters   */
-/* share a shot. The one deliberate exception is "colour": its two shots   */
-/* are a genuine back-to-back colourway change in the edit itself (black → */
-/* rose gold), which is the point of that chapter, not a mismatch. One     */
-/* near-duplicate shot (a second, near-identical "holding the loupes up"   */
-/* moment right after the first) was dropped rather than forced into a     */
-/* chapter of its own. Chapter text/copy and `align` are otherwise         */
-/* unchanged from before and are being revised separately, on direction.   */
+/* 22.583–29.958 (a red/silvergold/black glamour run) is deliberately not   */
+/* wired to a chapter — the old build played prescription-lens copy over    */
+/* it, a text/footage mismatch. Stills from it are used in the lower page   */
+/* instead (images/stills/). Scroll spans are proportional to each          */
+/* chapter's footage duration so scrub speed feels constant throughout.     */
+/* Chapter boundaries land on real cuts in the edit.                        */
 /* ---------------------------------------------------------------------- */
 
+/* "intro" is a full-bleed cold open: the dark rotating reveal plays edge to
+   edge with no copy at all (there is no matching chapter element, so every
+   chapter panel stays hidden while it's active — only the scroll cue
+   shows). The hero copy arrives with the hinge-macro shot at 7.375s, when
+   the layout snaps to the fixed copy-left/video-right arrangement used for
+   the rest of the tour. */
+/* The magnification chapter sits INSIDE the optics shot's own camera move:
+   the footage physically zooms into the lens barrel (peak fill ~12.7-13.2s),
+   at which point the sample-view overlay fades in over the frame - you're
+   now looking THROUGH the loupe (images/mag-samples/, swapped by the 2.5x-5x
+   buttons). Near the chapter's end the overlay lifts and the footage has
+   already cut back to the receding front-on product (13.45-14.667s), so the
+   sequence reads: zoom in -> through the lens -> zoom back out. Its scroll
+   span is deliberately larger than its 1.7s of footage: people stop and
+   click here. */
 const productScenes = [
-  { id: "intro", start: 0.0, end: 0.18, videoStart: 0.0, videoEnd: 7.375, align: "full" },
-  { id: "overview", start: 0.18, end: 0.2507, videoStart: 7.375, videoEnd: 10.167, align: "left" },
-  { id: "optics", start: 0.2507, end: 0.3647, videoStart: 10.167, videoEnd: 14.667, align: "right" },
-  { id: "parallel-viewing", start: 0.3647, end: 0.4016, videoStart: 14.667, videoEnd: 16.125, align: "left" },
-  { id: "lightweight", start: 0.4016, end: 0.4438, videoStart: 17.542, videoEnd: 19.208, align: "right" },
-  { id: "nose-bridge", start: 0.4438, end: 0.4818, videoStart: 19.208, videoEnd: 20.708, align: "left" },
-  { id: "pupillary-distance", start: 0.4818, end: 0.5293, videoStart: 20.708, videoEnd: 22.583, align: "right" },
-  { id: "protective-lens", start: 0.5293, end: 0.7161, videoStart: 22.583, videoEnd: 29.958, align: "left" },
-  { id: "working-distance", start: 0.7161, end: 0.7636, videoStart: 29.958, videoEnd: 31.833, align: "right" },
-  { id: "magnification", start: 0.7636, end: 0.8185, videoStart: 31.833, videoEnd: 34.0, align: "left" },
-  { id: "colour", start: 0.8185, end: 0.9346, videoStart: 34.0, videoEnd: 38.583, align: "right" },
-  { id: "illumination", start: 0.9346, end: 1.0, videoStart: 38.583, videoEnd: 41.0, align: "left" },
+  { id: "intro", start: 0.0, end: 0.2303, videoStart: 0.0, videoEnd: 7.375, full: true },
+  { id: "overview", start: 0.2303, end: 0.3175, videoStart: 7.375, videoEnd: 10.167 },
+  { id: "optics", start: 0.3175, end: 0.4044, videoStart: 10.167, videoEnd: 12.95 },
+  // videoStart === videoEnd on purpose: the footage parks on the
+  // lens-fill frame for the whole chapter (fully covered by the sample
+  // overlay anyway). The shot's zoom-back-out (13.45-14.667s) is not used
+  // anywhere - removed on client direction.
+  { id: "magnification", start: 0.4044, end: 0.5344, videoStart: 13.05, videoEnd: 13.05 },
+  { id: "posture", start: 0.5344, end: 0.6242, videoStart: 14.667, videoEnd: 17.542 },
+  { id: "fit", start: 0.6242, end: 0.7816, videoStart: 17.542, videoEnd: 22.583 },
+  { id: "colour", start: 0.7816, end: 1.0, videoStart: 34.0, videoEnd: 41.0 },
 ];
 
 /* ---------------------------------------------------------------------- */
@@ -102,17 +112,19 @@ class ProductTour {
     this.frameWrapEl = wrapperEl.querySelector(".tour__frame-wrap");
 
     this.chapterEls = Array.from(document.querySelectorAll("[data-chapter]"));
+    this.cueEl = wrapperEl.querySelector(".tour__scroll-cue");
+    this.endCtaEl = wrapperEl.querySelector(".tour__end-cta");
+    this.magOverlayEl = wrapperEl.querySelector(".mag-overlay");
     this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     this.activeIndex = -1;
     this._primed = false;
     this._rafId = null;
     this._inView = false;
     this._lastUpdateAt = 0;
-
-    this.chapterEls.forEach((el) => {
-      const scene = productScenes.find((s) => s.id === el.dataset.chapter);
-      if (scene) el.classList.add(`tour__chapter--${scene.align}`);
-    });
+    this._lastFrameAt = 0;
+    this._displayTime = null; // smoothed video time actually shown
+    this._sizeMode = null; // "full" | "normal" — which layout _sizeFrame last applied
+    this._seekIssuedAt = 0; // when the in-flight seek was written (0 = none)
 
     this._buildRail();
   }
@@ -120,20 +132,16 @@ class ProductTour {
   start() {
     if (!this.videoEl) return;
     this.videoEl.muted = true;
+    // Clears the stuck-seek marker used by _update()'s retry logic below.
+    this.videoEl.addEventListener("seeked", () => (this._seekIssuedAt = 0));
 
     if (this.reducedMotion) {
       // Static-but-real: park on a representative frame instead of
-      // scrubbing. The plain stacked layout (no `.tour--cinematic`) already
-      // keeps every chapter visible and sequential. One seek near the start
-      // doesn't need the full-file blob load below — that's only there to
-      // make *repeated, arbitrary-direction* seeking reliable.
-      this.videoEl.addEventListener(
-        "loadedmetadata",
-        () => this._primeVideo(() => (this.videoEl.currentTime = productScenes[0].videoStart + 1)),
-        { once: true }
-      );
-      this.videoEl.src = VIDEO_SRC;
-      this.videoEl.load();
+      // scrubbing (13.5s: the bright three-quarter beauty shot). Loaded via
+      // the same blob path as the interactive tour so that this parking
+      // seek — and any colour-swatch seek later — can't land on a stale
+      // frame from an unbuffered byte range.
+      this._loadVideoSource(() => (this.videoEl.currentTime = 13.5));
       return;
     }
 
@@ -145,57 +153,71 @@ class ProductTour {
     this._bindScroll();
     this._observeViewport();
     this._setActiveChapter(0);
+    this._sizeFrame(productScenes[0]);
   }
 
   /**
    * Loads the tour video as an in-memory blob instead of letting the
-   * <video> stream it progressively over the network. Verified directly
-   * against the source file (not guessed): the "overview" chapter's own
-   * videoStart–videoEnd range is a completely different shot — a blue
-   * hinge/knob macro close-up — from what was actually rendering there,
-   * which matched the *next* chapter's ("optics") opening frame instead.
-   * That's the same class of quirk the header comment already documents
-   * for this codebase (a <video> silently not honoring a `currentTime`
-   * write) — it just isn't limited to the one-time initial probe
-   * _primeVideo() guards against; a seek back to an earlier, no-longer-
-   * buffered byte range mid-scroll can land on a stale frame the same way.
-   * Once the whole file is a blob URL, every seek — forward or backward —
-   * is served from memory rather than depending on the browser's network/
-   * buffer state for that particular byte range, so it can't stall or go
-   * stale. Falls back to plain progressive streaming (the old behavior) if
-   * the fetch itself fails, so the tour still works, just without that
-   * guarantee.
+   * <video> stream it progressively over the network. A seek back to an
+   * earlier, no-longer-buffered byte range mid-scroll can silently land on
+   * a stale frame (same family of quirk as the readyState-4 issue in the
+   * header comment). Once the whole file is a blob URL, every seek —
+   * forward or backward — is served from memory, so it can't stall or go
+   * stale. Falls back to plain progressive streaming if the fetch fails.
    */
-  _loadVideoSource() {
+  _loadVideoSource(onReady) {
     const bindAndLoad = (src) => {
-      this.videoEl.addEventListener("loadedmetadata", () => this._primeVideo(), { once: true });
+      this.videoEl.addEventListener("loadedmetadata", () => this._primeVideo(onReady), { once: true });
       this.videoEl.src = src;
       this.videoEl.load();
       this.videoEl.pause();
     };
 
-    fetch(VIDEO_SRC)
+    // If the blob src itself fails to decode (e.g. the "video" was really
+    // an HTML error/splash page served with a 200, which fetch can't tell
+    // apart on status alone), fall back to plain progressive streaming
+    // once instead of leaving the element permanently sourceless — without
+    // this listener a decode failure meant the tour scrubbed text over a
+    // frozen poster for the whole session.
+    this.videoEl.addEventListener(
+      "error",
+      () => {
+        if (this._triedProgressive) return;
+        this._triedProgressive = true;
+        bindAndLoad(VIDEO_SRC);
+      }
+    );
+
+    // Bounded: a hung connection must degrade to progressive streaming,
+    // not leave the tour scrub-dead with no src forever.
+    const abort = new AbortController();
+    const timer = setTimeout(() => abort.abort(), 45000);
+
+    fetch(VIDEO_SRC, { signal: abort.signal })
       .then((res) => {
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const type = (res.headers.get("content-type") || "").toLowerCase();
+        if (!res.ok || (type && !type.startsWith("video/") && !type.startsWith("application/octet-stream"))) {
+          throw new Error(`${res.status} ${type}`);
+        }
         return res.blob();
       })
       .then((blob) => bindAndLoad(URL.createObjectURL(blob)))
-      .catch(() => bindAndLoad(VIDEO_SRC));
+      .catch(() => bindAndLoad(VIDEO_SRC))
+      .finally(() => clearTimeout(timer));
   }
 
   /**
-   * See the header comment: a freshly-loaded <video> can report readyState
-   * 4 while silently ignoring `currentTime` writes for anywhere from under
-   * a second up to several seconds. A trivial near-zero probe isn't a
-   * reliable test of this on a larger file — the browser can satisfy a
-   * sub-frame seek from the initial buffer without the decode pipeline
-   * actually being seek-ready yet. This probes with a real, several-second
-   * seek and waits for the `seeked` event that only fires once the browser
-   * has genuinely completed it, retrying (~400ms apart, ~8s total) until
-   * one actually lands, then calls back.
+   * A freshly-loaded <video> can report readyState 4 while silently
+   * ignoring `currentTime` writes for anywhere from under a second up to
+   * several seconds. This probes with a real, several-second seek and waits
+   * for the `seeked` event that only fires once the browser has genuinely
+   * completed it, retrying (~400ms apart, ~8s total) until one actually
+   * lands, then calls back.
    */
   _primeVideo(onReady, attemptsLeft = 20) {
-    const probeTarget = Math.min(2, (this.videoEl.duration || 4) - 0.5);
+    const scene = productScenes[Math.max(0, this.activeIndex)] || productScenes[0];
+    const base = scene && scene.videoStart != null ? scene.videoStart + 0.5 : 2;
+    const probeTarget = Math.min(base, (this.videoEl.duration || 4) - 0.5);
     let settled = false;
 
     const onSeeked = () => {
@@ -209,6 +231,7 @@ class ProductTour {
 
     this.videoEl.addEventListener("seeked", onSeeked);
     this.videoEl.currentTime = probeTarget;
+    this._seekIssuedAt = performance.now();
 
     setTimeout(() => {
       if (settled) return;
@@ -239,8 +262,9 @@ class ProductTour {
   }
 
   _chapterLabel(id) {
+    if (id === "intro") return "Introduction";
     const panel = this.chapterEls.find((el) => el.dataset.chapter === id);
-    const heading = panel && panel.querySelector("h2, h3");
+    const heading = panel && panel.querySelector("h1, h2, h3");
     return heading ? heading.textContent.trim() : id;
   }
 
@@ -251,22 +275,49 @@ class ProductTour {
 
   /**
    * Scrolls so the pinned tour lands on a specific moment (seconds within
-   * videos/tour-master.mp4), not just a chapter's start — e.g. the
-   * "colour" chapter is one continuous scroll range that happens to
-   * contain three back-to-back real shots (black, red, silvergold), so a
-   * caller like the colour swatch buttons in main.js can jump to whichever
-   * one was clicked, not just the chapter's opening frame. Public: called
-   * from outside this class.
+   * videos/tour-master.mp4), not just a chapter's start — e.g. the "colour"
+   * chapter is one continuous scroll range containing each colourway's real
+   * shot back to back, so the colour swatch buttons in main.js can jump to
+   * whichever one was clicked. Public: called from outside this class.
    */
+  /**
+   * Scrolls the page so the pinned tour sits at `local` (0..1) within the
+   * given chapter — used by the magnification level buttons, whose zoom is
+   * scroll-driven. Returns false when the cinematic tour isn't active.
+   */
+  scrollToChapterLocal(chapterId, local) {
+    if (!this.wrapperEl.classList.contains("tour--cinematic")) return false;
+    const scene = productScenes.find((s) => s.id === chapterId);
+    if (!scene) return false;
+    const rect = this.wrapperEl.getBoundingClientRect();
+    const total = this.wrapperEl.offsetHeight - window.innerHeight;
+    const progress = scene.start + clamp(local) * (scene.end - scene.start);
+    const y = window.scrollY + rect.top + progress * total + 1;
+    window.scrollTo({ top: y, behavior: "smooth" });
+    return true;
+  }
+
   scrollToMoment(chapterId, videoTime) {
     const scene = productScenes.find((s) => s.id === chapterId);
     if (!scene || scene.videoStart == null || scene.videoEnd == null) return;
+
+    // Stacked (non-cinematic) mode: the scroll-position math below only
+    // holds for the pinned 650vh layout, and there's no scrub loop to seek
+    // the video from scroll anyway. Park the video directly on the
+    // requested frame instead — no page jump. Checked against the applied
+    // class, not the constructor-time flag, so it stays correct even if the
+    // OS motion preference is toggled mid-session.
+    if (!this.wrapperEl.classList.contains("tour--cinematic")) {
+      this.videoEl.currentTime = videoTime;
+      return;
+    }
+
     const local = clamp((videoTime - scene.videoStart) / (scene.videoEnd - scene.videoStart));
     const rect = this.wrapperEl.getBoundingClientRect();
     const total = this.wrapperEl.offsetHeight - window.innerHeight;
     const progress = scene.start + local * (scene.end - scene.start);
     const y = window.scrollY + rect.top + progress * total + 1;
-    window.scrollTo({ top: y, behavior: this.reducedMotion ? "auto" : "smooth" });
+    window.scrollTo({ top: y, behavior: "smooth" });
   }
 
   _observeViewport() {
@@ -274,6 +325,9 @@ class ProductTour {
       (entries) => {
         entries.forEach((entry) => {
           this._inView = entry.isIntersecting;
+          // The rail is position:fixed, so without this it would float over
+          // every section below the tour once unhidden.
+          if (this.railEl) this.railEl.classList.toggle("rail--offscreen", !this._inView);
           if (this._inView) this._requestFrame();
         });
       },
@@ -299,63 +353,79 @@ class ProductTour {
    * `requestAnimationFrame` can, in some embedding/focus-loss scenarios,
    * stop delivering callbacks indefinitely — observed directly: a scheduled
    * frame simply never fires, `_rafId` stays permanently non-null, every
-   * later `_requestFrame()` call silently no-ops forever (its only guard is
-   * "is one already pending"), and the tour freezes on whatever chapter it
-   * last reached no matter how much further the page is scrolled. A manual
-   * `dispatchEvent(new Event("scroll"))` doesn't recover it either, since
-   * that still routes through the same stuck gate. Since scroll events
-   * fire independently of rAF, this watchdog uses them as the recovery
-   * path: if too long has passed since `_update()` last actually ran, that
-   * means rAF isn't delivering, so clear the (stuck) pending id and update
-   * directly instead of just re-requesting a frame that may never come.
-   * Time-gated so normal healthy scrolling still rides the smooth rAF
-   * path, not this one, on every single scroll event.
+   * later `_requestFrame()` call silently no-ops forever, and the tour
+   * freezes on whatever chapter it last reached. Since scroll events fire
+   * independently of rAF, this watchdog uses them as the recovery path: if
+   * too long has passed since `_update()` last actually ran, rAF isn't
+   * delivering, so clear the (stuck) pending id and update directly.
+   * Time-gated so normal healthy scrolling still rides the smooth rAF path.
    */
   _onScroll() {
     if (performance.now() - this._lastUpdateAt > 250) {
+      // Cancel (not just forget) any pending frame: a merely-delayed
+      // callback that later fired would slip past _requestFrame's guard and
+      // leave a second update loop running in parallel forever.
+      if (this._rafId) cancelAnimationFrame(this._rafId);
       this._rafId = null;
       this._update();
     } else {
       this._requestFrame();
     }
+    // Trailing guarantee: if rAF is dead, scroll events inside the 250ms
+    // window schedule frames that never fire — so the END of a fling could
+    // be dropped, parking the tour desynced until the next scroll. This
+    // timer ensures one direct update lands after every burst regardless.
+    clearTimeout(this._trailTimer);
+    this._trailTimer = setTimeout(() => {
+      if (performance.now() - this._lastUpdateAt > 200) {
+        if (this._rafId) cancelAnimationFrame(this._rafId);
+        this._rafId = null;
+        this._update();
+      }
+    }, 300);
   }
 
   /**
    * Sizes and positions `.tour__frame-wrap` with explicit inline
    * width/height/left/top, computed here rather than left to CSS
-   * aspect-ratio + vw/vh math. In testing, an aspect-ratio box whose width
-   * came from one rule and max-height from another (needed so the video
-   * can be a different size per chapter alignment) didn't reliably
-   * re-resolve together after a later class swap — a real, reproducible
-   * gap in this codebase's CSS engine, not just a one-off glitch. Computing
-   * exact pixels here sidesteps it rather than fighting it, and is the
-   * mechanism that keeps the video and the active chapter's copy from ever
-   * overlapping: left/right chapters shift the video toward the side
-   * opposite the copy; center chapters shrink and top-anchor it, opening a
-   * dedicated band underneath for the copy.
+   * aspect-ratio + vw/vh math (an aspect-ratio box whose width and
+   * max-height come from separate rules didn't reliably re-resolve together
+   * after class swaps in this codebase — computing exact pixels sidesteps
+   * it). Two layouts only: the intro's full-bleed cold open, and the one
+   * fixed arrangement every real chapter shares (desktop: video in a
+   * constant right-hand slot clear of the fixed left copy column; mobile:
+   * pinned top-centre with the copy below). It re-runs on a chapter change
+   * only when the mode actually flips (intro → overview), so nothing about
+   * the frame ever moves while scrolling through the chapters themselves.
    */
   _sizeFrame(scene) {
     if (!this.frameWrapEl) return;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const isMobile = vw <= 900;
+    const isFull = Boolean(scene && scene.full);
+    // Full-bleed is a desktop treatment: fitting 16:9 into a portrait
+    // phone's vw×vh yields a ~26vh strip centred on black, which for the
+    // near-black intro footage read as a blank screen. Mobile uses its
+    // normal top-anchored placement for the intro as well.
+    const applyFull = isFull && !isMobile;
     const RATIO = 16 / 9;
     // Must match .tour__chapter's `padding: 0 6vw` and .tour__copy's
-    // `max-width: 360px` in main.css — the video's size for left/right
-    // chapters is *derived* from how much room the text column actually
-    // needs, not a guessed vw-fraction that happens to leave enough (an
-    // earlier version picked the video width first and only left a fixed
-    // 3vw gutter, which a wide-enough video ate straight through — a real,
-    // measured 57px overlap at 1440px wide, not a hypothetical one).
+    // `max-width: 400px` in main.css — the video's size is derived from how
+    // much room the text column actually needs.
     const CHAPTER_PADDING_FRAC = 0.06;
-    const TEXT_COLUMN_WIDTH = 360;
+    const TEXT_COLUMN_WIDTH = 400;
     let maxW;
     let maxH;
 
-    if (scene.align === "full") {
-      // The cold-open intro: no chapter copy exists for it at all (see the
-      // productScenes comment above), so there's nothing to leave room
-      // for — genuinely edge-to-edge.
+    // Fixed nav is ~67px tall; keep the video's top edge clear of it.
+    const NAV_CLEAR = 78;
+
+    if (applyFull) {
+      // The cold-open intro: no chapter copy exists for it at all, so
+      // there's nothing to leave room for — genuinely edge-to-edge (the
+      // 16:9 fit below letterboxes on other aspect ratios, invisibly,
+      // since both the page and the footage's surround are black).
       maxW = vw;
       maxH = vh;
     } else if (isMobile) {
@@ -363,15 +433,17 @@ class ProductTour {
       maxH = vh * 0.34;
     } else {
       const gutter = vw * 0.03;
-      const edgeMargin = vw * 0.03;
+      // Wider right-hand clearance so the progress rail dots never sit on
+      // top of the video's edge.
+      const edgeMargin = Math.max(vw * 0.045, 64);
       const textZone = vw * CHAPTER_PADDING_FRAC + TEXT_COLUMN_WIDTH + gutter;
       maxW = Math.min(vw - textZone - edgeMargin, 1600);
-      maxH = vh * 0.88;
+      // Second term keeps the vertically-centred video from tucking under
+      // the fixed nav on short, wide viewports where 0.88vh alone would.
+      maxH = Math.min(vh * 0.88, vh - NAV_CLEAR * 2);
     }
 
-    // Fit 16:9 inside the (maxW, maxH) budget — never crops or stretches
-    // the source; whichever dimension is the tighter constraint wins and
-    // the other derives from it.
+    // Fit 16:9 inside the (maxW, maxH) budget — never crops or stretches.
     let w = maxW;
     let h = w / RATIO;
     if (h > maxH) {
@@ -381,24 +453,17 @@ class ProductTour {
 
     let left;
     let top;
-    if (scene.align === "full") {
+    if (applyFull) {
       left = (vw - w) / 2;
       top = (vh - h) / 2;
     } else if (isMobile) {
       left = (vw - w) / 2;
-      top = vh * 0.03;
+      top = vh * 0.03 + 67; // clear the fixed nav
     } else {
-      const edgeMargin = vw * 0.03;
-      // align "left" means the COPY sits on the left, so the video shifts
-      // all the way right instead (pinned `edgeMargin` off the right edge
-      // — its left edge lands `textZone` from the viewport's left, clear
-      // of the text column, as a consequence of how `w` was sized above).
-      // align "right" is the mirror: video pinned `edgeMargin` off the
-      // LEFT edge instead. (An earlier version used `textZone` here for
-      // "right" too, which put the video on the wrong side entirely and
-      // slammed it straight into the text — caught by measuring the actual
-      // rendered boxes, not just eyeballing it.)
-      left = scene.align === "left" ? vw - edgeMargin - w : edgeMargin;
+      // Copy on the left, video pinned toward the right edge — same
+      // clearance as the width budget above, so the rail dots sit in
+      // clear space rather than on the frame.
+      left = vw - Math.max(vw * 0.045, 64) - w;
       top = (vh - h) / 2;
     }
 
@@ -406,6 +471,23 @@ class ProductTour {
     this.frameWrapEl.style.height = `${Math.round(h)}px`;
     this.frameWrapEl.style.left = `${Math.round(left)}px`;
     this.frameWrapEl.style.top = `${Math.round(top)}px`;
+    // Full-bleed drops the card treatment (rounded corners + shadow).
+    this.frameWrapEl.classList.toggle("tour__frame-wrap--full", applyFull);
+
+    // Mobile chapter copy sits below the pinned video; publish the video's
+    // actual bottom edge so the CSS padding tracks the real height (a
+    // portrait phone's width-limited video is well short of the 34vh cap,
+    // which a fixed worst-case padding would leave as a blank band). Skip
+    // the desktop full-bleed intro: it has no copy, and overwriting the var
+    // with the intro's geometry would shift the next chapter's padding.
+    if (!applyFull) {
+      this.wrapperEl.style.setProperty("--tour-video-bottom", `${Math.round(top + h)}px`);
+    }
+
+    // Committed last, deliberately: if anything above threw, the mode stays
+    // un-committed and the per-frame invariant in _updateFrame retries the
+    // whole sizing pass instead of trusting a half-applied layout.
+    this._sizeMode = isFull ? "full" : "normal";
   }
 
   _requestFrame() {
@@ -417,7 +499,23 @@ class ProductTour {
   }
 
   _update() {
-    this._lastUpdateAt = performance.now();
+    // try/finally: whatever happens inside a frame, the loop must schedule
+    // the next one — a single thrown frame must never end the tour.
+    try {
+      this._updateFrame();
+    } finally {
+      if (this._inView) this._requestFrame();
+    }
+  }
+
+  _updateFrame() {
+    const now = performance.now();
+    // Clamped frame delta for the easing below — a tab coming back from
+    // being hidden shouldn't integrate a huge dt and teleport.
+    const dt = Math.min(Math.max(now - this._lastFrameAt, 0), 100);
+    this._lastFrameAt = now;
+    this._lastUpdateAt = now;
+
     const rect = this.wrapperEl.getBoundingClientRect();
     const total = this.wrapperEl.offsetHeight - window.innerHeight;
     const progress = clamp(-rect.top / Math.max(total, 1));
@@ -425,60 +523,117 @@ class ProductTour {
     let idx = productScenes.findIndex((s) => progress >= s.start && progress < s.end);
     if (idx === -1) idx = progress >= 1 ? productScenes.length - 1 : 0;
     const scene = productScenes[idx];
-    // Linear, not smoothstep: smoothstep's derivative is ~0 at t=0/t=1, so
-    // right where a chapter *starts* — the exact moment its text/frame
-    // transition fires — the video was barely advancing off videoStart for
-    // a good stretch of scroll (verified: 20% into a chapter's scroll range,
-    // smoothstep had only covered ~40% as much of the shot as linear would
-    // have). On chapters that only span a few percent of the total scroll
-    // range, that reads as "the clip stayed the same" through the whole
-    // transition — the bug reported. A 1:1 scroll-to-seek mapping is also
-    // what the header comment's own reference point (Apple's product-page
-    // scroll-scrub) actually uses; easing the *seek* fights the "tied to
-    // your scroll" feel that makes scrubbing read as responsive.
     const local = clamp((progress - scene.start) / (scene.end - scene.start));
 
-    if (idx !== this.activeIndex) this._setActiveChapter(idx);
-
-    // Chapters without a video moment assigned yet (`videoStart`/`videoEnd`
-    // both null — see productScenes above) just hold the video wherever it
-    // already is, rather than seeking to `lerp(null, null, local)` (NaN).
-    if (this._primed && scene.videoStart != null && scene.videoEnd != null) {
-      // Writes every tick, no skip-threshold: tour-master.mp4 is all-intra
-      // now (every frame a keyframe), so a seek is cheap, and the tour is
-      // scaled so a small scroll covers a small slice of video — skipping
-      // sub-threshold changes would mean quantizing exactly the fine-
-      // grained per-frame tracking that's the whole point now, not saving
-      // anything that matters.
-      this.videoEl.currentTime = lerp(scene.videoStart, scene.videoEnd, local);
+    // Guarded so an unexpected DOM error in the chapter/layout switch can
+    // only lose one frame's worth of text update — never the scrub loop:
+    // an uncaught throw here used to kill the rAF chain, freezing the whole
+    // tour on whatever frame it happened to be showing.
+    if (idx !== this.activeIndex) {
+      try {
+        this._setActiveChapter(idx);
+      } catch (err) {
+        // Un-commit so the switch is retried next frame — otherwise a
+        // single throw left activeIndex pointing at a chapter whose DOM
+        // never activated (blank copy, stale rail) with no retry path.
+        this.activeIndex = -1;
+        console.error("[tour] chapter switch failed", err);
+      }
     }
 
-    if (this._inView) this._requestFrame();
+    // Self-healing layout invariant: the frame's mode must match the active
+    // scene EVERY frame, not only on the chapter-change edge. If any missed
+    // transition, stale cached script, restored bfcache state, or swallowed
+    // error above ever leaves the full-bleed intro layout applied outside
+    // the intro (or vice versa), this corrects it within one frame instead
+    // of letting the page sit visibly wrong.
+    if (Boolean(scene.full) !== (this._sizeMode === "full")) this._sizeFrame(scene);
+
+    // Scroll cue: visible through the whole textless cold open, gone just
+    // before the first copy chapter arrives.
+    if (this.cueEl) this.cueEl.classList.toggle("is-hidden", progress > 0.18);
+
+    // End-of-tour CTA: fades in during the colour chapter's final shots.
+    if (this.endCtaEl) {
+      this.endCtaEl.classList.toggle("is-ready", scene.id === "colour" && local >= 0.8);
+    }
+
+    // Through-the-lens overlay: CUTS in as the magnification chapter begins
+    // (the footage has just filled the frame with the lens) and stays up
+    // for the WHOLE chapter — it cuts away only when the next chapter's
+    // footage takes over. Hard cuts on purpose: a crossfade left the loupes
+    // ghosted over the sample photo, and an end-of-chapter reveal window
+    // meant the banana vanished for the last stretch of scrolling, both of
+    // which read as bugs.
+    if (this.magOverlayEl) {
+      const on = scene.id === "magnification";
+      this.magOverlayEl.style.opacity = on ? "1" : "0";
+      this.magOverlayEl.classList.toggle("is-on", on);
+      // Scroll drives the through-the-lens zoom: broadcast chapter-local
+      // progress so main.js can scrub the sample photos with the scroll.
+      if (on) {
+        document.dispatchEvent(new CustomEvent("pentax:magscroll", { detail: { local } }));
+      }
+    }
+
+    if (this._primed && scene.videoStart != null && scene.videoEnd != null) {
+      // End one frame shy of the cut: a seek to a chapter's exact end
+      // timestamp displays the FIRST frame of the next shot, so parking at
+      // a chapter's last pixels used to show the wrong footage under its
+      // copy (the reported full-bleed hinge frame at the intro's end was
+      // this exact mechanism).
+      const endGuard = Math.max(scene.videoStart, scene.videoEnd - 1 / 24);
+      const target = lerp(scene.videoStart, endGuard, local);
+
+      // Ease the displayed time toward the target instead of snapping to
+      // every raw wheel step. τ ≈ 110ms: short enough to stay glued to the
+      // scroll, long enough to absorb the stepping. Snap — never ease —
+      // whenever the eased time sits outside the ACTIVE scene's own range:
+      // easing across a cut paints the neighbouring chapter's footage under
+      // this chapter's copy/layout (the |Δ|>3 check alone provably never
+      // fired across the intro↔overview cut, whose maximum gap is 2.97s —
+      // the root cause of the recurring stuck-hinge-frame report).
+      const outsideScene = this._displayTime != null && (this._displayTime < scene.videoStart || this._displayTime > scene.videoEnd);
+      if (this._displayTime == null || outsideScene || Math.abs(target - this._displayTime) > 3) {
+        this._displayTime = target;
+      } else {
+        const k = 1 - Math.exp(-dt / 110);
+        this._displayTime += (target - this._displayTime) * k;
+      }
+
+      // A seek can be in flight that WE never stamped (the prime probe, or
+      // any external write) — stamp it, or the stuck-detection below could
+      // never trigger and the gate would lock shut permanently.
+      if (this.videoEl.seeking && this._seekIssuedAt === 0) this._seekIssuedAt = now;
+
+      // Never stack a new seek on a healthy in-flight one, and skip
+      // sub-half-frame writes: re-seeking to effectively the same frame
+      // every rAF kept the decoder permanently busy in the old build. BUT a
+      // seek still marked in-flight after 200ms is treated as stuck and
+      // re-written — bypassing the delta gate too, because currentTime
+      // reads back the issued target immediately, so at scroll rest the
+      // delta is 0 and a gated retry would never fire.
+      const seekStuck = this._seekIssuedAt !== 0 && now - this._seekIssuedAt > 200;
+      const wantsWrite = Math.abs(this.videoEl.currentTime - this._displayTime) > 1 / 48;
+      if ((!this.videoEl.seeking && wantsWrite) || (this.videoEl.seeking && seekStuck)) {
+        this.videoEl.currentTime = this._displayTime;
+        this._seekIssuedAt = now;
+      }
+    }
   }
 
   _setActiveChapter(idx) {
-    // The frame itself (_sizeFrame below) always snaps to its new
-    // position/size instantly — no animation; an earlier version animated
-    // that move with a FLIP transform, but on this page that read as the
-    // video visibly sliding left/right between chapters, most noticeably
-    // where two alignment flips sit close together.
-    //
-    // Instant video + a *symmetric* 700ms crossfade on the text is exactly
-    // what caused the overlap this page actually shipped with: on an
-    // alignment flip (the common case — see productScenes above), the
-    // video's new position lands exactly where the OUTGOING chapter's text
-    // still is, and that text was still fading out there for up to 700ms.
-    // The fix is asymmetric, not a timing threshold: the outgoing chapter
-    // is hidden instantly (in lockstep with the video's own instant snap),
-    // while the incoming chapter still gets the normal CSS-defined 700ms
-    // fade-in for the "smooth" feel. Since at most one chapter is ever
-    // mid-fade-in at a time — a still-fading-in chapter that loses
-    // is-active before finishing is itself hidden instantly, the moment it
-    // does — this also can't pile up into multiple chapters' text ghosted
-    // together during a fast scroll/fling, without needing a separate
-    // rapid-scroll timing guard.
+    // Only the copy changes between chapters — the video frame never moves,
+    // with one deliberate exception: entering/leaving the full-bleed intro
+    // snaps the frame between edge-to-edge and the shared chapter slot.
+    // The outgoing chapter is hidden instantly while the incoming one gets
+    // the CSS-defined fade-in; since at most one chapter is ever mid-fade,
+    // fast scrolling can't ghost multiple copies together.
     this.activeIndex = idx;
     const scene = productScenes[idx];
+
+    const mode = scene.full ? "full" : "normal";
+    if (mode !== this._sizeMode) this._sizeFrame(scene);
 
     this.chapterEls.forEach((el) => {
       const shouldBeActive = el.dataset.chapter === scene.id;
@@ -495,8 +650,7 @@ class ProductTour {
     if (this.railEl) {
       Array.from(this.railEl.children).forEach((dot, i) => dot.classList.toggle("is-active", i === idx));
     }
-    this._sizeFrame(scene);
   }
 }
 
-window.PentaxProductTour = { ProductTour, productScenes, clamp, lerp, smoothstep };
+window.PentaxProductTour = { ProductTour, productScenes, clamp, lerp };

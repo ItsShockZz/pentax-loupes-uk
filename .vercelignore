@@ -1,0 +1,7 @@
+# Internal/dev files — never deploy these
+.claude
+.git
+serve.json
+README.md
+TODO.md
+SECURITY.md

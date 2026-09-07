@@ -3,6 +3,18 @@
    Dark mode only, by design brief — there is no light theme to toggle.
    ========================================================================== */
 
+/* Inter, self-hosted (variable, latin subset, weights 400-700; SIL OFL
+   licence). Served from our own origin on purpose: loading it from Google
+   Fonts sent every visitor's IP address to Google, which EU courts have
+   treated as a GDPR violation. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/inter-var.woff2") format("woff2");
+}
+
 :root {
   --bg: #000000;
   --bg-raised: #17181a;
@@ -264,11 +276,18 @@ h1, h2, h3, h4, p { margin: 0; }
     width: min(320px, 82vw);
     background: var(--bg-raised);
     transform: translateX(100%);
-    transition: transform var(--dur-med) var(--ease);
+    /* visibility keeps the closed drawer's links out of the tab order;
+       delayed on close so the slide-out finishes first. */
+    visibility: hidden;
+    transition: transform var(--dur-med) var(--ease), visibility 0s var(--dur-med);
     padding: 88px 28px 28px;
     box-shadow: -12px 0 40px rgba(0, 0, 0, 0.5);
   }
-  .nav__drawer--open { transform: translateX(0); }
+  .nav__drawer--open {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform var(--dur-med) var(--ease), visibility 0s;
+  }
   .nav__drawer a:not(.btn) {
     display: block;
     padding: 14px 0;
@@ -324,6 +343,8 @@ h1, h2, h3, h4, p { margin: 0; }
   box-shadow: 0 60px 140px -50px rgba(0, 0, 0, 0.9);
 }
 
+.tour__frame-wrap--full { border-radius: 0; box-shadow: none; }
+
 .tour__video {
   position: absolute;
   inset: 0;
@@ -332,6 +353,39 @@ h1, h2, h3, h4, p { margin: 0; }
   object-fit: contain;
   background: var(--bg);
 }
+
+/* Through-the-lens sample overlay - sits exactly over the video frame.
+   Hidden entirely outside the cinematic tour; opacity is written per-frame
+   by product-tour.js during the magnification chapter. */
+.mag-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--bg);
+}
+.tour--cinematic .mag-overlay { display: block; }
+/* The two stacked rack-zoom layers (shared with .mag-sample below) */
+[data-mag-sample] img[data-mag-layer] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform, opacity;
+}
+.mag-overlay__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mag-overlay__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mag-overlay__badge { font-size: 3rem; font-weight: 700; color: var(--pentax-blue); }
+
 
 .tour__chapters { position: static; }
 
@@ -369,15 +423,18 @@ h1, h2, h3, h4, p { margin: 0; }
 .tour__chapter h2 { font-size: clamp(1.7rem, 3vw, 2.6rem); line-height: 1.1; margin-bottom: 14px; letter-spacing: -0.015em; color: var(--ink); }
 .tour__chapter p { color: var(--muted); font-size: 1rem; max-width: 420px; margin-left: auto; margin-right: auto; }
 
-.tour__cta-row { display: flex; justify-content: center; gap: 14px; margin-top: 24px; }
-
 .tour__scroll-cue { display: none; }
-.tour--cinematic .tour__chapter[data-chapter="overview"] .tour__scroll-cue {
+/* Stage-level: visible over the full-bleed cold open (which has no chapter
+   copy at all), fading out as soon as the user starts scrolling (is-hidden
+   is toggled from product-tour.js). */
+.tour--cinematic .tour__scroll-cue {
   display: flex;
   position: absolute;
   bottom: 36px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: none; /* decorative — must never swallow taps */
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -385,7 +442,9 @@ h1, h2, h3, h4, p { margin: 0; }
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  transition: opacity var(--dur-med) var(--ease);
 }
+.tour--cinematic .tour__scroll-cue.is-hidden { opacity: 0; }
 .tour__scroll-cue::after {
   content: "";
   width: 1px; height: 26px;
@@ -411,6 +470,8 @@ h1, h2, h3, h4, p { margin: 0; }
   z-index: 6;
 }
 .rail[hidden] { display: none; }
+.rail { transition: opacity var(--dur-med) var(--ease); }
+.rail--offscreen { opacity: 0; pointer-events: none; }
 .rail__dot {
   width: 8px; height: 8px;
   border-radius: 50%;
@@ -422,28 +483,9 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .rail__dot.is-active { background: var(--pentax-blue); transform: scale(1.5); }
 
-/* Measurement callout line, e.g. "──────●" — decorative, hidden from AT */
-.measure-line {
-  display: inline-block;
-  width: 90px;
-  height: 1px;
-  background: var(--line-strong);
-  position: relative;
-  margin: 10px 0 6px;
-}
-.measure-line::after {
-  content: "";
-  position: absolute;
-  right: 0; top: 50%;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--pentax-blue);
-  transform: translateY(-50%);
-}
-
 /* In-tour magnification & colour selectors */
 .tour-selector { margin-top: 22px; }
-.tour-selector__row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.tour-selector__row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .mag-btn {
   border: 1px solid var(--line-strong);
   background: transparent;
@@ -473,7 +515,9 @@ h1, h2, h3, h4, p { margin: 0; }
   border: 2px solid transparent;
   cursor: pointer;
   padding: 0;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  /* 0.35 alpha ring: the black swatch sits on a near-black page and needs
+     more than a faint inset line to read as present at all. */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.14);
   transition: box-shadow var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 .colour-swatch:hover { transform: scale(1.08); }
@@ -485,25 +529,25 @@ h1, h2, h3, h4, p { margin: 0; }
   box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px currentColor, 0 0 24px currentColor;
   transform: scale(1.18);
 }
-.colour-selected-label {
-  display: block;
-  margin-top: 16px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  transition: opacity var(--dur-fast) var(--ease);
+/* One-shot pop on click (class added then removed in main.js) — a quick
+   ring flare in the swatch's own colour. */
+@keyframes swatch-pop {
+  0% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px currentColor, 0 0 0 0 currentColor; }
+  60% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px currentColor, 0 0 0 14px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px currentColor, 0 0 24px currentColor; }
 }
+.colour-swatch.is-pop { animation: swatch-pop 480ms var(--ease); }
 
 /* ------------------------------------------------------------------------
    Cinematic enhancement — added by main.js once it's safe to pin/scrub.
    Turns the plain stacked baseline above into the pinned, scroll-scrubbed
-   sequence: video centered and pinned, chapter copy positioned left/right/
-   center of it per chapter (`.tour__chapter--left/--right/--center`,
-   assigned in product-tour.js so the story doesn't sit on one side the
-   whole way through, but doesn't swing every single chapter either).
+   sequence. ONE fixed layout for every chapter: copy in a constant left
+   column, video in a constant right slot (sized/positioned by _sizeFrame()
+   in product-tour.js). Nothing moves between chapters except the footage
+   itself and the copy crossfade — the earlier per-chapter left/right
+   alternation read as the screen jumping side to side and is gone.
    ------------------------------------------------------------------------ */
-.tour--cinematic { height: 1200vh; } /* 11 chapters + intro worth of scroll range */
+.tour--cinematic { height: 650vh; } /* 6 chapters worth of scroll range */
 .tour--cinematic .tour__stage {
   position: sticky;
   top: 0;
@@ -518,15 +562,12 @@ h1, h2, h3, h4, p { margin: 0; }
   display: block;
 }
 /* Width/height/position are set inline by `_sizeFrame()` in
-   product-tour.js, not by CSS aspect-ratio/vw/vh math — the tour has one
-   shared video (not one per chapter), so keeping chapter copy off it means
-   moving the video itself out of the copy's way per chapter, which this
-   project's CSS engine wasn't reliably recomputing on class changes alone
-   (aspect-ratio boxes whose width and max-height come from separate rules
-   didn't re-resolve together after a later class swap — JS computing exact
-   pixel values sidesteps that rather than fighting it). Left/right chapters
-   get the video shifted toward the side opposite the copy; center chapters
-   get it shrunk and top-anchored, opening a dedicated band underneath. */
+   product-tour.js, not by CSS aspect-ratio/vw/vh math (aspect-ratio boxes
+   whose width and max-height come from separate rules didn't reliably
+   re-resolve together after class swaps in this codebase — JS computing
+   exact pixel values sidesteps that). The slot is the same for every
+   chapter: right of the fixed left copy column on desktop, pinned top on
+   mobile. It is computed once at start and on resize, never per chapter. */
 .tour--cinematic .tour__frame-wrap {
   position: absolute;
   /* The base (non-cinematic) rule above sets width/aspect-ratio/max-height
@@ -563,38 +604,69 @@ h1, h2, h3, h4, p { margin: 0; }
   inset: 0;
   display: flex;
   align-items: center;
+  justify-content: flex-start; /* copy always left — never alternates */
   padding: 0 6vw;
   border-bottom: 0;
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+  transform: translateY(10px);
+  /* visibility keeps the CTAs/selectors of the five invisible chapters out
+     of the keyboard tab order (opacity alone leaves them focusable). It
+     flips to visible instantly when is-active lands, so the opacity
+     fade-in still shows in full. */
+  visibility: hidden;
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease), visibility 0s;
+  will-change: opacity, transform;
 }
-.tour--cinematic .tour__chapter.is-active { opacity: 1; transform: translateY(0); pointer-events: auto; }
-.tour--cinematic .tour__copy { max-width: 360px; margin: 0; text-align: left; }
+.tour--cinematic .tour__chapter.is-active { opacity: 1; transform: translateY(0); visibility: visible; pointer-events: auto; }
+.tour--cinematic .tour__copy { max-width: 400px; margin: 0; text-align: left; }
 .tour--cinematic .tour__chapter p { margin-left: 0; margin-right: 0; }
 .tour--cinematic .tour__chapter-index { justify-content: flex-start; }
-
-.tour--cinematic .tour__chapter--left { justify-content: flex-start; }
-.tour--cinematic .tour__chapter--right { justify-content: flex-end; }
-.tour--cinematic .tour__chapter--right .tour__copy { text-align: right; }
-.tour--cinematic .tour__chapter--right .tour__chapter-index { justify-content: flex-end; }
-.tour--cinematic .tour__chapter--right .tour__chapter-index::after { order: -1; }
-.tour--cinematic .tour__chapter--right .tour-selector__row { justify-content: flex-end; }
-.tour--cinematic .tour__chapter--right .colour-swatches { justify-content: flex-end; }
-.tour--cinematic .tour__chapter--right .tour__cta-row,
-.tour--cinematic .tour__chapter--right .hero-ctas { justify-content: flex-end; }
 
 /* Smaller, tighter type in the cinematic tour specifically — the base
    sizes above are tuned for the plain stacked no-JS/reduced-motion
    fallback, which has the full page width to work with. Every chapter's
-   copy here instead sits in a fixed 360px column beside a much larger
+   copy here instead sits in a fixed 400px column beside a much larger
    video (see _sizeFrame() in product-tour.js), so it reads as a caption,
    not a competing headline. */
+.tour--cinematic .tour-selector__row { justify-content: flex-start; }
+
 .tour--cinematic .display { font-size: clamp(1.7rem, 2.6vw, 2.4rem); }
 .tour--cinematic .subhead { font-size: clamp(0.92rem, 1vw, 1rem); }
 .tour--cinematic .tour__chapter h2 { font-size: clamp(1.25rem, 1.7vw, 1.6rem); margin-bottom: 10px; }
 .tour--cinematic .tour__chapter p { font-size: 0.9rem; }
 .tour--cinematic .tour__chapter-index { font-size: 0.7rem; margin-bottom: 10px; }
+
+.tour__end-cta { margin-top: 22px; }
+.tour--cinematic .tour__end-cta {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
+}
+.tour--cinematic .tour__end-cta.is-ready {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Second selector outguns .tour--cinematic .tour__chapter p, so the
+   footnote stays small inside the cinematic tour too. */
+.tour__footnote,
+.tour--cinematic .tour__chapter p.tour__footnote {
+  margin-top: 10px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.tour__spec-line {
+  margin-top: 24px;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  display: grid;
+  gap: 5px;
+}
 
 /* .colour-swatch.is-selected grows to scale(1.18) and paints a glow with a
    24px blur radius (see the rule above) — fine in the base layout's wider
@@ -612,27 +684,21 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 @media (max-width: 900px) {
-  .tour--cinematic { height: 1600vh; }
+  .tour--cinematic { height: 850vh; }
   /* Frame sizing/position (width/height/left/top) is set inline by
      `_sizeFrame()` in product-tour.js for every breakpoint, mobile
-     included — its `isMobile` branch targets 88vw × 30vh top-anchored
-     4vh under the nav, which is what the chapter padding below assumes. */
-  /* On mobile every chapter is bottom-anchored and left-aligned regardless
-     of its desktop left/right assignment (the text-less "full" intro has
-     no chapter panel at all, so it needs nothing here) — side-by-side text
-     placement doesn't survive a narrow viewport, and consistent
-     positioning matters more than the variation there. padding-top
-     reserves space for both the fixed nav (~67px) and the pinned video. */
-  .tour--cinematic .tour__chapter,
-  .tour--cinematic .tour__chapter--left,
-  .tour--cinematic .tour__chapter--right {
+     included — its `isMobile` branch targets 92vw × max 34vh, top-anchored
+     3vh under the fixed nav (~67px), which is what the chapter padding
+     below assumes. Copy sits below the pinned video, always left-aligned. */
+  .tour--cinematic .tour__chapter {
     flex-direction: row;
     align-items: flex-start;
     justify-content: flex-start;
-    padding: calc(4vh + 30vh + 88px) 6vw 4vh;
+    /* --tour-video-bottom is published by _sizeFrame() (the video's actual
+       bottom edge in px); the fallback matches its worst case. */
+    padding: calc(var(--tour-video-bottom, 41vh) + 24px) 6vw 4vh;
   }
-  .tour--cinematic .tour__copy,
-  .tour--cinematic .tour__chapter--right .tour__copy {
+  .tour--cinematic .tour__copy {
     text-align: left;
     max-width: 100%;
     margin: 0;
@@ -646,20 +712,13 @@ h1, h2, h3, h4, p { margin: 0; }
     max-height: 100%;
     overflow-y: auto;
   }
-  .tour--cinematic .tour__chapter-index,
-  .tour--cinematic .tour__chapter--right .tour__chapter-index { justify-content: flex-start; }
+  .tour--cinematic .tour__chapter-index { justify-content: flex-start; }
   .tour--cinematic .tour__chapter-index::after { display: flex; order: 0; }
   .tour--cinematic .tour__chapter p { margin-left: 0; margin-right: 0; }
   .tour--cinematic .tour-selector__row,
   .tour--cinematic .colour-swatches,
-  .tour--cinematic .tour__cta-row,
   .tour--cinematic .hero-ctas { justify-content: flex-start; }
   .tour--cinematic .rail { display: none; }
-  /* CTAs already anchor at the bottom of the hero panel on mobile — the cue
-     would overlap them. Matches the specificity of the rule that turns the
-     cue on (chapter[data-chapter] + class) so this override actually wins. */
-  .tour--cinematic .tour__chapter[data-chapter="overview"] .tour__scroll-cue { display: none; }
-
   /* The hero chapter carries more content (headline + subhead + two CTAs)
      than any other chapter — compact it specifically so it fits above the
      fold without overlapping the nav bar. */
@@ -716,29 +775,31 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .why-row--reverse .why-row__media { order: 2; }
 .why-row__index { font-size: 0.85rem; font-weight: 700; color: var(--pentax-blue); letter-spacing: 0.08em; margin-bottom: 14px; }
-.why-row__media { position: relative; overflow: hidden; border-radius: 14px; background: var(--card-light); }
-.why-row__media img { width: 100%; height: auto; display: block; transition: transform var(--dur-slow) var(--ease); }
-
-/* Conventional-vs-PENTAX comparison rows: two figures side by side */
-.why-row__media--compare { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--line); }
-.why-row__media--compare figure { margin: 0; background: var(--card-light); }
-.why-row__media--compare figcaption {
-  text-align: center;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #6a6a6f;
-  padding: 10px 0;
-}
-.why-row__media--compare figure:last-child figcaption { color: var(--pentax-blue-dim); font-weight: 600; }
+/* Dark background: the images here are real frames from the product footage
+   (black studio), so they blend into the page instead of sitting in a white
+   card. `--photo` keeps the light card for white-studio photography. */
+.why-row__media { position: relative; overflow: hidden; border-radius: 14px; background: var(--bg-raised); aspect-ratio: 16 / 11; }
+.why-row__media img,
+.why-row__media video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform var(--dur-slow) var(--ease); }
+.why-row__media--photo { background: var(--card-light); }
+/* Portrait media (vertical product/clinician clips): a taller box so the
+   9:16 source fills without a hard crop. Cover-fit keeps the subject, which
+   sits centred in every clip, in frame. */
+.why-row__media--portrait { aspect-ratio: 4 / 5; }
+/* Two built-around-you tiles now hold portrait clips; keep the 4:3 tile
+   (so the 2x2 grid stays even) and frame the subject with object-position. */
+.feature-card__media--portrait video { object-position: 50% 32%; }
 .why-row__title { font-size: clamp(1.4rem, 2.4vw, 1.9rem); margin-bottom: 14px; letter-spacing: -0.01em; color: var(--ink); }
 
-.why-row {
+/* Scroll-reveal hiding is scoped to html:not(.no-js): without JS nothing
+   would ever add .is-visible, and unscoped opacity:0 would hide these
+   permanently for no-JS visitors. */
+html:not(.no-js) .why-row {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
 }
-.why-row.is-visible { opacity: 1; transform: translateY(0); }
+html:not(.no-js) .why-row.is-visible { opacity: 1; transform: translateY(0); }
 
 @media (max-width: 860px) {
   .why-row { grid-template-columns: 1fr; gap: 28px; padding: 44px 0; }
@@ -747,95 +808,30 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 /* ---------------------------------------------------------------------- */
-/* At a glance — bento overview                                            */
-/* ---------------------------------------------------------------------- */
-
-.bento {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(170px, auto);
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  overflow: hidden;
-}
-.bento__card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 32px;
-  background: var(--bg-raised);
-  text-decoration: none;
-  color: inherit;
-  transition: background var(--dur-fast) var(--ease), opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
-  opacity: 0;
-  transform: translateY(20px);
-}
-.bento__card.is-visible { opacity: 1; transform: translateY(0); }
-.bento__card:nth-child(2) { transition-delay: 60ms; }
-.bento__card:nth-child(3) { transition-delay: 120ms; }
-.bento__card:nth-child(4) { transition-delay: 180ms; }
-.bento__card:nth-child(5) { transition-delay: 240ms; }
-.bento__card:nth-child(6) { transition-delay: 300ms; }
-.bento__card:hover { background: var(--bg-raised-2); }
-.bento__card h3 { color: var(--ink); font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
-.bento__card p { color: var(--muted); font-size: 0.9rem; }
-.bento__stat { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; color: var(--pentax-blue); }
-
-.bento__card--large {
-  grid-column: span 2;
-  grid-row: span 2;
-  min-height: 360px;
-}
-.bento__card--large .bento__media { position: absolute; inset: 0; background: var(--card-light); }
-.bento__card--large .bento__media img { width: 100%; height: 100%; object-fit: contain; padding: 36px; }
-.bento__card--large .bento__text {
-  position: relative;
-  z-index: 1;
-  margin: -32px;
-  padding: 72px 32px 32px;
-  background: linear-gradient(180deg, transparent, rgba(10, 10, 12, 0.92) 55%);
-}
-.bento__card--large .bento__text h3 { font-size: 1.4rem; margin-bottom: 6px; }
-
-.bento__card--wide {
-  grid-column: 1 / -1;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-.bento__colour-row { display: flex; gap: 8px; flex-shrink: 0; }
-.bento__colour-row span {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-}
-
-@media (max-width: 900px) {
-  .bento { grid-template-columns: repeat(2, 1fr); }
-  .bento__card--large { grid-column: span 2; grid-row: span 1; min-height: 300px; }
-  .bento__card--wide { grid-column: span 2; flex-direction: column; align-items: flex-start; }
-}
-@media (max-width: 560px) {
-  .bento { grid-template-columns: 1fr; }
-  .bento__card--large, .bento__card--wide { grid-column: 1; }
-}
-
-/* ---------------------------------------------------------------------- */
 /* Trust band — bold restatement of real specs, leading into the final CTA */
 /* ---------------------------------------------------------------------- */
 
 .trust {
   position: relative;
-  background: var(--bg-raised);
+  background: var(--bg);
   padding: 110px 0;
   overflow: hidden;
   text-align: center;
 }
+.trust__bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  pointer-events: none;
+}
+.trust__bg video { width: 100%; height: 100%; object-fit: cover; }
+.trust__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.5) 45%, rgba(0, 0, 0, 0.82));
+}
+
 .trust__glow {
   position: absolute;
   top: 50%;
@@ -866,11 +862,13 @@ h1, h2, h3, h4, p { margin: 0; }
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+html:not(.no-js) .trust__stat {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
 }
-.trust__stat.is-visible { opacity: 1; transform: translateY(0); }
+html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0); }
 .trust__stat:nth-child(2) { transition-delay: 80ms; }
 .trust__stat:nth-child(3) { transition-delay: 160ms; }
 .trust__stat:nth-child(4) { transition-delay: 240ms; }
@@ -881,6 +879,16 @@ h1, h2, h3, h4, p { margin: 0; }
   color: var(--ink);
 }
 .trust__stat-label { color: var(--muted); font-size: 0.88rem; max-width: 200px; margin: 0 auto; }
+.trust__stat-unit { font-size: 0.5em; font-weight: 600; color: var(--muted); margin-left: 4px; }
+.trust__strip {
+  color: var(--muted);
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  width: 100%;
+  max-width: 960px;
+}
 .trust__cta { display: flex; flex-direction: column; align-items: center; gap: 18px; }
 .trust__cta p { font-size: 1.15rem; color: var(--ink); max-width: 440px; }
 
@@ -909,7 +917,8 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .feature-card:hover { background: var(--bg-raised-2); }
 .feature-card__media { border-radius: 10px; overflow: hidden; margin-bottom: 22px; aspect-ratio: 4 / 3; background: var(--card-light); }
-.feature-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.feature-card__media img,
+.feature-card__media video { width: 100%; height: 100%; object-fit: cover; }
 .feature-card__stat { display: block; margin-bottom: 6px; color: var(--ink); }
 .feature-card__label { font-weight: 600; margin-bottom: 8px; display: block; color: var(--ink); }
 .feature-card__body { color: var(--muted); font-size: 0.95rem; }
@@ -982,19 +991,6 @@ h1, h2, h3, h4, p { margin: 0; }
 
 @media (max-width: 860px) {
   .rx-section { grid-template-columns: 1fr; gap: 28px; }
-}
-
-/* ---------------------------------------------------------------------- */
-/* Audience section                                                        */
-/* ---------------------------------------------------------------------- */
-
-.audience-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border-radius: 16px; overflow: hidden; border: 1px solid var(--line); }
-.audience-card { background: var(--bg-raised); padding: 40px 30px; }
-.audience-card h3 { font-size: 1.2rem; margin-bottom: 10px; color: var(--ink); }
-.audience-card p { color: var(--muted); font-size: 0.92rem; }
-
-@media (max-width: 780px) {
-  .audience-grid { grid-template-columns: 1fr; }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1085,14 +1081,10 @@ h1, h2, h3, h4, p { margin: 0; }
   color: var(--ink);
 }
 .field select option { background: var(--bg-raised); color: var(--ink); }
-.field input::placeholder, .field textarea::placeholder { color: #6b6b70; }
+.field input::placeholder, .field textarea::placeholder { color: #8f8f96; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--pentax-blue); }
 .field input[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: var(--danger); }
 .field-error { min-height: 16px; font-size: 0.8rem; color: var(--danger); }
-.field--checkbox { display: flex; align-items: flex-start; gap: 10px; }
-.field--checkbox input { margin-top: 4px; }
-.field--checkbox label { font-weight: 400; font-size: 0.86rem; color: var(--muted); }
-
 .form-status { min-height: 20px; font-size: 0.9rem; }
 .form-status--success { color: var(--success); }
 .form-status--error { color: var(--danger); }
@@ -1124,13 +1116,14 @@ h1, h2, h3, h4, p { margin: 0; }
 .footer__col h4 { color: var(--white); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px; }
 .footer__col a { display: block; text-decoration: none; color: rgba(255, 255, 255, 0.62); padding: 5px 0; }
 .footer__col a:hover { color: var(--white); }
-.footer__bottom { border-top: 1px solid var(--line); padding-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; color: rgba(255, 255, 255, 0.4); font-size: 0.8rem; }
+.footer__bottom { border-top: 1px solid var(--line); padding-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; color: rgba(255, 255, 255, 0.58); font-size: 0.8rem; }
 
 /* ---------------------------------------------------------------------- */
 /* Hero (chapter 0 shares tour styling but a couple of hero-only bits)     */
 /* ---------------------------------------------------------------------- */
 
-.hero-ctas { display: flex; gap: 14px; margin-top: 26px; flex-wrap: wrap; }
+.hero-ctas { display: flex; gap: 14px; margin-top: 26px; flex-wrap: wrap; justify-content: center; }
+.tour--cinematic .hero-ctas { justify-content: flex-start; }
 
 /* ---------------------------------------------------------------------- */
 /* Misc                                                                     */
@@ -1147,3 +1140,431 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 .no-js .js-only { display: none !important; }
+
+/* ---------------------------------------------------------------------- */
+/* Legal pages (privacy / terms / cookies / returns)                       */
+/* ---------------------------------------------------------------------- */
+
+.legal { padding-top: 140px; }
+.legal .headline { margin-bottom: 6px; }
+.legal__updated { color: var(--muted); font-size: 0.85rem; margin-bottom: 36px; }
+.legal h2 { color: var(--ink); font-size: 1.25rem; letter-spacing: -0.01em; margin: 34px 0 10px; }
+.legal p { color: var(--muted); font-size: 0.98rem; line-height: 1.65; margin-bottom: 12px; max-width: 70ch; }
+.legal a { color: var(--pentax-blue); text-decoration: none; }
+.legal a:hover { text-decoration: underline; }
+.footer__bottom a { color: inherit; text-decoration: none; }
+.footer__bottom a:hover { color: var(--white); }
+
+/* ---------------------------------------------------------------------- */
+/* Photo slots — placeholders that swap themselves for real photos          */
+/* the moment the referenced file exists (see initPhotoSlots in main.js).   */
+/* ---------------------------------------------------------------------- */
+
+.photo-slot {
+  position: relative;
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg-raised);
+  border: 1px dashed var(--line-strong);
+  aspect-ratio: 4 / 3;
+}
+.photo-slot img { width: 100%; height: 100%; object-fit: cover; }
+.photo-slot.has-photo { border-style: solid; border-color: var(--line); }
+.photo-slot.has-photo .photo-slot__placeholder { display: none; }
+.photo-slot__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 16px;
+}
+.photo-slot__icon { font-size: 1.6rem; color: var(--muted); }
+.photo-slot__label { font-weight: 600; color: var(--ink); font-size: 0.95rem; }
+.photo-slot__note { color: var(--muted); font-size: 0.78rem; }
+
+/* ---------------------------------------------------------------------- */
+/* Magnification section — selector + per-magnification sample slot        */
+/* ---------------------------------------------------------------------- */
+
+.mag-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 56px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+.mag-layout .tour-selector__row { justify-content: flex-start; }
+
+.mag-sample {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--bg-raised-2);
+  border: 1px solid var(--line);
+}
+.mag-sample__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.mag-sample__badge {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--pentax-blue);
+}
+.mag-sample__note { color: var(--muted); font-size: 0.85rem; }
+
+@media (max-width: 860px) {
+  .mag-layout { grid-template-columns: 1fr; gap: 28px; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Illumination section — two LED photo slots + copy                       */
+/* ---------------------------------------------------------------------- */
+
+.led-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+.led-media { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+@media (max-width: 860px) {
+  .led-section { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Who it's for — discipline cards                                          */
+/* ---------------------------------------------------------------------- */
+
+.discipline-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.discipline-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 36px 30px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--bg);
+  text-decoration: none;
+  overflow: hidden;
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-med) var(--ease), box-shadow var(--dur-med) var(--ease);
+}
+.discipline-card:hover {
+  border-color: var(--pentax-blue-dim);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px -30px rgba(91, 134, 255, 0.35);
+}
+.discipline-card__media {
+  display: block;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.discipline-card__media .photo-slot__label { font-size: 0.8rem; }
+.discipline-card__media .photo-slot__note { font-size: 0.65rem; }
+
+.discipline-card__index {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--pentax-blue);
+  letter-spacing: 0.08em;
+}
+.discipline-card h3 { font-size: 1.5rem; letter-spacing: -0.01em; color: var(--ink); }
+.discipline-card__chip {
+  align-self: flex-start;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+.discipline-card p { color: var(--muted); font-size: 0.92rem; flex: 1; }
+.discipline-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--pentax-blue);
+}
+.discipline-card:hover .discipline-card__link { text-decoration: underline; }
+
+/* Scroll reveal (same html:not(.no-js) guard as .why-row — see there) */
+html:not(.no-js) .discipline-card,
+html:not(.no-js) .steps__item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-med) var(--ease);
+}
+html:not(.no-js) .discipline-card.is-visible,
+html:not(.no-js) .steps__item.is-visible { opacity: 1; transform: translateY(0); }
+html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px); }
+
+@media (max-width: 780px) {
+  .discipline-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* UK service — numbered steps                                              */
+/* ---------------------------------------------------------------------- */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  position: relative;
+}
+.steps__item {
+  position: relative;
+  padding: 30px 26px 26px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--bg);
+}
+.steps__num {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--pentax-blue);
+  letter-spacing: 0.08em;
+  border: 1px solid var(--pentax-blue-dim);
+  border-radius: 999px;
+  padding: 4px 12px;
+  margin-bottom: 16px;
+}
+.steps__item h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--ink); }
+.steps__item p { color: var(--muted); font-size: 0.92rem; }
+
+@media (max-width: 780px) {
+  .steps { grid-template-columns: 1fr; }
+}
+
+/* UK service - stacked steps beside the instrument-tray clip */
+.uk-split {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
+  align-items: stretch;
+}
+.steps--stacked { grid-template-columns: 1fr; align-content: start; }
+.ambient-panel {
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  min-height: 100%;
+  max-height: 560px;
+}
+.ambient-panel__video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+@media (max-width: 860px) {
+  .uk-split { grid-template-columns: 1fr; }
+  .ambient-panel { max-height: 420px; aspect-ratio: 4 / 5; min-height: 0; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Configurator — build-your-loupes flow                                    */
+/* ---------------------------------------------------------------------- */
+
+.cfg {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+.cfg__steps { display: grid; gap: 20px; }
+.cfg__step {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 26px 28px 28px;
+  background: var(--bg);
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.cfg__step legend {
+  /* legend behaves oddly across browsers inside rounded fieldsets — float
+     keeps it in normal flow so the border stays intact */
+  float: left;
+  width: 100%;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cfg__step legend + * { clear: both; }
+.cfg__step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--pentax-blue);
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.cfg__step.cfg__step--invalid { border-color: var(--danger); }
+.cfg__hint { margin-top: 12px; color: var(--muted); font-size: 0.85rem; }
+
+/* Per-step preview picture, shown once an option is chosen */
+.cfg-preview {
+  margin-top: 18px;
+  aspect-ratio: 16 / 9;
+  max-width: 460px;
+}
+.cfg__error { margin-top: 12px; color: var(--danger); font-size: 0.85rem; }
+
+/* Colour cards — side by side so every option is visible at once */
+.cfg__colours {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.cfg-colour {
+  display: grid;
+  gap: 10px;
+  padding: 10px 10px 14px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.cfg-colour:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+.cfg-colour[aria-pressed="true"] {
+  border-color: var(--pentax-blue);
+  box-shadow: 0 0 0 1px var(--pentax-blue), 0 12px 32px -18px rgba(91, 134, 255, 0.6);
+}
+.cfg-colour__media { aspect-ratio: 1 / 1; border-radius: 10px; }
+.cfg-colour__media .photo-slot__placeholder { padding: 0; }
+.cfg-colour__dot {
+  width: 44%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12), 0 10px 24px -10px rgba(0, 0, 0, 0.8);
+}
+.cfg-colour__name { font-size: 0.88rem; font-weight: 600; text-align: center; }
+
+/* Option chips (magnification / lenses / light) */
+.cfg__chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.cfg-chip {
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.cfg-chip:hover { border-color: var(--ink); }
+.cfg-chip[aria-pressed="true"] { background: var(--ink); color: #0a0a0c; border-color: var(--ink); }
+.cfg-chip:active { transform: scale(0.97); }
+
+/* Sticky summary */
+.cfg__summary {
+  position: sticky;
+  top: 88px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 26px 28px;
+  background: var(--bg);
+  display: grid;
+  gap: 18px;
+}
+.cfg__summary h3 { font-size: 1.05rem; color: var(--ink); }
+.cfg__summary-list { margin: 0; display: grid; gap: 10px; }
+.cfg__summary-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.cfg__summary-list dt { color: var(--muted); font-size: 0.88rem; }
+.cfg__summary-list dd { margin: 0; color: var(--ink); font-size: 0.88rem; font-weight: 600; text-align: right; }
+.cfg__quote-btn { justify-content: center; }
+
+.cfg__submit-row { display: grid; gap: 12px; margin-top: 6px; }
+.consent-note { color: var(--muted); font-size: 0.82rem; max-width: 520px; }
+.consent-note .text-link { font-weight: 500; }
+
+/* Success state */
+.cfg__success {
+  grid-column: 1 / -1;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 64px 32px;
+  background: var(--bg);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+.cfg__success h3 { font-size: 1.6rem; color: var(--ink); }
+.cfg__success p { color: var(--muted); max-width: 480px; }
+.cfg__success-recap { font-size: 0.85rem; }
+.cfg__success-check {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid var(--success);
+  position: relative;
+  animation: check-in 600ms var(--ease);
+}
+.cfg__success-check::after {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 16px;
+  width: 16px;
+  height: 28px;
+  border-right: 3px solid var(--success);
+  border-bottom: 3px solid var(--success);
+  transform: rotate(45deg);
+}
+@keyframes check-in {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 900px) {
+  .cfg { grid-template-columns: 1fr; gap: 24px; }
+  .cfg__summary { position: static; }
+  .cfg__step { padding: 20px 18px 22px; }
+  .cfg__colours { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfg__success-check,
+  .colour-swatch.is-pop { animation: none; }
+  .discipline-card:hover { transform: none; }
+}

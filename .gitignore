@@ -1,2 +1,13 @@
+# Local tooling / editor
+.claude/
+.vscode/
 .DS_Store
-.vercel
+
+# Dev scratch & inspection artifacts (never part of the site)
+_inspect/
+_*.html
+_*.js
+_*.py
+
+# Vercel build output (regenerated on deploy)
+.vercel/
