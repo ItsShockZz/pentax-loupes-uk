@@ -1622,3 +1622,23 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   .colour-swatch.is-pop { animation: none; }
   .discipline-card:hover { transform: none; }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Built around you: four portrait tiles                                   */
+/* The working-distance and PD clips are 9:16 and the working-distance     */
+/* composition runs diagonally (surgeon top-left, patient bottom-right), so */
+/* a landscape tile can never hold it. All four tiles share a 3:4 box; on   */
+/* desktop they sit in one row so the section stays a sensible height.      */
+/* ---------------------------------------------------------------------- */
+.feature-card__media { aspect-ratio: 3 / 4; }
+.feature-card__media--portrait video { object-position: 50% 50%; }
+.feature-card__media--wd video { object-position: 50% 100%; } /* keep the patient in */
+@media (min-width: 1100px) {
+  .feature-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .feature-card { padding: 20px; }
+  .feature-card__media { margin-bottom: 18px; }
+}
+/* Why PENTAX: the wide-field row uses the same diagonal shot; give it a
+   taller box anchored to the bottom so the patient stays in frame. */
+.why-row__media--tall { aspect-ratio: 2 / 3; }
+.why-row__media--tall video { object-position: 50% 100%; }

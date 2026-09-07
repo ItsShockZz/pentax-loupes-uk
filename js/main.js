@@ -209,20 +209,29 @@ function magSampleSrc(value) {
    magnification chapter switches the overlay still (one photo per level),
    and the buttons swap them instantly. */
 
-function setMagStills(value) {
+/* Two independent magnification displays live on the page: the tour's
+   (overlay + chapter copy, driven by scroll) and the lower "Magnification
+   range" section (driven only by its own buttons). Every updater takes a
+   `root` so the tour's scroll-scrub never drags the lower section along —
+   without this the visitor arrived at the lower section already on 5.0x. */
+function magRootFor(el) {
+  return (el && (el.closest(".tour") || el.closest("section"))) || document;
+}
+
+function setMagStills(value, root = document) {
   const mag = magnifications.find((m) => m.value === value);
   if (!mag) return;
   const src = magSampleSrc(value);
-  document.querySelectorAll(".mag-overlay__img, .mag-sample img[data-mag-layer]").forEach((img) => {
+  root.querySelectorAll(".mag-overlay__img, .mag-sample img[data-mag-layer]").forEach((img) => {
     if (img.getAttribute("src") !== src) img.src = src;
     if (!img.closest(".mag-overlay")) img.alt = `Sample view at ${mag.label} magnification`;
   });
 }
 
-function updateMagText(value) {
+function updateMagText(value, root = document) {
   const mag = magnifications.find((m) => m.value === value);
   if (!mag) return;
-  document.querySelectorAll("[data-magnification-selector]").forEach((group) => {
+  root.querySelectorAll("[data-magnification-selector]").forEach((group) => {
     group.querySelectorAll("[data-magnification]").forEach((b) =>
       b.setAttribute("aria-pressed", String(parseFloat(b.dataset.magnification) === value))
     );
@@ -242,20 +251,22 @@ function initMagScrollStills() {
     im.src = magSampleSrc(v);
   });
   let lastValue = null;
+  const tourRoot = magRootFor(document.querySelector("[data-chapter='magnification']"));
   document.addEventListener("pentax:magscroll", (e) => {
     const local = Math.min(0.9999, Math.max(0, e.detail.local));
     const value = MAG_STEPS[Math.round(local * (MAG_STEPS.length - 1))];
     if (value === lastValue) return;
     lastValue = value;
-    setMagStills(value);
-    updateMagText(value);
+    // Tour only: the lower section keeps its own selection.
+    setMagStills(value, tourRoot);
+    updateMagText(value, tourRoot);
   });
 }
 
-function applyMagnificationDisplay(value) {
+function applyMagnificationDisplay(value, root = document) {
   const mag = magnifications.find((m) => m.value === value);
   if (!mag) return;
-  document.querySelectorAll("[data-magnification-selector]").forEach((group) => {
+  root.querySelectorAll("[data-magnification-selector]").forEach((group) => {
     const buttons = group.querySelectorAll("[data-magnification]");
     const valueEl = group.querySelector("[data-mag-value]");
     const fovEl = group.querySelector("[data-mag-fov]");
@@ -265,7 +276,7 @@ function applyMagnificationDisplay(value) {
     if (fovEl) fovEl.textContent = `${mag.fov} mm field of view`;
     if (guidanceEl) guidanceEl.textContent = mag.guidance;
   });
-  setMagStills(value);
+  setMagStills(value, root);
 }
 
 function initMagnificationSelectors(tour) {
@@ -278,12 +289,13 @@ function initMagnificationSelectors(tour) {
       // boundary and tips into the next scene (the 5.0x still shows from
       // local 0.875, so 0.95 sits safely inside its band).
       const levelLocal = Math.min(0.95, MAG_STEPS.indexOf(value) / (MAG_STEPS.length - 1));
+      const root = magRootFor(btn);
       if (inTour && tour && tour.scrollToChapterLocal("magnification", levelLocal)) {
         // The smooth scroll steps the stills itself (see initMagScrollStills);
         // just reflect the choice in the copy immediately.
-        updateMagText(value);
+        updateMagText(value, root);
       } else {
-        applyMagnificationDisplay(value);
+        applyMagnificationDisplay(value, root);
       }
       track("magnification_select", { value });
     });
