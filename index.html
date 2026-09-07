@@ -159,7 +159,7 @@
           <div class="tour-selector" data-magnification-selector>
             <span class="mag-display__value" data-mag-value>2.5×</span>
             <span class="mag-display__fov" data-mag-fov>141 mm field of view</span>
-            <p data-mag-guidance>Broad field of view and approachable magnification.</p>
+            <p data-mag-guidance>For those who favour field of view and depth of vision: general surgeons, urologists and hygienists.</p>
             <div class="tour-selector__row" role="group" aria-label="Choose a magnification to preview">
               <button type="button" class="mag-btn" data-magnification="2.5" aria-pressed="true">2.5×</button>
               <button type="button" class="mag-btn" data-magnification="3.0" aria-pressed="false">3.0×</button>
@@ -365,7 +365,7 @@
         <div class="tour-selector" data-magnification-selector>
           <span class="mag-display__value" data-mag-value>2.5×</span>
           <span class="mag-display__fov" data-mag-fov>141 mm field of view</span>
-          <p data-mag-guidance>Broad field of view and approachable magnification.</p>
+          <p data-mag-guidance>For those who favour field of view and depth of vision: general surgeons, urologists and hygienists.</p>
           <div class="tour-selector__row" role="group" aria-label="Choose a magnification to preview">
             <button type="button" class="mag-btn" data-magnification="2.5" aria-pressed="true">2.5×</button>
             <button type="button" class="mag-btn" data-magnification="3.0" aria-pressed="false">3.0×</button>
@@ -374,6 +374,26 @@
             <button type="button" class="mag-btn" data-magnification="5.0" aria-pressed="false">5.0×</button>
           </div>
           <p class="tour__footnote">*These are estimates, results per person may vary.</p>
+        </div>
+
+        <!-- Priority slider: field of view on the left, magnification on the
+             right. The track splits into five equal bands (one per level in
+             js/config.js); moving the thumb recommends that magnification and
+             pushes it through the readout, buttons and sample view above.
+             See initMagPrioritySlider() in main.js. -->
+        <div class="mag-priority" data-mag-priority>
+          <label class="mag-priority__title" for="mag-priority-range">What's more important for you?</label>
+          <div class="mag-priority__scale">
+            <span class="mag-priority__end">Field of view</span>
+            <div class="mag-priority__track">
+              <input type="range" id="mag-priority-range" class="mag-priority__range" min="0" max="100" step="1" value="50" aria-describedby="mag-priority-result" />
+              <ol class="mag-priority__ticks" aria-hidden="true">
+                <li>2.5×</li><li>3.0×</li><li>3.5×</li><li>4.0×</li><li>5.0×</li>
+              </ol>
+            </div>
+            <span class="mag-priority__end">Magnification</span>
+          </div>
+          <p class="mag-priority__result" id="mag-priority-result" data-mag-priority-result aria-live="polite">Slide towards what matters most to you and we'll recommend a magnification.</p>
         </div>
       </div>
 
@@ -397,11 +417,11 @@
         <tr><th scope="col">Magnification</th><th scope="col">Field of view</th><th scope="col">Guidance</th></tr>
       </thead>
       <tbody>
-        <tr><td>2.5×</td><td>141 mm</td><td>Broad field of view and approachable magnification.</td></tr>
-        <tr><td>3.0×</td><td>120 mm</td><td>A useful balance of magnification and field of view.</td></tr>
-        <tr><td>3.5×</td><td>106 mm</td><td>Higher detail while retaining a practical working field.</td></tr>
-        <tr><td>4.0×</td><td>98 mm</td><td>For clinicians requiring finer visual detail.</td></tr>
-        <tr><td>5.0×</td><td>80 mm</td><td>High magnification for very detailed work.</td></tr>
+        <tr><td>2.5×</td><td>141 mm</td><td>For those who favour field of view and depth of vision: general surgeons, urologists and hygienists.</td></tr>
+        <tr><td>3.0×</td><td>120 mm</td><td>For general dentists and ENT surgeons.</td></tr>
+        <tr><td>3.5×</td><td>106 mm</td><td>For anyone who wants a good middle ground between field of view and magnification.</td></tr>
+        <tr><td>4.0×</td><td>98 mm</td><td>For those who need good attention to detail while maintaining a decent field of view.</td></tr>
+        <tr><td>5.0×</td><td>80 mm</td><td>For those working on very small, fine details, such as endodontics or microsurgery.</td></tr>
       </tbody>
     </table>
 
@@ -409,23 +429,23 @@
     <div class="mag-rows">
       <div class="mag-row">
         <button class="mag-row__trigger" aria-controls="mag-row-panel-25">2.5× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-25"><p>Field of view: 141 mm</p><p>Broad field of view and approachable magnification.</p></div>
+        <div class="mag-row__panel" id="mag-row-panel-25"><p>Field of view: 141 mm</p><p>For those who favour field of view and depth of vision: general surgeons, urologists and hygienists.</p></div>
       </div>
       <div class="mag-row">
         <button class="mag-row__trigger" aria-controls="mag-row-panel-30">3.0× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-30"><p>Field of view: 120 mm</p><p>A useful balance of magnification and field of view.</p></div>
+        <div class="mag-row__panel" id="mag-row-panel-30"><p>Field of view: 120 mm</p><p>For general dentists and ENT surgeons.</p></div>
       </div>
       <div class="mag-row">
         <button class="mag-row__trigger" aria-controls="mag-row-panel-35">3.5× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-35"><p>Field of view: 106 mm</p><p>Higher detail while retaining a practical working field.</p></div>
+        <div class="mag-row__panel" id="mag-row-panel-35"><p>Field of view: 106 mm</p><p>For anyone who wants a good middle ground between field of view and magnification.</p></div>
       </div>
       <div class="mag-row">
         <button class="mag-row__trigger" aria-controls="mag-row-panel-40">4.0× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-40"><p>Field of view: 98 mm</p><p>For clinicians requiring finer visual detail.</p></div>
+        <div class="mag-row__panel" id="mag-row-panel-40"><p>Field of view: 98 mm</p><p>For those who need good attention to detail while maintaining a decent field of view.</p></div>
       </div>
       <div class="mag-row">
         <button class="mag-row__trigger" aria-controls="mag-row-panel-50">5.0× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-50"><p>Field of view: 80 mm</p><p>High magnification for very detailed work.</p></div>
+        <div class="mag-row__panel" id="mag-row-panel-50"><p>Field of view: 80 mm</p><p>For those working on very small, fine details, such as endodontics or microsurgery.</p></div>
       </div>
     </div>
 
@@ -747,9 +767,17 @@
         </fieldset>
       </div>
 
-      <!-- Live summary — sticky on desktop, follows the flow on mobile -->
+      <!-- Live summary — a bar fixed to the bottom-centre of the viewport
+           from the moment the configurator scrolls into view, so the running
+           choices and the quote button stay in reach through every step
+           (initConfigurator() toggles .is-visible from an IntersectionObserver
+           on this section). Hidden along with the steps once the request is
+           sent. -->
       <aside class="cfg__summary" aria-label="Your configuration">
-        <h3>Your configuration</h3>
+        <div class="cfg__summary-head">
+          <h3>Your configuration</h3>
+          <span class="cfg__summary-progress" data-cfg-progress>0 of 5 chosen</span>
+        </div>
         <dl class="cfg__summary-list">
           <div><dt>Colour</dt><dd data-cfg-summary="colour">—</dd></div>
           <div><dt>Magnification</dt><dd data-cfg-summary="magnification">—</dd></div>
@@ -757,6 +785,8 @@
           <div><dt>Light</dt><dd data-cfg-summary="light">—</dd></div>
           <div><dt>Use</dt><dd data-cfg-summary="use">—</dd></div>
         </dl>
+        <!-- Narrow screens: the list is kept for assistive tech but shown as this one-line recap -->
+        <p class="cfg__summary-compact" data-cfg-summary-compact aria-hidden="true">Nothing chosen yet</p>
         <button class="btn btn-primary cfg__quote-btn" type="button" id="cfg-quote-btn">Get your quote <span class="btn__arrow" aria-hidden="true">→</span></button>
       </aside>
 
