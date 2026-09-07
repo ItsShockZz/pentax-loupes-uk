@@ -1284,8 +1284,112 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
 }
 .mag-sample__note { color: var(--muted); font-size: 0.85rem; }
 
+/* Priority slider — "What's more important for you?" Field of view on the
+   left, magnification on the right; the track splits into five equal bands,
+   one per level, and the recommended band's tick lights up
+   (initMagPrioritySlider() in main.js). */
+.mag-priority {
+  --thumb: 22px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.mag-priority__title {
+  display: block;
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.mag-priority__scale {
+  display: grid;
+  grid-template-areas: "left track right";
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 14px;
+}
+.mag-priority__end {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  line-height: var(--thumb); /* centred on the thumb row */
+}
+.mag-priority__end:first-child { grid-area: left; }
+.mag-priority__end:last-child { grid-area: right; text-align: right; }
+.mag-priority__track { grid-area: track; min-width: 0; display: grid; gap: 6px; }
+.mag-priority__range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: var(--thumb);
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.mag-priority__range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--line-strong), var(--pentax-blue));
+}
+.mag-priority__range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--line-strong), var(--pentax-blue));
+}
+.mag-priority__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((4px - var(--thumb)) / 2);
+  border-radius: 50%;
+  background: var(--ink);
+  border: 3px solid var(--bg-raised);
+  box-shadow: 0 0 0 1px var(--line-strong), 0 8px 20px -8px rgba(0, 0, 0, 0.9);
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.mag-priority__range::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border-radius: 50%;
+  background: var(--ink);
+  border: 3px solid var(--bg-raised);
+  box-shadow: 0 0 0 1px var(--line-strong), 0 8px 20px -8px rgba(0, 0, 0, 0.9);
+}
+.mag-priority__range:hover::-webkit-slider-thumb,
+.mag-priority__range:active::-webkit-slider-thumb { transform: scale(1.1); }
+.mag-priority__range:focus-visible { outline: none; }
+.mag-priority__range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--pentax-blue); }
+.mag-priority__range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--pentax-blue); }
+.mag-priority__ticks {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 0;
+  padding: 0 calc(var(--thumb) / 2); /* lines the five bands up with the thumb's travel */
+  list-style: none;
+  font-size: 0.74rem;
+  color: var(--muted);
+  text-align: center;
+}
+.mag-priority__ticks li { transition: color var(--dur-fast) var(--ease); }
+.mag-priority__ticks li.is-active { color: var(--ink); font-weight: 600; }
+.mag-priority__result { margin-top: 16px; font-size: 0.95rem; color: var(--muted); }
+.mag-priority__result strong { color: var(--ink); font-weight: 700; }
+
 @media (max-width: 860px) {
   .mag-layout { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 720px) {
+  /* End labels move above the track so it keeps a usable length */
+  .mag-priority__scale {
+    grid-template-areas: "left right" "track track";
+    grid-template-columns: 1fr 1fr;
+    row-gap: 10px;
+  }
+  .mag-priority__end { line-height: 1.3; }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1459,11 +1563,13 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 
 .cfg {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 48px;
   align-items: start;
+  max-width: 880px; /* the live summary floats (see .cfg__summary), so the steps run in one readable column */
 }
-.cfg__steps { display: grid; gap: 20px; }
+/* Bottom padding keeps the last step clear of the floating summary bar */
+.cfg__steps { display: grid; gap: 20px; padding-bottom: 104px; }
 .cfg__step {
   margin: 0;
   border: 1px solid var(--line);
@@ -1571,29 +1677,138 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 .cfg-chip[aria-pressed="true"] { background: var(--ink); color: #0a0a0c; border-color: var(--ink); }
 .cfg-chip:active { transform: scale(0.97); }
 
-/* Sticky summary */
+/* Floating summary bar — fixed to the bottom-centre of the viewport while
+   the configurator is on screen (initConfigurator() toggles .is-visible from
+   an IntersectionObserver on #configure). Sits under the nav and its drawer
+   (z 100) and the lightbox (z 300), above everything else. Off-screen and
+   inert until the section arrives so the hero and tour stay clean. */
 .cfg__summary {
-  position: sticky;
-  top: 88px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 26px 28px;
-  background: var(--bg);
+  --bar-inset: 20px;
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--bar-inset) + env(safe-area-inset-bottom, 0px));
+  z-index: 90;
+  width: min(1120px, calc(100vw - 2 * var(--bar-inset)));
   display: grid;
-  gap: 18px;
+  grid-template-areas: "head list btn";
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 24px;
+  padding: 14px 14px 14px 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  background: rgba(30, 31, 34, 0.84);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  box-shadow: 0 30px 70px -24px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, calc(100% + var(--bar-inset) + 24px));
+  opacity: 0;
+  visibility: hidden;
+  transition: transform var(--dur-med) var(--ease), opacity var(--dur-med) var(--ease), visibility 0s var(--dur-med);
 }
-.cfg__summary h3 { font-size: 1.05rem; color: var(--ink); }
-.cfg__summary-list { margin: 0; display: grid; gap: 10px; }
+.cfg__summary.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  visibility: visible;
+  transition: transform var(--dur-med) var(--ease), opacity var(--dur-med) var(--ease), visibility 0s;
+}
+.cfg__summary[hidden] { display: none; }
+.cfg__summary-head { grid-area: head; display: grid; gap: 2px; }
+.cfg__summary h3 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cfg__summary-progress { font-size: 0.92rem; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.cfg__summary-list { grid-area: list; margin: 0; display: flex; min-width: 0; }
 .cfg__summary-list > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: 2px 16px;
+  border-left: 1px solid var(--line);
 }
-.cfg__summary-list dt { color: var(--muted); font-size: 0.88rem; }
-.cfg__summary-list dd { margin: 0; color: var(--ink); font-size: 0.88rem; font-weight: 600; text-align: right; }
-.cfg__quote-btn { justify-content: center; }
+.cfg__summary-list dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cfg__summary-list dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cfg__summary-list dd.is-set { color: var(--ink); font-weight: 600; }
+.cfg__summary-compact { grid-area: compact; display: none; }
+.cfg__quote-btn { grid-area: btn; justify-content: center; white-space: nowrap; }
+
+/* Narrower than the five-column list can bear: title + one-line recap on the
+   left, quote button on the right. The list stays in the accessibility tree. */
+@media (max-width: 1000px) {
+  .cfg__summary {
+    --bar-inset: 12px;
+    grid-template-areas: "head btn" "compact btn";
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 12px 12px 12px 18px;
+    border-radius: 18px;
+  }
+  .cfg__summary-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .cfg__summary h3 { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
+  .cfg__summary-progress { flex: none; }
+  .cfg__summary-list {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .cfg__summary-compact {
+    display: block;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cfg__quote-btn { padding: 11px 16px; font-size: 0.88rem; }
+}
+/* Phones: no room for the title next to the count, so it goes to assistive
+   tech only and the "n of 5 chosen" line plus the recap carry the bar. */
+@media (max-width: 600px) {
+  .cfg__summary h3 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 
 .cfg__submit-row { display: grid; gap: 12px; margin-top: 6px; }
 .consent-note { color: var(--muted); font-size: 0.82rem; max-width: 520px; }
@@ -1641,7 +1856,6 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 
 @media (max-width: 900px) {
   .cfg { grid-template-columns: 1fr; gap: 24px; }
-  .cfg__summary { position: static; }
   .cfg__step { padding: 20px 18px 22px; }
   .cfg__colours { grid-template-columns: repeat(2, 1fr); }
 }
@@ -1650,6 +1864,9 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   .cfg__success-check,
   .colour-swatch.is-pop { animation: none; }
   .discipline-card:hover { transform: none; }
+  .cfg__summary,
+  .mag-priority__range::-webkit-slider-thumb,
+  .mag-priority__ticks li { transition: none; }
 }
 
 /* ---------------------------------------------------------------------- */
