@@ -90,7 +90,12 @@ pentaxloupes.com's own layout: a connecting vertical line through the
 "Why PENTAX" editorial rows, a count-up spec band before the configurator,
 and a "Build your loupes" configurator (`#configure`) that funnels a
 colour/magnification/lenses/light/use selection into a quote request (no
-prices are shown anywhere — contractual). Every number in the spec band
+prices are shown anywhere — contractual). The configurator's live summary
+is a bar fixed to the bottom-centre of the viewport while the section is on
+screen (see `initConfigurator()`), and the magnification section carries a
+"What's more important for you?" slider — field of view on the left,
+magnification on the right — that recommends one of the five levels
+(`initMagPrioritySlider()` in `js/main.js`). Every number in the spec band
 restates a fact stated in full elsewhere on the same page — no customer
 counts, countries-served, or review counts were invented to fill it out.
 An earlier "At a glance" bento grid was removed on client direction. See
