@@ -13,7 +13,7 @@
 
 function track(eventName, detail) {
   // Structured hook point per brief: quote_nav, request_demo_nav, request_demo_hero,
-  // request_demo_final, magnification_select, colour_select,
+  // request_demo_final, magnification_select, magnification_priority, colour_select,
   // specialist_contact, faq_open, configurator_quote, configurator_submit.
   // No analytics library is installed; this only logs in development.
   if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
@@ -344,6 +344,59 @@ function initMagnificationSelectors(tour) {
 }
 
 /* ---------------------------------------------------------------------- */
+/* Priority slider — "What's more important for you?"                     */
+/* Field of view on the left, magnification on the right. The 0–100 track  */
+/* splits into five equal bands, one per level in MAG_STEPS; moving the    */
+/* thumb recommends that level and pushes it through the section's own     */
+/* readout, buttons and sample view. The buttons don't drag the thumb      */
+/* back: the slider says what we'd suggest, the readout shows what the     */
+/* visitor is currently looking at. The thumb starts centred but nothing   */
+/* is recommended until it moves, so the section keeps its 2.5× default.   */
+/* ---------------------------------------------------------------------- */
+
+const PRIORITY_LEADS = [
+  "Field of view first.",
+  "Leaning towards field of view.",
+  "A balance of both.",
+  "Leaning towards magnification.",
+  "Magnification first.",
+];
+
+function initMagPrioritySlider() {
+  document.querySelectorAll("[data-mag-priority]").forEach((box) => {
+    const range = box.querySelector("input[type='range']");
+    const result = box.querySelector("[data-mag-priority-result]");
+    const ticks = Array.from(box.querySelectorAll(".mag-priority__ticks li"));
+    if (!range) return;
+    const root = magRootFor(box);
+    const bandFor = () =>
+      Math.min(MAG_STEPS.length - 1, Math.floor((Number(range.value) / 100) * MAG_STEPS.length));
+
+    let shown = null;
+    const render = () => {
+      const idx = bandFor();
+      const mag = magnifications.find((m) => m.value === MAG_STEPS[idx]);
+      if (!mag) return;
+      range.setAttribute("aria-valuetext", `${PRIORITY_LEADS[idx]} We recommend ${mag.label}.`);
+      ticks.forEach((li, i) => li.classList.toggle("is-active", i === idx));
+      if (result) {
+        const strong = document.createElement("strong");
+        strong.textContent = mag.label;
+        result.replaceChildren(`${PRIORITY_LEADS[idx]} We recommend `, strong, ".");
+      }
+      if (mag.value !== shown) {
+        shown = mag.value;
+        applyMagnificationDisplay(mag.value, root);
+      }
+    };
+
+    range.setAttribute("aria-valuetext", "Not set. Slide to get a recommendation.");
+    range.addEventListener("input", render);
+    range.addEventListener("change", () => track("magnification_priority", { value: MAG_STEPS[bandFor()] }));
+  });
+}
+
+/* ---------------------------------------------------------------------- */
 /* Colour selector — every swatch now has a matching real shot in the      */
 /* footage (verified frame by frame against the video): the tour's colour  */
 /* chapter (34.0–41.0s) is a continuous colourway run, so pressing a       */
@@ -600,10 +653,29 @@ function initConfigurator() {
     }
   }
 
+  const progressEl = root.querySelector("[data-cfg-progress]");
+  const compactEl = root.querySelector("[data-cfg-summary-compact]");
+
+  // Progress count, plus the one-line recap the floating bar shows on
+  // narrow screens in place of the five-column list.
+  function refreshSummaryMeta() {
+    const chosen = STEPS.filter((k) => state[k]);
+    if (progressEl) progressEl.textContent = `${chosen.length} of ${STEPS.length} chosen`;
+    if (compactEl) {
+      compactEl.textContent = chosen.length
+        ? chosen.map((k) => (k === "lenses" ? `Lenses: ${state[k]}` : state[k])).join("  ·  ")
+        : "Nothing chosen yet";
+    }
+  }
+
   function setValue(key, value) {
     state[key] = value;
     const dd = summaryEl(key);
-    if (dd) dd.textContent = value || "—";
+    if (dd) {
+      dd.textContent = value || "—";
+      dd.classList.toggle("is-set", Boolean(value));
+    }
+    refreshSummaryMeta();
     const step = stepEl(key);
     if (step) step.classList.remove("cfg__step--invalid");
     const err = errorEl(key);
@@ -630,6 +702,24 @@ function initConfigurator() {
   const quoteBtn = document.getElementById("cfg-quote-btn");
   const submitBtn = document.getElementById("cfg-submit");
   const statusEl = document.getElementById("cfg-status");
+
+  // The live summary is a bar fixed to the bottom-centre of the viewport
+  // (see .cfg__summary). It slides in once the configurator has properly
+  // arrived — its top inside the upper 70% of the viewport — and slides out
+  // when the section has scrolled fully past, so the hero, tour and the rest
+  // of the page stay clear of it.
+  const summaryBar = root.querySelector(".cfg__summary");
+  const section = root.closest("section") || root;
+  if (summaryBar) {
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(
+        ([entry]) => summaryBar.classList.toggle("is-visible", entry.isIntersecting),
+        { rootMargin: "0px 0px -30% 0px", threshold: 0 }
+      ).observe(section);
+    } else {
+      summaryBar.classList.add("is-visible");
+    }
+  }
 
   function validateSteps() {
     let firstInvalid = null;
@@ -914,6 +1004,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initMagnificationSelectors(tour);
   initMagScrollStills();
   applyMagnificationDisplay(2.5); // sync displays + sample slot to the default
+  initMagPrioritySlider();
 
   const configurator = initConfigurator();
   initDisciplineCards(configurator);
