@@ -1642,3 +1642,7 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
    taller box anchored to the bottom so the patient stays in frame. */
 .why-row__media--tall { aspect-ratio: 2 / 3; }
 .why-row__media--tall video { object-position: 50% 100%; }
+
+/* Who it's for: a single centred call to action under the three cards
+   (replaces the per-card links and numbering). */
+.discipline-cta { display: flex; justify-content: center; margin-top: 40px; }
