@@ -25,7 +25,7 @@
      no third-party font CDN, so no visitor IPs leave this origin. -->
 <link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
 
-<link rel="stylesheet" href="css/main.css?v=20260826v" />
+<link rel="stylesheet" href="css/main.css?v=20260826w" />
 
 <script type="application/ld+json">
 {
@@ -238,7 +238,7 @@
 
     <div class="why-row why-row--reverse">
       <div class="why-row__media why-row__media--portrait">
-        <video src="videos/features/wide.mp4?v=1" poster="images/ai-stills/ai-barrels.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon wearing PENTAX Loupes in profile"></video>
+        <video src="videos/features/wide.mp4?v=2" poster="images/ai-stills/ai-barrels.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon wearing PENTAX Loupes in profile"></video>
       </div>
       <div class="why-row__text">
         <p class="why-row__index">02</p>
@@ -260,7 +260,7 @@
 
     <div class="why-row why-row--reverse">
       <div class="why-row__media why-row__media--portrait">
-        <video src="videos/features/flip.mp4?v=1" poster="images/ai-stills/ai-flip-hand.jpg" muted loop playsinline preload="none" data-ambient aria-label="Clinician adjusting and flipping the PENTAX Loupes barrels"></video>
+        <video src="videos/features/flip.mp4?v=2" poster="images/ai-stills/ai-flip-hand.jpg" muted loop playsinline preload="none" data-ambient aria-label="Clinician adjusting and flipping the PENTAX Loupes barrels"></video>
       </div>
       <div class="why-row__text">
         <p class="why-row__index">04</p>
@@ -285,7 +285,7 @@
 
     <div class="feature-grid">
       <div class="feature-card">
-        <div class="feature-card__media feature-card__media--portrait"><video src="videos/features/wide.mp4?v=1" poster="images/ai-stills/ai-collar-rings.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon in profile wearing PENTAX Loupes at a working distance"></video></div>
+        <div class="feature-card__media feature-card__media--portrait"><video src="videos/features/wide.mp4?v=2" poster="images/ai-stills/ai-collar-rings.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon in profile wearing PENTAX Loupes at a working distance"></video></div>
         <span class="stat-number feature-card__stat">25–70 cm</span>
         <span class="feature-card__label">Working distance</span>
         <p class="feature-card__body">Set to match your height, your chair and the way you sit or stand at work.</p>
@@ -297,7 +297,7 @@
         <p class="feature-card__body">Position the barrels for a natural line of sight, then lock them in.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-card__media feature-card__media--portrait"><video src="videos/features/pd.mp4?v=1" poster="images/ai-stills/ai-barrels.jpg" muted loop playsinline preload="none" data-ambient aria-label="PENTAX Loupes being set up for pupillary distance"></video></div>
+        <div class="feature-card__media feature-card__media--portrait"><video src="videos/features/pd.mp4?v=2" poster="images/ai-stills/ai-barrels.jpg" muted loop playsinline preload="none" data-ambient aria-label="PENTAX Loupes being set up for pupillary distance"></video></div>
         <span class="stat-number feature-card__stat">52–78 mm</span>
         <span class="feature-card__label">Pupillary distance</span>
         <p class="feature-card__body">Matched to your own eyes, not a factory average.</p>
@@ -442,27 +442,30 @@
 <section class="section" id="illumination-detail">
   <div class="container led-section">
     <div class="led-media">
-      <figure class="photo-slot" data-photo-slot>
+      <figure class="led-slot photo-slot" data-photo-slot data-zoom>
         <img src="images/led-wired.jpg" alt="Wired LED headlight for PENTAX Loupes" hidden />
         <figcaption class="photo-slot__placeholder">
           <span class="photo-slot__icon" aria-hidden="true">⚡</span>
           <span class="photo-slot__label">Wired LED</span>
           <span class="photo-slot__note">Photo coming soon</span>
         </figcaption>
+        <span class="led-slot__tag">Wired &middot; constant power</span>
       </figure>
-      <figure class="photo-slot" data-photo-slot>
+      <figure class="led-slot photo-slot" data-photo-slot data-zoom>
         <img src="images/led-wireless.jpg" alt="Wireless LED headlight for PENTAX Loupes" hidden />
         <figcaption class="photo-slot__placeholder">
           <span class="photo-slot__icon" aria-hidden="true">◌</span>
           <span class="photo-slot__label">Wireless LED</span>
           <span class="photo-slot__note">Photo coming soon</span>
         </figcaption>
+        <span class="led-slot__tag">Wireless &middot; free to move</span>
       </figure>
     </div>
     <div class="why-row__text">
-      <h2 class="headline" style="font-size:clamp(1.6rem,2.6vw,2.2rem);">LED lighting, wired or wireless.</h2>
-      <p class="body-copy body-copy--tight">Optional LED headlights attach to the loupes and put bright, shadow-free light exactly where you are looking. Choose wired for constant power or wireless for freedom of movement.</p>
-      <p class="body-copy body-copy--tight">Already own a light you like? Brackets are available for other LED brands. Ask us about compatibility.</p>
+      <span class="eyebrow">Illumination</span>
+      <h2 class="headline" style="font-size:clamp(1.6rem,2.6vw,2.2rem); margin-top:12px;">Light exactly where you are looking.</h2>
+      <p class="body-copy body-copy--tight">An optional LED headlight clips to the loupes and lights the field directly ahead of you. Choose <strong>wired</strong> for constant power from a beltpack, or <strong>wireless</strong> for complete freedom of movement.</p>
+      <p class="body-copy body-copy--tight">Already own a light you like? Brackets are available for other LED brands — ask us about compatibility.</p>
     </div>
   </div>
 </section>
@@ -626,7 +629,7 @@
           <!-- Preview appears on selection. Drop photos in as
                images/previews/colour-silvergold.jpg / colour-blue.jpg /
                colour-black.jpg / colour-red.jpg -->
-          <figure class="photo-slot cfg-preview" data-cfg-preview="colour" hidden>
+          <figure class="photo-slot cfg-preview cfg-preview--product" data-cfg-preview="colour" data-zoom hidden>
             <img alt="" />
             <figcaption class="photo-slot__placeholder">
               <span class="photo-slot__label" data-cfg-preview-label>Colour preview</span>
@@ -666,7 +669,7 @@
           <p class="cfg__error" data-cfg-error="lenses" role="alert" hidden>Choose an option.</p>
           <!-- Yes -> images/previews/lenses-yes.jpg (with protective lenses),
                No -> images/previews/lenses-no.jpg (without) -->
-          <figure class="photo-slot cfg-preview" data-cfg-preview="lenses" hidden>
+          <figure class="photo-slot cfg-preview cfg-preview--product" data-cfg-preview="lenses" data-zoom hidden>
             <img alt="" />
             <figcaption class="photo-slot__placeholder">
               <span class="photo-slot__label" data-cfg-preview-label>Protective lenses</span>
@@ -684,7 +687,7 @@
           </div>
           <p class="cfg__error" data-cfg-error="light" role="alert" hidden>Choose an option.</p>
           <!-- Wireless -> images/led-wireless.jpg, Wired -> images/led-wired.jpg -->
-          <figure class="photo-slot cfg-preview" data-cfg-preview="light" hidden>
+          <figure class="photo-slot cfg-preview cfg-preview--product" data-cfg-preview="light" data-zoom hidden>
             <img alt="" />
             <figcaption class="photo-slot__placeholder">
               <span class="photo-slot__label" data-cfg-preview-label>LED light</span>
@@ -1062,8 +1065,14 @@
   </div>
 </footer>
 
-<script src="js/config.js?v=20260826v"></script>
-<script src="js/product-tour.js?v=20260826v"></script>
-<script src="js/main.js?v=20260826v"></script>
+<!-- Fullscreen image viewer: opened by clicking any [data-zoom] figure -->
+<div class="lightbox" id="lightbox" hidden aria-hidden="true">
+  <button class="lightbox__close" type="button" aria-label="Close">&times;</button>
+  <img class="lightbox__img" alt="" />
+</div>
+
+<script src="js/config.js?v=20260826w"></script>
+<script src="js/product-tour.js?v=20260826w"></script>
+<script src="js/main.js?v=20260826w"></script>
 </body>
 </html>

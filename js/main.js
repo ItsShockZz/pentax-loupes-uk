@@ -799,7 +799,38 @@ function populateContent() {
 /* Boot                                                                    */
 /* ---------------------------------------------------------------------- */
 
+function initLightbox() {
+  const box = document.getElementById("lightbox");
+  if (!box) return;
+  const img = box.querySelector(".lightbox__img");
+  const closeBtn = box.querySelector(".lightbox__close");
+  const open = (src, alt) => {
+    img.src = src; img.alt = alt || "";
+    box.hidden = false; box.setAttribute("aria-hidden", "false");
+    document.body.classList.add("no-scroll");
+    closeBtn.focus();
+  };
+  const close = () => {
+    box.hidden = true; box.setAttribute("aria-hidden", "true");
+    img.removeAttribute("src");
+    document.body.classList.remove("no-scroll");
+  };
+  // Delegated: any [data-zoom] whose photo has actually loaded opens fullscreen.
+  document.addEventListener("click", (e) => {
+    const fig = e.target.closest("[data-zoom]");
+    if (!fig || box.contains(e.target)) return;
+    const pic = fig.querySelector("img");
+    if (!pic || pic.hidden || !pic.getAttribute("src") || fig.hidden) return;
+    e.preventDefault();
+    open(pic.currentSrc || pic.src, pic.alt);
+  });
+  closeBtn.addEventListener("click", close);
+  box.addEventListener("click", (e) => { if (e.target === box) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !box.hidden) close(); });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initLightbox();
   document.documentElement.classList.remove("no-js");
   populateContent();
   initNav();

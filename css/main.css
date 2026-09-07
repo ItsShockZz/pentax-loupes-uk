@@ -1131,6 +1131,28 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
 
 [hidden] { display: none !important; }
 
+/* ---------------------------------------------------------------------- */
+/* Fullscreen image viewer                                                 */
+/* ---------------------------------------------------------------------- */
+.lightbox {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 4vw;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(4px);
+  animation: lb-in var(--dur-fast) var(--ease);
+}
+@keyframes lb-in { from { opacity: 0; } to { opacity: 1; } }
+.lightbox__img { max-width: 96vw; max-height: 92vh; object-fit: contain; border-radius: 10px; }
+.lightbox__close {
+  position: absolute; top: 20px; right: 24px;
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.1); color: var(--white);
+  border: 1px solid var(--line-strong); border-radius: 50%;
+  font-size: 1.6rem; line-height: 1; cursor: pointer;
+}
+.lightbox__close:hover { background: rgba(255,255,255,0.2); }
+
 .visually-hidden {
   position: absolute;
   width: 1px; height: 1px;
@@ -1170,6 +1192,14 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
   aspect-ratio: 4 / 3;
 }
 .photo-slot img { width: 100%; height: 100%; object-fit: cover; }
+/* Product renders (colours, lenses, lights) are square subjects on pure
+   black. contain shows the whole product; the black container is seamless
+   with the render's own background, so there are no visible bars. */
+.led-slot img,
+.cfg-preview--product img,
+.cfg-colour__media img { object-fit: contain !important; background: #000; }
+.led-slot, .cfg-preview--product, .cfg-colour__media { background: #000; }
+[data-zoom] { cursor: zoom-in; }
 .photo-slot.has-photo { border-style: solid; border-color: var(--line); }
 .photo-slot.has-photo .photo-slot__placeholder { display: none; }
 .photo-slot__placeholder {
@@ -1240,6 +1270,15 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
   align-items: center;
 }
 .led-media { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.led-slot { position: relative; aspect-ratio: 1 / 1; border: 1px solid var(--line); }
+.led-slot__tag {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 10px 12px;
+  font-size: 0.72rem; letter-spacing: 0.04em; color: var(--ink);
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.75));
+  text-align: center;
+}
+.led-slot.has-photo .led-slot__tag { display: block; }
 
 @media (max-width: 860px) {
   .led-section { grid-template-columns: 1fr; gap: 32px; }
@@ -1274,10 +1313,13 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
 }
 .discipline-card__media {
   display: block;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 5;
   border-radius: 12px;
   margin-bottom: 8px;
 }
+/* People photos are portrait; bias the crop toward the top so faces and
+   loupes stay in frame rather than the torso. */
+.discipline-card__media img { object-position: 50% 22%; }
 .discipline-card__media .photo-slot__label { font-size: 0.8rem; }
 .discipline-card__media .photo-slot__note { font-size: 0.65rem; }
 
@@ -1436,6 +1478,18 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   margin-top: 18px;
   aspect-ratio: 16 / 9;
   max-width: 460px;
+}
+/* Product-render previews are square subjects — give them a squarer box so
+   contain leaves minimal empty space, and hint they open fullscreen. */
+.cfg-preview--product { aspect-ratio: 4 / 3; }
+.cfg-preview--product::after {
+  content: "\2922";
+  position: absolute; right: 10px; top: 10px;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  font-size: 15px; color: var(--ink);
+  background: rgba(0,0,0,0.55); border-radius: 8px;
+  pointer-events: none;
 }
 .cfg__error { margin-top: 12px; color: var(--danger); font-size: 0.85rem; }
 
