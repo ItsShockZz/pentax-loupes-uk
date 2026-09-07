@@ -24,12 +24,16 @@ const siteConfig = {
 /* Source: pentaxloupes.com specification table + FAQ                       */
 /* ------------------------------------------------------------------------ */
 
+// Guidance copy is the client's own wording (supplied September 2026), not
+// pentaxloupes.com's; the magnification and field-of-view figures are
+// unchanged. It is mirrored by hand in index.html (tour chapter, magnification
+// section, comparison table and mobile rows) — keep the two in step.
 const magnifications = [
-  { value: 2.5, label: "2.5×", fov: 141, guidance: "Broad field of view and approachable magnification." },
-  { value: 3.0, label: "3.0×", fov: 120, guidance: "A useful balance of magnification and field of view." },
-  { value: 3.5, label: "3.5×", fov: 106, guidance: "Higher detail while retaining a practical working field." },
-  { value: 4.0, label: "4.0×", fov: 98, guidance: "For clinicians requiring finer visual detail." },
-  { value: 5.0, label: "5.0×", fov: 80, guidance: "High magnification for very detailed work." },
+  { value: 2.5, label: "2.5×", fov: 141, guidance: "For those who favour field of view and depth of vision: general surgeons, urologists and hygienists." },
+  { value: 3.0, label: "3.0×", fov: 120, guidance: "For general dentists and ENT surgeons." },
+  { value: 3.5, label: "3.5×", fov: 106, guidance: "For anyone who wants a good middle ground between field of view and magnification." },
+  { value: 4.0, label: "4.0×", fov: 98, guidance: "For those who need good attention to detail while maintaining a decent field of view." },
+  { value: 5.0, label: "5.0×", fov: 80, guidance: "For those working on very small, fine details, such as endodontics or microsurgery." },
 ];
 
 // Working distance 25–70 cm, pupillary distance 52–78 mm: referenced in prose
