@@ -498,7 +498,7 @@ function initConfigurator() {
   // light, Not sure) hide the preview. Magnification reuses the real
   // sample-view photos; the rest are photo slots waiting on client images.
   const PREVIEWS = {
-    colour: (v) => ({ src: `images/previews/colour-${v.toLowerCase()}.jpg`, label: v }),
+    colour: (v) => ({ src: `images/previews/colour-${v.toLowerCase()}.jpg?v=2`, label: v }),
     magnification: (v) =>
       /^\d/.test(v)
         ? { src: `images/mag-samples/mag-${v.replace("×", "").replace(".", "-")}.jpg`, label: `${v} sample view` }
