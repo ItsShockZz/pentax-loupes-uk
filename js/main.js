@@ -26,6 +26,47 @@ function track(eventName, detail) {
 /* Navigation                                                              */
 /* ---------------------------------------------------------------------- */
 
+/* Highlights the nav link for whichever section currently sits under the
+   header. Position-checked on scroll (not IntersectionObserver) so it is
+   deterministic: the current section is the last one whose top has passed
+   the band 25% down the viewport. Nothing is highlighted while the tour is
+   on screen (it has no nav link), so the bar stays quiet during the cold
+   open, and nothing is highlighted past the last linked section either. */
+function initNavSpy() {
+  const links = Array.from(document.querySelectorAll(".nav__links a:not(.btn)[href^='#']"));
+  const pairs = links
+    .map((a) => ({ a, el: document.querySelector(a.getAttribute("href")) }))
+    .filter((p) => p.el);
+  if (!pairs.length) return;
+  let ticking = false;
+  const paint = () => {
+    ticking = false;
+    const band = window.innerHeight * 0.25;
+    let current = null;
+    for (const p of pairs) {
+      const r = p.el.getBoundingClientRect();
+      if (r.top <= band && r.bottom > band) current = p;
+    }
+    pairs.forEach((p) => {
+      if (p === current) p.a.setAttribute("aria-current", "true");
+      else p.a.removeAttribute("aria-current");
+    });
+  };
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    // rAF keeps it to one layout read per frame; fall back to a direct call
+    // where rAF is throttled (background tabs) so the state never goes stale.
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(paint);
+    else paint();
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  paint();
+  // Exposed for the position check to be driven without a real frame.
+  initNavSpy.paint = paint;
+}
+
 function initNav() {
   const nav = document.querySelector(".nav");
   const toggle = document.querySelector(".nav__toggle");
@@ -846,6 +887,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("no-js");
   populateContent();
   initNav();
+  initNavSpy();
   bindFaq();
   initTestimonials();
   initDemoForm();
