@@ -5,3 +5,10 @@ serve.json
 README.md
 TODO.md
 SECURITY.md
+# Passport dev tooling and local data (api/ and lib/ ARE deployed)
+scripts
+tests
+.data
+.env
+.env.*
+node_modules

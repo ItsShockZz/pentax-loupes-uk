@@ -190,3 +190,32 @@ table above stops being a pass and becomes a checklist:
   origin once it exists.
 
 See `TODO.md` for the actioned/owner-facing version of this list.
+
+## Loupe passport backend (added 2026-09-13)
+
+The "no backend" statements above are now historical: the passport feature
+adds Vercel Functions under `api/` with shared code in `lib/passport/`. What
+was promised in "when a real backend arrives" is implemented there:
+
+- **Server-side validation** of every field (`lib/passport/service.js`),
+  independent of the browser checks. Unknown options, over-long text and
+  out-of-range numbers are rejected with a 400 that names the field.
+- **Abuse guards on public endpoints:** same-origin check on every POST
+  (`Origin` must match the host), a honeypot field, an idempotency key so
+  retries never duplicate a request, and hourly rate limits per passport and
+  per IP (`tests/api.test.mjs` covers each of these).
+- **Manager access** is one shared secret (`PASSPORT_ADMIN_KEY`) compared in
+  constant time and sent as a header — never in a URL. Failed attempts are
+  counted per IP (20/hour). The key is kept in `sessionStorage` for the tab
+  only. There are no accounts, cookies or sessions.
+- **Tokens** are 128-bit random hex, separate for the customer's link and the
+  colleague invitation, so an invitation never reveals the customer's page.
+  The customer page never receives the customer's email, phone or internal
+  notes; the invitation page receives only the inviter's name.
+- **Storage** is Redis over REST (Upstash via Vercel) with credentials in
+  environment variables only; locally a git-ignored JSON file in `.data/`.
+- **CSP unchanged:** no inline scripts, no `innerHTML`, QR codes are inline
+  SVG built with DOM APIs, and API responses are `Cache-Control: no-store`
+  with `X-Content-Type-Options: nosniff`.
+- Still to confirm before launch: the privacy policy wording for stored
+  passport data (see TODO.md).

@@ -131,3 +131,19 @@ privacy policy (`href="#"`) — a real URL stays a launch blocker.
 - Site works with JavaScript disabled (the tour's `<video poster>` shows a real frame; all chapter copy is present in plain HTML) and respects `prefers-reduced-motion` (footage still visible, parked on a representative frame, no scroll-scrubbing).
 - Fixed real bugs during this build: the tour's chapter text collapsing to zero width on narrow viewports (a flex-item sizing quirk); the illumination chapter's video range bleeding into placeholder-text footage (see above); an invisible nav CTA caused by a CSS specificity collision; a non-pure-black background where pure black was requested.
 - Security-reviewed: no `innerHTML`/`eval`/URL-param reflection anywhere (confirmed by direct grep, not assumption) — nothing on the site currently has an XSS surface. Demo form posts (not GETs) as a no-JS safety net, has `maxlength` caps on every field, and a real phone-shape check instead of a length check. Full findings in `SECURITY.md`.
+
+## Loupe passport (added 2026-09-13)
+
+- [ ] **Before issuing real passports:** connect an Upstash Redis database in
+  Vercel (Storage tab) and set `PASSPORT_ADMIN_KEY` — see README.md. Until
+  then `/manage` shows a setup banner and nothing can be saved.
+- [ ] **Care guidance is general good practice**, not the manufacturer's
+  wording — confirm the four steps in `passport.html` (`#care`) against the
+  printed leaflet that ships with the loupes.
+- [ ] **Privacy policy** needs a line for passports: name, email, phone,
+  practice, fitting measurements, check-ins and support messages are stored
+  (Vercel + Upstash), and colleague enquiries store the colleague's details.
+- [ ] Optional: email alerts (`RESEND_API_KEY`, `PASSPORT_NOTIFY_TO`) so a
+  support request or colleague enquiry reaches your inbox as well as `/manage`.
+- [ ] Optional: a "Your passport" mention in the order/fitting paperwork so
+  customers know to expect the QR card.

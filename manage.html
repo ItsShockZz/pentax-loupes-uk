@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Passport manager | PENTAX Loupes UK</title>
+<meta name="robots" content="noindex, nofollow" />
+<!-- Served at /manage (see vercel.json rewrites). Protected by the PASSPORT_ADMIN_KEY on the server. -->
+<link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="/css/main.css?v=20260913" />
+<link rel="stylesheet" href="/css/passport.css?v=20260913" />
+</head>
+<body class="pp-page">
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav nav--scrolled nav--inner">
+  <div class="nav__inner">
+    <a class="nav__brand" href="/" aria-label="PENTAX Loupes UK, back to the site">
+      <span class="nav__brand-mark">PENTAX</span>
+      <span class="nav__brand-sub">Loupes UK</span>
+    </a>
+    <nav class="nav__links" aria-label="Manager">
+      <a href="/p/example" target="_blank" rel="noopener">Example passport</a>
+      <a href="/">Back to the site</a>
+      <span class="nav__sep" aria-hidden="true"></span>
+      <button class="btn btn-ghost btn-sm nav__cta" type="button" id="mg-signout" hidden>Sign out</button>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="pp-top">
+  <div class="container">
+
+    <!-- Key prompt -->
+    <section class="mg-gate" id="mg-gate">
+      <span class="eyebrow">Passport manager</span>
+      <h1>Sign in</h1>
+      <p>Enter the manager key to issue passports and see which customers need attention.</p>
+      <form id="mg-gate-form" novalidate>
+        <div class="field">
+          <label for="mg-key">Manager key</label>
+          <input id="mg-key" name="key" type="password" autocomplete="current-password" required aria-describedby="err-mg-key" />
+          <span class="field-error" id="err-mg-key" data-error-for="key"></span>
+        </div>
+        <button class="btn btn-primary" type="submit" style="margin-top:14px;">Continue</button>
+        <p class="form-status" id="mg-gate-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <div id="mg-app" hidden>
+      <div class="mg-head">
+        <div>
+          <span class="eyebrow">Passport manager</span>
+          <h1 class="headline">Your customers, at a glance</h1>
+        </div>
+        <div class="mg-head__actions">
+          <button class="btn btn-ghost btn-sm" type="button" id="mg-refresh">Refresh</button>
+          <button class="btn btn-primary btn-sm" type="button" id="mg-new">Issue a passport</button>
+        </div>
+      </div>
+      <p class="form-status" id="mg-status" role="status" aria-live="polite"></p>
+      <div class="mg-banner" id="mg-banner" hidden></div>
+      <div class="mg-stats" id="mg-stats"></div>
+
+      <div class="mg-tabs" role="tablist" aria-label="Manager sections">
+        <button class="mg-tab" role="tab" type="button" id="tab-attention" aria-selected="true" aria-controls="panel-attention">Needs attention<span class="mg-count" id="count-open">0</span></button>
+        <button class="mg-tab" role="tab" type="button" id="tab-passports" aria-selected="false" aria-controls="panel-passports">Passports<span class="mg-count" id="count-passports">0</span></button>
+        <button class="mg-tab" role="tab" type="button" id="tab-issue" aria-selected="false" aria-controls="panel-issue">Issue a passport</button>
+      </div>
+
+      <!-- Needs attention -->
+      <section id="panel-attention" role="tabpanel" aria-labelledby="tab-attention">
+        <div class="mg-toolbar">
+          <p class="mg-hint">Open check-ins, support requests and colleague enquiries, newest first.</p>
+          <label class="mg-toggle"><input type="checkbox" id="mg-show-resolved" /> Show resolved</label>
+        </div>
+        <div class="mg-list" id="mg-activity"></div>
+      </section>
+
+      <!-- Passports -->
+      <section id="panel-passports" role="tabpanel" aria-labelledby="tab-passports" hidden>
+        <div class="mg-toolbar">
+          <input type="search" id="mg-search" placeholder="Search by name, reference or practice" aria-label="Search passports" />
+          <label class="mg-toggle"><input type="checkbox" id="mg-show-closed" /> Show closed passports</label>
+        </div>
+        <div class="mg-list" id="mg-passports"></div>
+      </section>
+
+      <!-- Issue / edit -->
+      <section id="panel-issue" role="tabpanel" aria-labelledby="tab-issue" hidden>
+        <div class="mg-result" id="mg-result" hidden>
+          <div class="pp-qr" id="mg-result-qr" aria-hidden="true"></div>
+          <div>
+            <span class="eyebrow" id="mg-result-eyebrow">Passport issued</span>
+            <h2 id="mg-result-title"></h2>
+            <p id="mg-result-sub"></p>
+            <div class="pp-share__link mg-result__link">
+              <input type="text" id="mg-result-link" readonly aria-label="Passport link" />
+              <button class="btn btn-primary btn-sm" type="button" id="mg-result-copy">Copy link</button>
+            </div>
+            <div class="pp-share__actions">
+              <a class="btn btn-ghost btn-sm" id="mg-result-open" href="#" target="_blank" rel="noopener">Open passport</a>
+              <button class="btn btn-ghost btn-sm" type="button" id="mg-result-print">Print card for the case</button>
+              <button class="btn btn-ghost btn-sm" type="button" id="mg-result-another">Issue another</button>
+            </div>
+          </div>
+        </div>
+
+        <form class="mg-form" id="mg-form" novalidate>
+          <fieldset>
+            <legend><span class="cfg__step-num">1</span> Customer</legend>
+            <div class="form-row">
+              <div class="field">
+                <label for="f-name">Name, as you'd greet them <span class="required" aria-hidden="true">*</span></label>
+                <input id="f-name" name="name" type="text" maxlength="100" required placeholder="Dr Alex Morgan" aria-describedby="err-f-name" />
+                <span class="field-error" id="err-f-name" data-error-for="name"></span>
+              </div>
+              <div class="field">
+                <label for="f-email">Email <span class="required" aria-hidden="true">*</span></label>
+                <input id="f-email" name="email" type="email" maxlength="254" required aria-describedby="err-f-email" />
+                <span class="field-error" id="err-f-email" data-error-for="email"></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="f-phone">Phone</label>
+                <input id="f-phone" name="phone" type="tel" maxlength="40" aria-describedby="err-f-phone" />
+                <span class="field-error" id="err-f-phone" data-error-for="phone"></span>
+              </div>
+              <div class="field">
+                <label for="f-practice">Practice / company</label>
+                <input id="f-practice" name="practice" type="text" maxlength="160" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="f-discipline">Discipline <span class="required" aria-hidden="true">*</span></label>
+                <select id="f-discipline" name="discipline" required aria-describedby="err-f-discipline"></select>
+                <span class="field-error" id="err-f-discipline" data-error-for="discipline"></span>
+              </div>
+              <div class="field">
+                <label for="f-reference">Reference</label>
+                <input id="f-reference" name="reference" type="text" maxlength="40" placeholder="Leave blank to number automatically" />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="cfg__step-num">2</span> The loupes</legend>
+            <div class="form-row form-row--3">
+              <div class="field">
+                <label for="f-magnification">Magnification <span class="required" aria-hidden="true">*</span></label>
+                <select id="f-magnification" name="magnification" required aria-describedby="err-f-magnification"></select>
+                <span class="field-error" id="err-f-magnification" data-error-for="magnification"></span>
+              </div>
+              <div class="field">
+                <label for="f-colour">Frame colour <span class="required" aria-hidden="true">*</span></label>
+                <select id="f-colour" name="colour" required aria-describedby="err-f-colour"></select>
+                <span class="field-error" id="err-f-colour" data-error-for="colour"></span>
+              </div>
+              <div class="field">
+                <label for="f-light">Light <span class="required" aria-hidden="true">*</span></label>
+                <select id="f-light" name="light" required aria-describedby="err-f-light"></select>
+                <span class="field-error" id="err-f-light" data-error-for="light"></span>
+              </div>
+            </div>
+            <div class="form-row form-row--3">
+              <div class="field">
+                <label for="f-lenses">Protective lenses <span class="required" aria-hidden="true">*</span></label>
+                <select id="f-lenses" name="lenses" required aria-describedby="err-f-lenses"></select>
+                <span class="field-error" id="err-f-lenses" data-error-for="lenses"></span>
+              </div>
+              <div class="field">
+                <label for="f-prescription">Prescription <span class="required" aria-hidden="true">*</span></label>
+                <select id="f-prescription" name="prescription" required aria-describedby="err-f-prescription"></select>
+                <span class="field-error" id="err-f-prescription" data-error-for="prescription"></span>
+              </div>
+              <div class="field">
+                <label for="f-fitted_by">Fitted by</label>
+                <input id="f-fitted_by" name="fitted_by" type="text" maxlength="80" placeholder="Your name" />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="cfg__step-num">3</span> Fitting measurements</legend>
+            <div class="form-row form-row--3">
+              <div class="field">
+                <label for="f-wd">Working distance (cm)</label>
+                <input id="f-wd" name="working_distance" type="number" min="25" max="70" step="1" inputmode="numeric" placeholder="25–70" aria-describedby="err-f-wd" />
+                <span class="field-error" id="err-f-wd" data-error-for="working_distance"></span>
+              </div>
+              <div class="field">
+                <label for="f-pd">Pupillary distance (mm)</label>
+                <input id="f-pd" name="pupillary_distance" type="number" min="52" max="78" step="1" inputmode="numeric" placeholder="52–78" aria-describedby="err-f-pd" />
+                <span class="field-error" id="err-f-pd" data-error-for="pupillary_distance"></span>
+              </div>
+              <div class="field">
+                <label for="f-fitted_at">Fitting date</label>
+                <input id="f-fitted_at" name="fitted_at" type="date" aria-describedby="err-f-fitted_at" />
+                <span class="field-error" id="err-f-fitted_at" data-error-for="fitted_at"></span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-notes">Internal notes (never shown to the customer)</label>
+              <textarea id="f-notes" name="notes" rows="3" maxlength="2000" placeholder="Anything worth remembering for their next visit"></textarea>
+            </div>
+          </fieldset>
+
+          <div class="mg-form__actions">
+            <button class="btn btn-primary" type="submit" id="mg-submit">Issue passport</button>
+            <button class="btn btn-ghost" type="button" id="mg-cancel-edit" hidden>Cancel editing</button>
+            <p class="form-status" id="mg-form-status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </section>
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__bottom">
+      <span>&copy; 2026 PENTAX Loupes UK.</span>
+      <span>Passport manager · <a href="/">Site</a></span>
+    </div>
+  </div>
+</footer>
+
+<!-- Printable card: a direct child of <body> so @media print can isolate it -->
+<div class="mg-print" id="mg-print" hidden role="dialog" aria-modal="true" aria-label="Print passport card">
+  <div class="mg-print__inner">
+    <div class="pp-card-print" id="mg-card">
+      <div class="pp-card-print__brand">PENTAX<span>Loupes UK</span></div>
+      <div>
+        <h2>Your loupe passport</h2>
+        <p class="pp-card-print__name" id="card-name"></p>
+      </div>
+      <div class="pp-card-print__qr" id="card-qr"></div>
+      <div>
+        <p class="pp-card-print__spec" id="card-spec"></p>
+        <p class="pp-card-print__ref" id="card-ref"></p>
+        <p class="pp-card-print__url" id="card-url"></p>
+      </div>
+      <p class="pp-card-print__foot">Scan to open your setup, care guide and fitting support, or to invite a colleague to a demonstration.</p>
+    </div>
+    <div class="mg-print__actions">
+      <button class="btn btn-primary" type="button" id="mg-print-go">Print</button>
+      <button class="btn btn-ghost" type="button" id="mg-print-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/config.js?v=20260913"></script>
+<script src="/js/qr.js?v=20260913"></script>
+<script src="/js/passport-common.js?v=20260913"></script>
+<script src="/js/manage.js?v=20260913"></script>
+</body>
+</html>

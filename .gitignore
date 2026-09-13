@@ -11,3 +11,10 @@ _*.py
 
 # Vercel build output (regenerated on deploy)
 .vercel/
+
+# Loupe passport: local data store, secrets, dependencies
+.data/
+.env
+.env.*
+!.env.example
+node_modules/

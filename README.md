@@ -113,3 +113,53 @@ js/main.js             nav, FAQ, testimonials, selectors, form, scroll reveals, 
 images/                photography/diagrams (pentaxloupes.com) + tour poster frame
 videos/                tour-master.mp4 — single continuous source video (see TODO.md)
 ```
+
+## Loupe passport — `/p/<token>`, `/invite/<token>`, `/manage`
+
+Every customer gets a private link (and a printable QR card for their case)
+that opens their own passport: the pair they were fitted with, care guidance,
+the fitting guide, accessories, a one-tap check-in, a support form and a link
+to invite a colleague to a demonstration. The manager at `/manage` issues
+passports, prints the cards and shows who needs attention.
+
+How it fits the site:
+
+- `passport.html`, `invite.html`, `manage.html` and `css/passport.css` use the
+  same design system as `index.html` (dark, Inter, blue accent, pill buttons).
+  Asset paths are root-absolute because of the clean-URL rewrites in
+  `vercel.json`.
+- `js/passport.js`, `js/invite.js`, `js/manage.js`, `js/passport-common.js`
+  and `js/qr.js` are vanilla scripts: no inline JS, no `innerHTML`, and QR
+  codes are inline SVG, so the CSP in `vercel.json` is unchanged.
+- `api/` holds the Vercel Functions (`api/passport/[token].js`,
+  `api/invite/[token].js`, `api/admin/passports.js`, `api/admin/activity.js`);
+  shared code lives in `lib/passport/`. Every field is re-validated on the
+  server; public POSTs are same-origin only, honeypot-checked, idempotent per
+  request key and rate limited per passport and per IP.
+- Storage is Redis over REST in production (Vercel's Upstash integration) and
+  a JSON file in `.data/` locally. Until a database is connected nothing can
+  be saved on Vercel, but the site and the example passport (`/p/example`)
+  still work and `/manage` explains what to do.
+
+Run it locally (replaces `npx serve` — same static site, with Range support,
+plus the API):
+
+```bash
+npm run dev
+```
+
+Then open <http://127.0.0.1:8000/p/example>, `/invite/example` and `/manage`
+(development key `pentax-dev`, or set `PASSPORT_ADMIN_KEY` in a local `.env`;
+see `.env.example`). `npm test` runs the API, QR and option-list tests.
+
+Go live, once:
+
+1. Vercel → this project → **Storage** → Create Database → **Upstash for
+   Redis** → connect it to the project. This injects `KV_REST_API_URL` and
+   `KV_REST_API_TOKEN`.
+2. **Settings → Environment Variables** → add `PASSPORT_ADMIN_KEY` (a long
+   random string; it is the only thing protecting `/manage`).
+3. Optional email alerts for new requests: `RESEND_API_KEY` and
+   `PASSPORT_NOTIFY_TO` (see `.env.example`).
+4. Redeploy, open `https://<your-domain>/manage`, issue a passport, print the
+   card.
