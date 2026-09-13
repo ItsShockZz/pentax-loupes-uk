@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your loupe passport | PENTAX Loupes UK</title>
+<meta name="description" content="Your PENTAX Loupes setup, care guidance, fitting support and a way to introduce a colleague, all in one place." />
+<meta name="robots" content="noindex, nofollow" />
+<!-- Served at /p/<token> (see vercel.json rewrites), so every asset path is root-absolute. -->
+<link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="/css/main.css?v=20260913" />
+<link rel="stylesheet" href="/css/passport.css?v=20260913" />
+</head>
+<body class="pp-page">
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav nav--scrolled nav--inner">
+  <div class="nav__inner">
+    <a class="nav__brand" href="/" aria-label="PENTAX Loupes UK, back to the site">
+      <span class="nav__brand-mark">PENTAX</span>
+      <span class="nav__brand-sub">Loupes UK</span>
+    </a>
+    <nav class="nav__links" aria-label="Passport sections">
+      <a href="#setup">Your setup</a>
+      <a href="#care">Care</a>
+      <a href="#fitting">Fitting</a>
+      <a href="#support">Support</a>
+      <a href="#invite">Invite a colleague</a>
+      <span class="nav__sep" aria-hidden="true"></span>
+      <a class="btn btn-primary nav__cta" href="#checkin">Quick check-in</a>
+    </nav>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-drawer" aria-label="Open menu">
+      <span></span>
+    </button>
+  </div>
+  <nav class="nav__drawer" id="nav-drawer" aria-label="Mobile">
+    <a href="#setup">Your setup</a>
+    <a href="#care">Care</a>
+    <a href="#fitting">Fitting</a>
+    <a href="#support">Support</a>
+    <a href="#invite">Invite a colleague</a>
+    <a href="/">Back to the site</a>
+    <a class="btn btn-primary" href="#checkin">Quick check-in</a>
+  </nav>
+</header>
+
+<main id="main" class="pp-top">
+
+  <!-- Loading -->
+  <section class="pp-state" id="pp-loading" aria-live="polite" aria-busy="true">
+    <div class="container">
+      <span class="eyebrow">Loupe passport</span>
+      <p class="headline" style="margin-top:14px;"><span class="pp-skeleton pp-skeleton--wide"></span></p>
+      <p><span class="pp-skeleton"></span></p>
+    </div>
+  </section>
+
+  <!-- Unavailable -->
+  <section class="pp-state" id="pp-error" hidden>
+    <div class="container">
+      <span class="eyebrow">Loupe passport</span>
+      <h1 class="headline">This passport isn't available</h1>
+      <p id="pp-error-message">The link may have been copied incorrectly, or the passport has been closed. If you think it should be open, contact the UK team.</p>
+      <div class="pp-state__actions">
+        <a class="btn btn-primary" data-contact-href href="#">Email the UK team</a>
+        <a class="btn btn-ghost" href="/">Back to the site</a>
+      </div>
+    </div>
+  </section>
+
+  <div id="pp-content" hidden>
+
+    <!-- =================================================================
+         HERO — the customer's own pair, in their colour
+         ================================================================= -->
+    <section class="pp-hero" id="top">
+      <div class="pp-hero__glow" aria-hidden="true"></div>
+      <div class="container pp-hero__inner">
+        <div class="pp-enter">
+          <div class="pp-hero__eyebrow">
+            <span class="eyebrow">Your loupe passport</span>
+            <span class="pp-ref" data-fill="reference"></span>
+          </div>
+          <h1 class="display">Hello, <span data-fill="greeting"></span></h1>
+          <p class="subhead">Your PENTAX Loupes, your setup and your UK support team, all in one place. Keep this link: it stays yours for as long as you wear them.</p>
+          <div class="pp-hero__ctas">
+            <a class="btn btn-primary" href="#checkin">How are they feeling? <span class="btn__arrow" aria-hidden="true">→</span></a>
+            <a class="btn btn-ghost" href="#support">Get support</a>
+          </div>
+          <p class="pp-hero__fitline" id="pp-fitline"></p>
+        </div>
+        <div class="pp-hero__media pp-enter pp-enter--late">
+          <span class="pp-hero__badge" id="pp-badge">PENTAX Loupes</span>
+          <img id="pp-hero-img" src="/images/product-hero.jpg" alt="" />
+          <div class="pp-hero__chips" id="pp-chips"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         YOUR SETUP
+         ================================================================= -->
+    <section class="section section--tight" id="setup">
+      <div class="container">
+        <div class="pp-section-head">
+          <div>
+            <span class="eyebrow">Your setup</span>
+            <h2 class="headline">Built to your numbers</h2>
+          </div>
+          <p>Pupillary distance and working distance are adjustable, and can be reset whenever your eyesight or posture changes. Magnification is fixed at manufacture.</p>
+        </div>
+        <div class="pp-specs" id="pp-specs" data-reveal></div>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         CHECK-IN
+         ================================================================= -->
+    <section class="section section--tight" id="checkin">
+      <div class="container">
+        <div class="pp-checkin" data-reveal>
+          <div id="pp-checkin-ask">
+            <span class="eyebrow">A quick check-in</span>
+            <h2>How are your loupes feeling?</h2>
+            <p>One tap tells us whether everything is comfortable, or whether a small adjustment would help. It takes ten seconds and reaches a real person.</p>
+          </div>
+          <div class="pp-checkin__actions" id="pp-checkin-actions">
+            <button class="btn btn-primary" type="button" id="pp-good">All good</button>
+            <button class="btn btn-ghost" type="button" id="pp-help">I need a hand</button>
+          </div>
+          <div class="pp-checkin__done" id="pp-checkin-done" hidden></div>
+          <p class="form-status" id="pp-checkin-status" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         CARE
+         Guidance is general good practice for precision loupes. Keep the
+         printed leaflet supplied with the product as the authoritative
+         reference and confirm this wording against it before launch.
+         ================================================================= -->
+    <section class="section section--raised" id="care">
+      <div class="container pp-split">
+        <div>
+          <span class="eyebrow">Care</span>
+          <h2 class="headline" style="margin-top:12px;">Look after the optics and they'll look after you</h2>
+          <p class="body-copy" style="margin-top:14px;">Precision optics stay sharp for years with a light routine. Four habits worth keeping.</p>
+          <div class="pp-steps">
+            <div class="pp-step">
+              <span class="pp-step__num">01</span>
+              <div>
+                <h3>Clean the lenses gently</h3>
+                <p>Blow or brush away grit first, then use a clean microfibre cloth. A little lens-cleaning solution on the cloth is fine; never spray the loupes directly, and keep solvents and abrasive wipes away from the optics.</p>
+              </div>
+            </div>
+            <div class="pp-step">
+              <span class="pp-step__num">02</span>
+              <div>
+                <h3>Wipe the frame after each session</h3>
+                <p>A damp microfibre cloth lifts skin oils and debris from the frame, nose pad and head strap. Keep the barrels and hinge dry, and never submerge or autoclave the loupes.</p>
+              </div>
+            </div>
+            <div class="pp-step">
+              <span class="pp-step__num">03</span>
+              <div>
+                <h3>Handle by the frame, not the barrels</h3>
+                <p>Lift the loupes by the frame and use the flip-up hinge to move the barrels. Set them down optics-up on a soft surface, never resting on the lenses.</p>
+              </div>
+            </div>
+            <div class="pp-step">
+              <span class="pp-step__num">04</span>
+              <div>
+                <h3>Store them in the case</h3>
+                <p>Between sessions the case protects the optics and the adjustments made at your fitting. Keep an LED headlight and its battery out of direct heat.</p>
+              </div>
+            </div>
+          </div>
+          <p class="pp-note">The printed care leaflet supplied with your loupes is the reference for your model. Unsure about a cleaning product? Ask us before using it.</p>
+        </div>
+        <figure class="pp-media pp-media--wide" data-reveal>
+          <img src="/images/stills/tour-still-lens-macro.jpg" alt="Close-up of a PENTAX Loupes lens barrel" />
+          <figcaption class="pp-media__caption">Precision optics · keep solvents and abrasives away</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         FITTING GUIDE
+         ================================================================= -->
+    <section class="section" id="fitting">
+      <div class="container">
+        <div class="pp-section-head">
+          <div>
+            <span class="eyebrow">Fitting</span>
+            <h2 class="headline">Four adjustments, set to you</h2>
+          </div>
+          <p>These were set at your fitting. If your posture, chair or eyesight changes they can be reset: small tweaks by you, anything bigger at a fitting check with us.</p>
+        </div>
+        <div class="pp-cards">
+          <article class="pp-card" data-reveal>
+            <div class="pp-card__media pp-card__media--light"><img src="/images/adjust-pupil-distance.jpg" alt="Adjusting the pupillary distance on PENTAX Loupes" /></div>
+            <div class="pp-card__body">
+              <span class="pp-card__index">01</span>
+              <h3>Pupillary distance</h3>
+              <p>Each barrel moves independently so the optics sit exactly over your eyes. A double image or one soft edge usually means this needs a nudge.</p>
+              <div class="pp-card__foot"><span class="pp-tag" id="pp-tag-pd">Adjustable 52–78 mm</span></div>
+            </div>
+          </article>
+          <article class="pp-card" data-reveal>
+            <div class="pp-card__media pp-card__media--light"><img src="/images/adjust-working-distance.jpg" alt="Adjusting the working distance on PENTAX Loupes" /></div>
+            <div class="pp-card__body">
+              <span class="pp-card__index">02</span>
+              <h3>Working distance</h3>
+              <p>Sets how far from your eyes the image is sharp. Yours matches the way you sit or stand at work; change your setup and it can follow.</p>
+              <div class="pp-card__foot"><span class="pp-tag" id="pp-tag-wd">Adjustable 25–70 cm</span></div>
+            </div>
+          </article>
+          <article class="pp-card" data-reveal>
+            <div class="pp-card__media pp-card__media--light"><img src="/images/adjust-height-angle.jpg" alt="Adjusting the height and angle of the PENTAX Loupes barrels" /></div>
+            <div class="pp-card__body">
+              <span class="pp-card__index">03</span>
+              <h3>Height and angle</h3>
+              <p>The knurled adjusters raise, lower and tilt the barrels so you look through the centre of the optics with your head level and your eyes relaxed.</p>
+              <div class="pp-card__foot"><span class="pp-tag">Lock in, then forget</span></div>
+            </div>
+          </article>
+          <article class="pp-card" data-reveal>
+            <div class="pp-card__media pp-card__media--light"><img src="/images/adjust-protective-lens.jpg" alt="PENTAX Loupes with protective lenses" /></div>
+            <div class="pp-card__body">
+              <span class="pp-card__index">04</span>
+              <h3>Protective and prescription lenses</h3>
+              <p>Protective lenses shield your eyes and the optics. A prescription insert, or your own glasses underneath, carry your correction.</p>
+              <div class="pp-card__foot"><span class="pp-tag" id="pp-tag-lens">Optional</span></div>
+            </div>
+          </article>
+        </div>
+        <p style="margin-top:28px;">Not sure what to adjust? <a class="text-link" href="#support" data-topic="Fitting or adjustment">Ask for a fitting check →</a></p>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         ACCESSORIES
+         ================================================================= -->
+    <section class="section section--raised" id="accessories">
+      <div class="container">
+        <div class="pp-section-head">
+          <div>
+            <span class="eyebrow">Accessories</span>
+            <h2 class="headline">What works with your pair</h2>
+          </div>
+          <p>Every option clips to the same frame, so you can add light or change lens options later without a new pair.</p>
+        </div>
+        <div class="pp-cards pp-cards--3">
+          <article class="pp-card" data-reveal data-acc="Wireless LED">
+            <div class="pp-card__media pp-card__media--contain"><img src="/images/led-wireless.jpg" alt="Wireless LED headlight for PENTAX Loupes" /></div>
+            <div class="pp-card__body">
+              <span class="pp-card__index">Illumination</span>
+              <h3>Wireless LED headlight</h3>
+              <p>Clips to the loupes and lights the field directly ahead of you, with complete freedom of movement.</p>
+              <div class="pp-card__foot"><span class="pp-tag" data-acc-tag>Add a light</span><a class="text-link" href="#support" data-topic="Headlight or accessory">Ask about it →</a></div>
+            </div>
+          </article>
+          <article class="pp-card" data-reveal data-acc="Wired LED">
+            <div class="pp-card__media pp-card__media--contain"><img src="/images/led-wired.jpg" alt="Wired LED headlight and beltpack for PENTAX Loupes" /></div>
+            <div class="pp-card__body">
+              <span class="pp-card__index">Illumination</span>
+              <h3>Wired LED headlight</h3>
+              <p>Constant power from a beltpack for long lists. Already own a light you like? Brackets are available for other LED brands.</p>
+              <div class="pp-card__foot"><span class="pp-tag" data-acc-tag>Add a light</span><a class="text-link" href="#support" data-topic="Headlight or accessory">Ask about it →</a></div>
+            </div>
+          </article>
+          <article class="pp-card" data-reveal data-acc="lenses">
+            <div class="pp-card__media pp-card__media--contain"><img src="/images/previews/lenses-yes.jpg" alt="PENTAX Loupes with protective lenses fitted" /></div>
+            <div class="pp-card__body">
+              <span class="pp-card__index">Lenses</span>
+              <h3>Protective and prescription options</h3>
+              <p>Protective lenses shield the optics; a custom prescription insert or your own glasses underneath carry your correction.</p>
+              <div class="pp-card__foot"><span class="pp-tag" data-acc-tag>Optional</span><a class="text-link" href="#support" data-topic="Prescription or lenses">Ask about it →</a></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         SUPPORT
+         ================================================================= -->
+    <section class="section" id="support">
+      <div class="container pp-split pp-split--top">
+        <div>
+          <span class="eyebrow">Support</span>
+          <h2 class="headline" style="margin-top:12px;">Here when something's not quite right</h2>
+          <p class="body-copy" style="margin-top:14px;">A slipping nose pad, a headlight question, an adjustment you'd like checked: tell us and the UK team will come back to you. Your passport reference travels with the message, so there's no need to explain your setup.</p>
+          <div class="pp-contact-card">
+            <h3>Prefer to email?</h3>
+            <p>Write to <a class="text-link" data-contact-email href="#">info@pentaxloupes.com</a> and quote your reference <strong data-fill="reference"></strong>.</p>
+          </div>
+        </div>
+        <div class="pp-panel">
+          <form class="pp-form" id="pp-support-form" novalidate>
+            <div class="field">
+              <label for="sp-topic">What's it about? <span class="required" aria-hidden="true">*</span></label>
+              <select id="sp-topic" name="topic" required aria-describedby="err-sp-topic"></select>
+              <span class="field-error" id="err-sp-topic" data-error-for="topic"></span>
+            </div>
+            <div class="field">
+              <label for="sp-message">Tell us more <span class="required" aria-hidden="true">*</span></label>
+              <textarea id="sp-message" name="message" rows="5" maxlength="2000" required aria-describedby="err-sp-message" placeholder="What's happening, and when did you first notice it?"></textarea>
+              <span class="field-error" id="err-sp-message" data-error-for="message"></span>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="sp-email">Email for our reply <span class="required" aria-hidden="true">*</span></label>
+                <input type="email" id="sp-email" name="email" autocomplete="email" maxlength="254" required aria-describedby="err-sp-email" />
+                <span class="field-error" id="err-sp-email" data-error-for="email"></span>
+              </div>
+              <div class="field">
+                <label for="sp-phone">Phone (optional)</label>
+                <input type="tel" id="sp-phone" name="phone" autocomplete="tel" maxlength="40" aria-describedby="err-sp-phone" />
+                <span class="field-error" id="err-sp-phone" data-error-for="phone"></span>
+              </div>
+            </div>
+            <div class="pp-honeypot" aria-hidden="true">
+              <label for="sp-website">Leave this field empty</label>
+              <input type="text" id="sp-website" name="website" tabindex="-1" autocomplete="off" />
+            </div>
+            <div class="cfg__submit-row">
+              <button class="btn btn-primary" type="submit">Send to the UK team</button>
+              <p class="consent-note">By sending this you agree to PENTAX Loupes UK contacting you about your request. Read our <a class="text-link" href="/privacy.html">privacy policy</a>.</p>
+            </div>
+            <p class="form-status" id="pp-support-status" role="status" aria-live="polite"></p>
+          </form>
+          <div class="pp-success" id="pp-support-done" hidden>
+            <span class="pp-check" aria-hidden="true"></span>
+            <h3>Thanks, we've got it</h3>
+            <p id="pp-support-done-msg">The UK team will come back to you by email.</p>
+            <button class="btn btn-ghost" type="button" id="pp-support-again">Send another message</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         INVITE A COLLEAGUE
+         ================================================================= -->
+    <section class="section section--raised" id="invite">
+      <div class="container pp-split">
+        <div>
+          <span class="eyebrow">Good things are worth sharing</span>
+          <h2 class="headline" style="margin-top:12px;">Know someone who'd like to see for themselves?</h2>
+          <p class="body-copy" style="margin-top:14px;">Your invitation link opens a short page where a colleague can request their own demonstration and fitting. It carries your name and nothing else: your setup and contact details stay private.</p>
+          <p class="body-copy" style="margin-top:12px;">We'll arrange a demonstration with them in the UK, the same way we did with you.</p>
+        </div>
+        <div class="pp-share" data-reveal>
+          <div>
+            <strong style="color:var(--ink);">Your invitation link</strong>
+            <p class="pp-share__hint">Send it in a message or an email, or let a colleague scan the code.</p>
+          </div>
+          <div class="pp-share__link">
+            <input type="text" id="pp-invite-link" readonly aria-label="Your invitation link" />
+            <button class="btn btn-primary" type="button" id="pp-copy">Copy link</button>
+          </div>
+          <div class="pp-share__actions">
+            <button class="btn btn-ghost" type="button" id="pp-share" hidden>Share…</button>
+            <a class="btn btn-ghost" id="pp-mail" href="#">Email a colleague</a>
+          </div>
+          <div class="pp-share__qr">
+            <div class="pp-qr" id="pp-invite-qr" aria-hidden="true"></div>
+            <p><strong>Or let them scan this</strong>Point a phone camera at the code and the invitation opens.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /pp-content -->
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__bottom">
+      <span>&copy; 2026 PENTAX Loupes UK.</span>
+      <span><a href="/">Site</a> &nbsp;&middot;&nbsp; <a href="/privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="/terms.html">Terms</a> &nbsp;&middot;&nbsp; <a data-contact-href href="#">Contact</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/config.js?v=20260913"></script>
+<script src="/js/qr.js?v=20260913"></script>
+<script src="/js/passport-common.js?v=20260913"></script>
+<script src="/js/passport.js?v=20260913"></script>
+</body>
+</html>
