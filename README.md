@@ -213,3 +213,31 @@ the live site, then open **Admin → Ingestion** in the CRM. The payload is list
 there with status `parsed` (new lead) or `duplicate` (merged), and the lead
 appears in the pipeline routed by postcode. A `401 Invalid signature` there
 means the two secrets differ.
+
+## Email alerts for new leads
+
+Every new website lead (demonstration or quote request), passport support
+request, "needs a hand" check-in and colleague enquiry is emailed to
+`PASSPORT_NOTIFY_TO`, with the customer's address as Reply-To so a reply goes
+straight to them. The alert says whether the CRM created a lead or merged the
+enquiry into an existing one.
+
+Sending goes through [lib/passport/mail.js](lib/passport/mail.js), which has two
+transports. The simplest is your own mailbox over SMTP; for the OVH mailbox the
+CRM already reads from, add these to the website's Vercel project:
+
+| Variable | Value |
+|---|---|
+| `PASSPORT_NOTIFY_TO` | the address that should receive alerts |
+| `SMTP_HOST` | `ssl0.ovh.net` |
+| `SMTP_PORT` | `465` |
+| `SMTP_USER` | `puyan@pentaxloupes.com` |
+| `SMTP_PASSWORD` | the mailbox password (the CRM's `IMAP_PASSWORD`) |
+| `PASSPORT_NOTIFY_FROM` | `PENTAX Loupes UK <puyan@pentaxloupes.com>` (optional) |
+
+The SMTP client is written against `node:tls` so the site keeps its
+zero-dependency deploy; it uses implicit TLS on port 465, STARTTLS on any other
+port, and refuses to send a password over a plain connection. The alternative
+transport is [resend.com](https://resend.com) (`RESEND_API_KEY`), used when no
+`SMTP_HOST` is set. A mail failure is logged and never fails the customer's
+submission; the enquiry is still stored, listed in `/manage` and sent to the CRM.
