@@ -147,6 +147,38 @@ test("SMTP configuration comes from the environment with sensible defaults", () 
   assert.equal(starttls.secure, false);
   const forced = smtpConfig({ SMTP_HOST: "h", SMTP_USER: "u", SMTP_PASSWORD: "p", SMTP_PORT: "2525", SMTP_SECURE: "true" });
   assert.equal(forced.secure, true);
+  const gmail = smtpConfig({ SMTP_HOST: "smtp.gmail.com", SMTP_USER: "someone@gmail.com", SMTP_PASSWORD: "abcd efgh ijkl mnop" });
+  assert.equal(gmail.password, "abcdefghijklmnop", "Google app-password spacing is stripped");
+  const other = smtpConfig({ SMTP_HOST: "mail.example.com", SMTP_USER: "u@example.com", SMTP_PASSWORD: "pa ss" });
+  assert.equal(other.password, "pa ss", "other providers keep the password exactly");
+});
+
+test("notify() goes to the UK team's inbox by default", async () => {
+  const { server, port, sessions } = await fakeSmtpServer();
+  servers.push(server);
+  const saved = { ...process.env };
+  Object.assign(process.env, {
+    SMTP_HOST: "127.0.0.1",
+    SMTP_PORT: String(port),
+    SMTP_SECURE: "false",
+    SMTP_INSECURE: "1",
+    SMTP_USER: "someone@gmail.com",
+    SMTP_PASSWORD: "abcd efgh ijkl mnop",
+  });
+  delete process.env.PASSPORT_NOTIFY_TO;
+  delete process.env.PASSPORT_NOTIFY_FROM;
+  try {
+    const { notify, DEFAULT_NOTIFY_TO } = await import("../lib/passport/service.js");
+    assert.equal(DEFAULT_NOTIFY_TO, "drpuyanheydari@gmail.com");
+    assert.equal(await notify({ subject: "New lead", lines: ["hello"] }), true);
+    const session = sessions[sessions.length - 1];
+    assert.ok(session.commands.includes(`RCPT TO:<${DEFAULT_NOTIFY_TO}>`));
+    const auth = session.commands.find((c) => c.startsWith("AUTH PLAIN "));
+    assert.equal(Buffer.from(auth.slice("AUTH PLAIN ".length), "base64").toString("utf8"), "\0someone@gmail.com\0abcdefghijklmnop");
+  } finally {
+    for (const key of Object.keys(process.env)) if (!(key in saved)) delete process.env[key];
+    Object.assign(process.env, saved);
+  }
 });
 
 test("notify() delivers a new-lead alert through SMTP when configured", async () => {

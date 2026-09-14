@@ -594,6 +594,7 @@ async function submitLead(payload) {
   } catch {
     data = null;
   }
+  if (res.status === 503) throw new Error(`We couldn't send your enquiry just now. ${fallback}`);
   if (!res.ok) throw new Error((data && data.error) || `Something went wrong (${res.status}). ${fallback}`);
   return data || {};
 }

@@ -217,27 +217,35 @@ means the two secrets differ.
 ## Email alerts for new leads
 
 Every new website lead (demonstration or quote request), passport support
-request, "needs a hand" check-in and colleague enquiry is emailed to
-`PASSPORT_NOTIFY_TO`, with the customer's address as Reply-To so a reply goes
-straight to them. The alert says whether the CRM created a lead or merged the
-enquiry into an existing one.
+request, "needs a hand" check-in and colleague enquiry is emailed to the UK
+team, with the customer's address as Reply-To so a reply goes straight to
+them. The alert says whether the CRM created a lead or merged the enquiry into
+an existing one. The recipient defaults to `drpuyanheydari@gmail.com`
+(`DEFAULT_NOTIFY_TO` in [lib/passport/service.js](lib/passport/service.js));
+`PASSPORT_NOTIFY_TO` overrides it.
 
 Sending goes through [lib/passport/mail.js](lib/passport/mail.js), which has two
-transports. The simplest is your own mailbox over SMTP; for the OVH mailbox the
-CRM already reads from, add these to the website's Vercel project:
+transports. The simplest is a Gmail account over SMTP. Google will not accept
+the normal account password from an application, so create an **App password**
+first: Google Account → Security → 2-Step Verification (must be on) → App
+passwords → name it "PENTAX website" → copy the 16 characters. Then add to the
+website's Vercel project:
 
 | Variable | Value |
 |---|---|
-| `PASSPORT_NOTIFY_TO` | the address that should receive alerts |
-| `SMTP_HOST` | `ssl0.ovh.net` |
+| `SMTP_HOST` | `smtp.gmail.com` |
 | `SMTP_PORT` | `465` |
-| `SMTP_USER` | `puyan@pentaxloupes.com` |
-| `SMTP_PASSWORD` | the mailbox password (the CRM's `IMAP_PASSWORD`) |
-| `PASSPORT_NOTIFY_FROM` | `PENTAX Loupes UK <puyan@pentaxloupes.com>` (optional) |
+| `SMTP_USER` | `drpuyanheydari@gmail.com` |
+| `SMTP_PASSWORD` | the 16-character app password (spaces are ignored) |
 
 The SMTP client is written against `node:tls` so the site keeps its
 zero-dependency deploy; it uses implicit TLS on port 465, STARTTLS on any other
-port, and refuses to send a password over a plain connection. The alternative
-transport is [resend.com](https://resend.com) (`RESEND_API_KEY`), used when no
-`SMTP_HOST` is set. A mail failure is logged and never fails the customer's
-submission; the enquiry is still stored, listed in `/manage` and sent to the CRM.
+port, and refuses to send a password over a plain connection. Any other mailbox
+works with the same four variables. The alternative transport is
+[resend.com](https://resend.com) (`RESEND_API_KEY`), used when no `SMTP_HOST`
+is set. A mail failure is logged and never fails the customer's submission;
+the enquiry is still stored, listed in `/manage` and sent to the CRM.
+
+Gmail counts messages you send to yourself as normal mail, but the first one
+from a new "sender" may land in spam once; mark it "not spam" and the rest
+arrive in the inbox.
