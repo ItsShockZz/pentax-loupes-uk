@@ -123,7 +123,7 @@ test("every field is validated on the server", async () => {
 
 test("guards: same-origin, method, per-IP limit", async () => {
   assert.equal((await call(leadRoute, { body: demo(), headers: { origin: "https://evil.example" } })).status, 403);
-  assert.equal((await call(leadRoute, { method: "GET" })).status, 405);
+  assert.equal((await call(leadRoute, { method: "DELETE" })).status, 405);
   let limited = null;
   for (let i = 0; i < 12 && !limited; i++) {
     const res = await call(leadRoute, { body: demo(), headers: { "x-forwarded-for": "198.51.100.7" } });
