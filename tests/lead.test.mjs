@@ -123,7 +123,7 @@ test("every field is validated on the server", async () => {
 
 test("guards: same-origin, method, per-IP limit", async () => {
   assert.equal((await call(leadRoute, { body: demo(), headers: { origin: "https://evil.example" } })).status, 403);
-  assert.equal((await call(leadRoute, { method: "GET" })).status, 405);
+  assert.equal((await call(leadRoute, { method: "DELETE" })).status, 405);
   let limited = null;
   for (let i = 0; i < 12 && !limited; i++) {
     const res = await call(leadRoute, { body: demo(), headers: { "x-forwarded-for": "198.51.100.7" } });
@@ -219,6 +219,14 @@ test("without storage: forwarded to the CRM when configured, otherwise a clear 5
     const none = await call(leadRoute, { body: demo() });
     assert.equal(none.status, 503);
     assert.equal(none.body.code, "unconfigured");
+    assert.deepEqual(none.body.detail, { storage: false, crm: "unconfigured", email: false, crm_result: "unconfigured", crm_reason: null });
+
+    const status = await call(leadRoute, { method: "GET" });
+    assert.equal(status.status, 200);
+    assert.equal(status.body.ok, false);
+    assert.equal(status.body.storage, false);
+    assert.equal(status.body.crm, "unconfigured");
+    assert.match(status.body.hint, /CRM_WEBHOOK_URL/);
 
     process.env.CRM_WEBHOOK_URL = "https://pentax-crm.example/api/ingest/webhook";
     process.env.CRM_WEBHOOK_SECRET = "s3cret";

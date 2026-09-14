@@ -32,7 +32,31 @@ import {
 } from "../lib/passport/service.js";
 import { describeDetails, leadEntry, WEBSITE_PASSPORT } from "../lib/passport/leads.js";
 
+/** What this deployment can do with an enquiry — no values, just yes/no. */
+function configurationStatus() {
+  const crmConfigured = Boolean(process.env.CRM_WEBHOOK_URL && process.env.CRM_WEBHOOK_SECRET);
+  return {
+    storage: Boolean(createStore()),
+    crm: crmConfigured ? "configured" : "unconfigured",
+    email: notificationsConfigured(),
+  };
+}
+
 export default handler(async (req, res) => {
+  if (req.method === "GET") {
+    const status = configurationStatus();
+    return sendJson(res, 200, {
+      ok: status.storage || status.crm === "configured" || status.email,
+      ...status,
+      // Which commit this deployment was built from (set by Vercel), so a
+      // "did it deploy?" question has a one-line answer.
+      commit: (process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 7) || null,
+      hint:
+        status.storage || status.crm === "configured" || status.email
+          ? undefined
+          : "Set CRM_WEBHOOK_URL + CRM_WEBHOOK_SECRET, or the SMTP_* variables, or connect Upstash Redis, then redeploy.",
+    });
+  }
   assertMethod(req, "POST");
   assertSameOrigin(req);
   const data = await readJsonBody(req);
@@ -57,7 +81,10 @@ export default handler(async (req, res) => {
     activity = buildActivity(WEBSITE_PASSPORT, entry);
     crm = await forwardToCrm(activity, WEBSITE_PASSPORT);
     if (crm.status !== "sent" && !notificationsConfigured()) {
-      throw new HttpError(503, "We couldn't send your enquiry just now. Please email the UK team instead.", { code: "unconfigured" });
+      throw new HttpError(503, "We couldn't send your enquiry just now. Please email the UK team instead.", {
+        code: "unconfigured",
+        detail: { ...configurationStatus(), crm_result: crm.status, crm_reason: crm.reason || null },
+      });
     }
   }
 
