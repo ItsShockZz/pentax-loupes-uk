@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { crmLeadPayload, shouldForwardToCrm, signCrmBody } from "../lib/passport/service.js";
+import { crmLeadPayload, crmSecret, shouldForwardToCrm, signCrmBody } from "../lib/passport/service.js";
 
 const passport = { id: "p1", reference: "PX-0004", name: "Dr Sam Patel", token: "t" };
 const base = { id: "11111111-2222-4333-8444-555555555555", created_at: "2026-09-14T12:00:00.000Z", status: "open" };

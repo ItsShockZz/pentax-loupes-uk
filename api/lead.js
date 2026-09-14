@@ -24,6 +24,7 @@ import { createStore } from "../lib/passport/store.js";
 import {
   baseUrl,
   buildActivity,
+  crmSecret,
   forwardToCrm,
   honeypot,
   notificationsConfigured,
@@ -34,7 +35,7 @@ import { describeDetails, leadEntry, WEBSITE_PASSPORT } from "../lib/passport/le
 
 /** What this deployment can do with an enquiry — no values, just yes/no. */
 function configurationStatus() {
-  const crmConfigured = Boolean(process.env.CRM_WEBHOOK_URL && process.env.CRM_WEBHOOK_SECRET);
+  const crmConfigured = Boolean(process.env.CRM_WEBHOOK_URL && crmSecret());
   return {
     storage: Boolean(createStore()),
     crm: crmConfigured ? "configured" : "unconfigured",

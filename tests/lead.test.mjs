@@ -9,7 +9,7 @@ import { Readable } from "node:stream";
 
 process.env.PASSPORT_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "pp-lead-test-"));
 process.env.PASSPORT_ADMIN_KEY = "test-key";
-for (const name of ["KV_REST_API_URL", "KV_REST_API_TOKEN", "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "RESEND_API_KEY", "PASSPORT_NOTIFY_TO", "CRM_WEBHOOK_URL", "CRM_WEBHOOK_SECRET", "VERCEL"]) {
+for (const name of ["KV_REST_API_URL", "KV_REST_API_TOKEN", "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "RESEND_API_KEY", "PASSPORT_NOTIFY_TO", "CRM_WEBHOOK_URL", "CRM_WEBHOOK_SECRET", "WEBSITE_WEBHOOK_SECRET", "SMTP_HOST", "VERCEL"]) {
   delete process.env[name];
 }
 
