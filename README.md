@@ -182,14 +182,17 @@ The CRM is [ItsShockZz/pentax-crm](https://github.com/ItsShockZz/pentax-crm)
 in the CRM's `docs/zapier-setup.md`. The CRM deduplicates by email (hard) and
 phone (soft), routes on postcode to a territory and representative, and answers
 `created`, `merged` (a repeat enquiry was added to an existing lead) or
-`skipped` (already received). No CRM code changes were needed.
+`skipped` (already received). The only CRM change was to let its intake
+verify signatures with a secret named `WEBSITE_WEBHOOK_SECRET` as well as its
+own `INGEST_WEBHOOK_SECRET`.
 
-Two environment variables on the **website's** Vercel project switch it on:
+Two environment variables on the **website's** Vercel project switch it on,
+and the secret has to exist on the **CRM** project too:
 
 | Variable | Value |
 |---|---|
 | `CRM_WEBHOOK_URL` | `https://pentax-crm.vercel.app/api/ingest/webhook` |
-| `CRM_WEBHOOK_SECRET` | the CRM's `INGEST_WEBHOOK_SECRET`, copied from the **CRM** project's environment variables in Vercel |
+| `WEBSITE_WEBHOOK_SECRET` | a long random value (`openssl rand -hex 32`). Set the **same value** as `WEBSITE_WEBHOOK_SECRET` on the **CRM** project: its `INGEST_WEBHOOK_SECRET` keeps working for Zapier, but Vercel never reveals a stored secret, so the two projects share a new one. The website also accepts the name `CRM_WEBHOOK_SECRET`. Redeploy both projects after adding it. |
 
 What is sent, per record ([`crmLeadPayload()`](lib/passport/service.js)):
 
@@ -204,9 +207,9 @@ What is sent, per record ([`crmLeadPayload()`](lib/passport/service.js)):
 Every message carries `message_id: website:<id>`, so a retry can never create a
 second lead. Delivery is recorded on each item (`crm_status`: sent / failed /
 skipped / unconfigured, plus the CRM's lead reference) and shown in `/manage`;
-a failed hand-off never fails the customer's submission. Until the two
+a failed hand-off never fails the customer's submission. Until the
 variables are set, enquiries are simply kept in `/manage` (and emailed, if
-Resend is set up).
+email alerts are set up).
 
 To prove the link after setting the variables: submit the demonstration form on
 the live site, then open **Admin → Ingestion** in the CRM. The payload is listed
