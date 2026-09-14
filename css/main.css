@@ -1892,3 +1892,121 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 /* Who it's for: a single centred call to action under the three cards
    (replaces the per-card links and numbering). */
 .discipline-cta { display: flex; justify-content: center; margin-top: 40px; }
+
+/* ---------------------------------------------------------------------- */
+/* Loupe passport — homepage intro (card visual) and benefits grid          */
+/* The passport pages themselves live in passport.html / css/passport.css. */
+/* ---------------------------------------------------------------------- */
+
+.passport-intro {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 64px;
+  align-items: center;
+}
+.passport-intro__copy .headline { margin: 12px 0 16px; }
+.passport-steps { display: grid; gap: 12px; margin: 30px 0 0; padding: 0; list-style: none; }
+.passport-steps__item {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+}
+.passport-steps__num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 0.78rem; font-weight: 700;
+  color: var(--pentax-blue);
+  border: 1px solid var(--pentax-blue-dim);
+}
+.passport-steps__item h3 { font-size: 1rem; color: var(--ink); margin-bottom: 4px; }
+.passport-steps__item p { color: var(--muted); font-size: 0.92rem; }
+.passport-intro__ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+
+/* The card: the same white A6 passport card that /manage prints, sitting
+   on the dark page with a soft blue glow behind it. */
+.passport-visual { position: relative; display: grid; justify-items: center; gap: 22px; padding: 24px 0; }
+.passport-visual__glow {
+  position: absolute;
+  left: 50%; top: 45%;
+  width: 520px; height: 520px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(91, 134, 255, 0.22), transparent 66%);
+  pointer-events: none;
+}
+.passport-card {
+  position: relative;
+  width: min(100%, 330px);
+  background: #fff;
+  color: #111;
+  border-radius: 18px;
+  padding: 30px 28px 26px;
+  display: grid;
+  gap: 18px;
+  transform: rotate(-3deg);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transition: transform var(--dur-slow) var(--ease);
+}
+.passport-visual:hover .passport-card { transform: rotate(0deg) translateY(-4px); }
+.passport-card__brand { font-weight: 800; letter-spacing: 0.14em; font-size: 0.95rem; }
+.passport-card__brand span { display: block; font-weight: 500; letter-spacing: 0.16em; font-size: 0.58rem; color: #777; text-transform: uppercase; margin-top: 3px; }
+.passport-card__title { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
+.passport-card__name { font-size: 0.9rem; color: #333; margin-top: 4px; }
+.passport-card__qr { width: 150px; height: 150px; margin: 0 auto; }
+.passport-card__qr svg { width: 100%; height: 100%; display: block; }
+.passport-card__spec { font-size: 0.78rem; color: #444; text-align: center; line-height: 1.5; }
+.passport-card__ref { font-size: 0.74rem; letter-spacing: 0.12em; font-weight: 700; text-align: center; margin-top: 4px; }
+.passport-card__foot { font-size: 0.7rem; color: #666; text-align: center; line-height: 1.45; }
+.passport-visual__chips { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.passport-visual__chips li {
+  font-size: 0.78rem; font-weight: 600; color: var(--ink);
+  border: 1px solid var(--line-strong); border-radius: 999px; padding: 7px 12px;
+  background: rgba(10, 10, 12, 0.6);
+}
+
+.benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.benefit { background: var(--bg-raised); padding: 34px 30px; }
+.benefit:hover { background: var(--bg-raised-2); }
+.benefit__index { display: block; font-size: 0.78rem; font-weight: 700; color: var(--pentax-blue); letter-spacing: 0.08em; margin-bottom: 14px; }
+.benefit h3 { font-size: 1.15rem; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 10px; }
+.benefit p { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+/* Scroll reveal, same html:not(.no-js) guard as .why-row */
+html:not(.no-js) .benefit,
+html:not(.no-js) .passport-visual {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease), background var(--dur-fast) var(--ease);
+}
+html:not(.no-js) .benefit.is-visible,
+html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY(0); }
+.benefit:nth-child(2), .benefit:nth-child(5) { transition-delay: 60ms; }
+.benefit:nth-child(3), .benefit:nth-child(6) { transition-delay: 120ms; }
+
+@media (max-width: 1000px) {
+  .benefit-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .passport-intro { grid-template-columns: 1fr; gap: 36px; }
+  .passport-card, .passport-visual:hover .passport-card { transform: none; }
+}
+@media (max-width: 640px) {
+  .benefit-grid { grid-template-columns: 1fr; }
+  .benefit { padding: 26px 22px; }
+  .passport-intro__ctas .btn { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .passport-card, .passport-visual:hover .passport-card { transform: none; transition: none; }
+}

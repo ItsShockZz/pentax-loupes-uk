@@ -147,3 +147,9 @@ privacy policy (`href="#"`) — a real URL stays a launch blocker.
   support request or colleague enquiry reaches your inbox as well as `/manage`.
 - [ ] Optional: a "Your passport" mention in the order/fitting paperwork so
   customers know to expect the QR card.
+- [ ] **Homepage passport sections (`#passport`, `#passport-benefits`, added
+  2026-09-14):** the benefit copy states that a passported pair is covered by
+  the manufacturer's warranty and that resale transfers the record to the new
+  owner. Both are the client's own claims — confirm the exact wording (and the
+  warranty terms) before launch, in line with the no-unverified-claims rule
+  above.
