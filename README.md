@@ -163,3 +163,42 @@ Go live, once:
    `PASSPORT_NOTIFY_TO` (see `.env.example`).
 4. Redeploy, open `https://<your-domain>/manage`, issue a passport, print the
    card.
+
+## Enquiries and the CRM
+
+Both homepage forms are live: "Request a demonstration" and the
+configurator's quote request POST to `/api/lead` ([api/lead.js](api/lead.js)),
+which re-validates every field ([lib/passport/leads.js](lib/passport/leads.js)),
+stores the enquiry alongside the passport activity (it appears under "Needs
+attention" at `/manage` as a *Website enquiry*), forwards it to the CRM and
+emails the UK team when Resend is configured.
+
+The CRM link is two environment variables on the website's Vercel project:
+
+- `CRM_WEBHOOK_URL` — the CRM endpoint that accepts the JSON below.
+- `CRM_WEBHOOK_SECRET` — sent as `Authorization: Bearer <secret>` (and
+  `X-Webhook-Secret`) so the CRM can reject anything else.
+
+Every record — website enquiries, passport check-ins, support requests and
+colleague enquiries — is sent as one JSON object:
+
+```json
+{
+  "source": "pentaxloupes.co.uk",
+  "event": "enquiry | support | checkin | referral",
+  "id": "uuid", "topic": "Demonstration request", "status": "open",
+  "created_at": "2026-09-14T12:00:00.000Z",
+  "name": "Dr Priya Shah", "email": "priya@example.com", "phone": "07700 900321",
+  "practice": "Kensington Dental Studio", "postcode": "W8 5NP", "profession": "Dentistry",
+  "message": "Mornings are best.",
+  "details": { "magnification_interest": "3.5×", "preferred_contact": "Phone" },
+  "passport": null
+}
+```
+
+`details` carries the form-specific extras (the configurator sends `colour`,
+`magnification`, `lenses`, `light`, `use`); `passport` is filled for passport
+activity (`{ id, reference, name }`). Delivery is recorded on each item
+(`crm_status`: sent / failed / unconfigured) and shown in `/manage`; a failed
+hand-off never fails the customer's submission. Until the CRM endpoint exists,
+enquiries are simply kept in `/manage` (and emailed, if Resend is set up).

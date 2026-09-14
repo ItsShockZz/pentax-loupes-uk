@@ -564,6 +564,41 @@ function initMagRows() {
 }
 
 /* ---------------------------------------------------------------------- */
+/* Enquiry submission — both forms POST to /api/lead (a Vercel Function,   */
+/* see api/lead.js), which re-validates every field, stores the enquiry    */
+/* with the passport activity (/manage), forwards it to the CRM and emails */
+/* the UK team. The client-side checks below remain UX only.               */
+/* ---------------------------------------------------------------------- */
+
+function leadRequestKey() {
+  if (window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 14)}`;
+}
+
+async function submitLead(payload) {
+  const fallback = `Please try again, or email ${siteConfig.contactEmail}.`;
+  let res;
+  try {
+    res = await fetch("api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload),
+      credentials: "same-origin",
+    });
+  } catch {
+    throw new Error(`We couldn't reach the server. Check your connection and ${fallback}`);
+  }
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
+  if (!res.ok) throw new Error((data && data.error) || `Something went wrong (${res.status}). ${fallback}`);
+  return data || {};
+}
+
+/* ---------------------------------------------------------------------- */
 /* Shared field validators (used by both forms)                            */
 /* ---------------------------------------------------------------------- */
 
@@ -791,30 +826,50 @@ function initConfigurator() {
       }
 
       statusEl.textContent = "";
+      const submitLabel = Array.from(submitBtn.childNodes).map((node) => node.cloneNode(true));
       submitBtn.disabled = true;
       submitBtn.textContent = "Sending…";
 
       const name = document.getElementById("cfgName").value.trim();
       const firstName = name.split(/\s+/)[0] || "";
 
-      // NOT WIRED TO A BACKEND YET — simulated so the flow can be reviewed.
-      // Replace with a real request to the CRM endpoint before launch.
-      window.setTimeout(() => {
-        track("configurator_submit", { ...state });
-        const success = document.getElementById("cfg-success");
-        const msg = document.getElementById("cfg-success-msg");
-        const recap = document.getElementById("cfg-success-recap");
-        root.querySelector(".cfg__steps").hidden = true;
-        root.querySelector(".cfg__summary").hidden = true;
-        if (msg) {
-          msg.textContent = `${firstName ? `Thanks, ${firstName}. ` : "Thanks. "}A PENTAX Loupes specialist will be in touch within 24 hours with your personalised quote.`;
-        }
-        if (recap) {
-          recap.textContent = [state.colour, state.magnification, `Protective lenses: ${state.lenses}`, state.light, state.use].join("  ·  ");
-        }
-        success.hidden = false;
-        success.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 700);
+      // Real submission: /api/lead stores the quote request, forwards it to
+      // the CRM and emails the UK team. Every check above is repeated
+      // server-side (lib/passport/leads.js).
+      const honeypot = document.getElementById("cfgWebsite");
+      const payload = {
+        kind: "quote",
+        requestKey: leadRequestKey(),
+        website: honeypot ? honeypot.value : "",
+        name,
+        email: document.getElementById("cfgEmail").value.trim(),
+        phone: document.getElementById("cfgPhone").value.trim(),
+        practice: (document.getElementById("cfgPractice") || { value: "" }).value.trim(),
+        configuration: { ...state },
+      };
+      submitLead(payload)
+        .then(() => {
+          track("configurator_submit", { ...state });
+          const success = document.getElementById("cfg-success");
+          const msg = document.getElementById("cfg-success-msg");
+          const recap = document.getElementById("cfg-success-recap");
+          root.querySelector(".cfg__steps").hidden = true;
+          root.querySelector(".cfg__summary").hidden = true;
+          if (msg) {
+            msg.textContent = `${firstName ? `Thanks, ${firstName}. ` : "Thanks. "}A PENTAX Loupes specialist will be in touch within 24 hours with your personalised quote.`;
+          }
+          if (recap) {
+            recap.textContent = [state.colour, state.magnification, `Protective lenses: ${state.lenses}`, state.light, state.use].join("  ·  ");
+          }
+          success.hidden = false;
+          success.scrollIntoView({ behavior: "smooth", block: "center" });
+        })
+        .catch((err) => {
+          statusEl.textContent = err.message;
+          statusEl.className = "form-status form-status--error";
+          submitBtn.disabled = false;
+          submitBtn.replaceChildren(...submitLabel);
+        });
     });
   }
 
@@ -903,17 +958,39 @@ function initDemoForm() {
     submitBtn.disabled = true;
     submitBtn.textContent = "Sending…";
 
-    // No backend is wired up yet for this fresh build — this simulates a
-    // submission so the UI/UX can be reviewed end-to-end. Replace with a
-    // real request (fetch/POST) to the client's form/CRM endpoint.
-    window.setTimeout(() => {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Request a fitting & demonstration";
-      statusEl.textContent = "Thanks. A PENTAX Loupes specialist will be in touch shortly to arrange your demonstration.";
-      statusEl.className = "form-status form-status--success";
-      form.reset();
-      track("request_demo_final", {});
-    }, 700);
+    // Real submission: /api/lead stores the enquiry, forwards it to the CRM
+    // and emails the UK team. Every check above is repeated server-side
+    // (lib/passport/leads.js).
+    const f = form.elements;
+    const payload = {
+      kind: "demo",
+      requestKey: leadRequestKey(),
+      website: f.website ? f.website.value : "",
+      fullName: f.fullName.value.trim(),
+      email: f.email.value.trim(),
+      phone: f.phone.value.trim(),
+      practice: f.practice.value.trim(),
+      profession: f.profession.value,
+      postcode: f.postcode.value.trim(),
+      magnificationInterest: f.magnificationInterest ? f.magnificationInterest.value : "",
+      preferredContact: f.preferredContact ? f.preferredContact.value : "",
+      message: f.message ? f.message.value.trim() : "",
+    };
+    submitLead(payload)
+      .then(() => {
+        statusEl.textContent = "Thanks. A PENTAX Loupes specialist will be in touch shortly to arrange your demonstration.";
+        statusEl.className = "form-status form-status--success";
+        form.reset();
+        track("request_demo_final", {});
+      })
+      .catch((err) => {
+        statusEl.textContent = err.message;
+        statusEl.className = "form-status form-status--error";
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Request a fitting & demonstration";
+      });
   });
 }
 

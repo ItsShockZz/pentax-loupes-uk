@@ -2010,3 +2010,7 @@ html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY
 @media (prefers-reduced-motion: reduce) {
   .passport-card, .passport-visual:hover .passport-card { transform: none; transition: none; }
 }
+
+/* Honeypot fields on the enquiry forms: invisible to people, tempting to
+   bots. The server rejects any submission that fills one in. */
+.honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

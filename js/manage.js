@@ -211,8 +211,8 @@
   function renderStats() {
     const open = openItems();
     const stats = [
-      [open.filter((a) => a.kind !== "referral").length, "Customers needing a hand"],
-      [open.filter((a) => a.kind === "referral").length, "Colleague enquiries to follow up"],
+      [open.filter((a) => a.kind === "support" || a.kind === "checkin").length, "Customers needing a hand"],
+      [open.filter((a) => a.kind === "enquiry" || a.kind === "referral").length, "Enquiries to follow up"],
       [state.passports.filter((p) => p.active).length, "Active passports"],
       [state.activity.filter((a) => a.kind === "checkin" && a.topic === "All good").length, "Happy check-ins"],
     ];
@@ -247,22 +247,42 @@
   }
 
   function activityItem(a) {
-    const kindLabel = { checkin: "Check-in", support: "Support", referral: "Colleague enquiry" }[a.kind] || a.kind;
+    const kindLabel =
+      { checkin: "Check-in", support: "Support", referral: "Colleague enquiry", enquiry: "Website enquiry" }[a.kind] || a.kind;
     const badgeClass = a.kind === "checkin" && a.topic === "All good" ? "mg-badge--good" : `mg-badge--${a.kind}`;
+    const crmBadge =
+      a.crm_status === "sent"
+        ? C.el("span", { class: "mg-badge mg-badge--good", text: "Sent to CRM" })
+        : a.crm_status === "failed"
+          ? C.el("span", { class: "mg-badge mg-badge--off", text: "CRM failed" })
+          : null;
     const head = C.el("div", { class: "mg-item__head" }, [
       C.el("span", { class: `mg-badge ${badgeClass}`, text: kindLabel }),
       a.status === "resolved" ? C.el("span", { class: "mg-badge", text: "Resolved" }) : null,
+      crmBadge,
       C.el("span", { class: "mg-hint", text: C.timeAgo(a.created_at) }),
     ]);
-    const title = a.kind === "referral" ? `${a.name} would like a demonstration` : a.topic;
+    const title =
+      a.kind === "referral" ? `${a.name} would like a demonstration` : a.kind === "enquiry" ? `${a.topic}: ${a.name}` : a.topic;
     const ref = a.passport_reference ? ` (${a.passport_reference})` : "";
     const meta = C.el("p", { class: "mg-item__meta" }, [
-      a.kind === "referral" ? `Introduced by ${a.passport_name}${ref}` : `${a.passport_name}${ref}`,
+      a.kind === "referral"
+        ? `Introduced by ${a.passport_name}${ref}`
+        : a.kind === "enquiry"
+          ? "Sent from the website form"
+          : `${a.passport_name}${ref}`,
     ]);
     if (a.passport_token) {
       meta.append(" · ", C.el("a", { href: `/p/${a.passport_token}`, target: "_blank", rel: "noopener", text: "Open passport" }));
     }
     const body = C.el("div", {}, [head, C.el("h3", { text: title }), meta]);
+    if (a.details && typeof a.details === "object") {
+      const line = Object.entries(a.details)
+        .filter(([, value]) => value !== "" && value != null)
+        .map(([key, value]) => `${key.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase())}: ${value}`)
+        .join(" · ");
+      if (line) body.appendChild(C.el("p", { class: "mg-item__details", text: line }));
+    }
     if (a.message) body.appendChild(C.el("p", { class: "mg-item__msg", text: a.message }));
 
     const contact = C.el("p", { class: "mg-item__contact" });
@@ -295,7 +315,8 @@
     });
     const actions = C.el("div", { class: "mg-item__actions" }, [toggle]);
     if (a.email) {
-      const subject = a.kind === "referral" ? "Your PENTAX Loupes demonstration" : `Your PENTAX Loupes: ${a.topic}`;
+      const subject =
+        a.kind === "referral" || a.kind === "enquiry" ? "Your PENTAX Loupes enquiry" : `Your PENTAX Loupes: ${a.topic}`;
       actions.appendChild(
         C.el("a", { class: "btn btn-primary btn-sm", href: `mailto:${a.email}?subject=${encodeURIComponent(subject)}`, text: "Reply by email" }),
       );

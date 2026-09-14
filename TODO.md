@@ -153,3 +153,10 @@ privacy policy (`href="#"`) — a real URL stays a launch blocker.
   owner. Both are the client's own claims — confirm the exact wording (and the
   warranty terms) before launch, in line with the no-unverified-claims rule
   above.
+- [x] **Demo form and configurator now have a backend** (2026-09-14):
+  both POST to `/api/lead`; every client-side check is repeated server-side
+  and enquiries are stored, listed in `/manage` and forwarded to the CRM.
+- [ ] **CRM inbound endpoint:** the website sends every enquiry to
+  `CRM_WEBHOOK_URL` with a bearer secret (README "Enquiries and the CRM").
+  The CRM at pentax-crm.vercel.app needs an endpoint that accepts that JSON,
+  then the two variables go into the website's Vercel project.
