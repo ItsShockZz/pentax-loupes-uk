@@ -249,3 +249,11 @@ the enquiry is still stored, listed in `/manage` and sent to the CRM.
 Gmail counts messages you send to yourself as normal mail, but the first one
 from a new "sender" may land in spam once; mark it "not spam" and the rest
 arrive in the inbox.
+
+## Repositories and deployment
+
+`ItsShockZz/pentax-loupes-uk` is the live repository: Vercel deploys every push
+to `main` automatically, and commits are made under the ItsShockZz identity so
+that Vercel treats them as the project owner's. `parhamheydari/pentax-loupes-uk`
+is the original, now a spare copy; nothing deploys from it. Which commit is
+live is visible at `/api/lead` (the `commit` field).
