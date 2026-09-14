@@ -48,6 +48,9 @@ export default handler(async (req, res) => {
     return sendJson(res, 200, {
       ok: status.storage || status.crm === "configured" || status.email,
       ...status,
+      // Which commit this deployment was built from (set by Vercel), so a
+      // "did it deploy?" question has a one-line answer.
+      commit: (process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 7) || null,
       hint:
         status.storage || status.crm === "configured" || status.email
           ? undefined
