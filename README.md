@@ -166,39 +166,50 @@ Go live, once:
 
 ## Enquiries and the CRM
 
-Both homepage forms are live: "Request a demonstration" and the
-configurator's quote request POST to `/api/lead` ([api/lead.js](api/lead.js)),
-which re-validates every field ([lib/passport/leads.js](lib/passport/leads.js)),
+Both homepage forms are live: "Request a demonstration" and the configurator's
+quote request POST to `/api/lead` ([api/lead.js](api/lead.js)), which
+re-validates every field ([lib/passport/leads.js](lib/passport/leads.js)),
 stores the enquiry alongside the passport activity (it appears under "Needs
-attention" at `/manage` as a *Website enquiry*), forwards it to the CRM and
-emails the UK team when Resend is configured.
+attention" at `/manage` as a *Website enquiry*), hands it to the CRM and emails
+the UK team when Resend is configured.
 
-The CRM link is two environment variables on the website's Vercel project:
+### The CRM link
 
-- `CRM_WEBHOOK_URL` — the CRM endpoint that accepts the JSON below.
-- `CRM_WEBHOOK_SECRET` — sent as `Authorization: Bearer <secret>` (and
-  `X-Webhook-Secret`) so the CRM can reject anything else.
+The CRM is [ItsShockZz/pentax-crm](https://github.com/ItsShockZz/pentax-crm)
+(Next.js + Supabase). It takes leads at `POST /api/ingest/webhook` as a
+"structured lead" signed with HMAC-SHA256 over the raw request body
+(`X-Pentax-Signature`, hex) — the same intake its Zapier feed uses, documented
+in the CRM's `docs/zapier-setup.md`. The CRM deduplicates by email (hard) and
+phone (soft), routes on postcode to a territory and representative, and answers
+`created`, `merged` (a repeat enquiry was added to an existing lead) or
+`skipped` (already received). No CRM code changes were needed.
 
-Every record — website enquiries, passport check-ins, support requests and
-colleague enquiries — is sent as one JSON object:
+Two environment variables on the **website's** Vercel project switch it on:
 
-```json
-{
-  "source": "pentaxloupes.co.uk",
-  "event": "enquiry | support | checkin | referral",
-  "id": "uuid", "topic": "Demonstration request", "status": "open",
-  "created_at": "2026-09-14T12:00:00.000Z",
-  "name": "Dr Priya Shah", "email": "priya@example.com", "phone": "07700 900321",
-  "practice": "Kensington Dental Studio", "postcode": "W8 5NP", "profession": "Dentistry",
-  "message": "Mornings are best.",
-  "details": { "magnification_interest": "3.5×", "preferred_contact": "Phone" },
-  "passport": null
-}
-```
+| Variable | Value |
+|---|---|
+| `CRM_WEBHOOK_URL` | `https://pentax-crm.vercel.app/api/ingest/webhook` |
+| `CRM_WEBHOOK_SECRET` | the CRM's `INGEST_WEBHOOK_SECRET`, copied from the **CRM** project's environment variables in Vercel |
 
-`details` carries the form-specific extras (the configurator sends `colour`,
-`magnification`, `lenses`, `light`, `use`); `passport` is filled for passport
-activity (`{ id, reference, name }`). Delivery is recorded on each item
-(`crm_status`: sent / failed / unconfigured) and shown in `/manage`; a failed
-hand-off never fails the customer's submission. Until the CRM endpoint exists,
-enquiries are simply kept in `/manage` (and emailed, if Resend is set up).
+What is sent, per record ([`crmLeadPayload()`](lib/passport/service.js)):
+
+| Website record | CRM lead source | What the CRM sees |
+|---|---|---|
+| Demonstration request | `website` | name, email, phone, practice, postcode, profession; magnification interest, preferred contact and the message in `enquiry_details` |
+| Quote request | `website` | name, email, phone, practice, postcode; intended use as profession; colour, magnification, lenses, light and use in `enquiry_details` |
+| Passport support request, "needs a hand" check-in | `existing_customer` | merged into the customer's existing lead by email; topic, message and passport reference in `enquiry_details` |
+| Colleague invitation | `word_of_mouth` | the colleague's details, plus who introduced them |
+| "All good" check-in | not sent | recorded in `/manage` only |
+
+Every message carries `message_id: website:<id>`, so a retry can never create a
+second lead. Delivery is recorded on each item (`crm_status`: sent / failed /
+skipped / unconfigured, plus the CRM's lead reference) and shown in `/manage`;
+a failed hand-off never fails the customer's submission. Until the two
+variables are set, enquiries are simply kept in `/manage` (and emailed, if
+Resend is set up).
+
+To prove the link after setting the variables: submit the demonstration form on
+the live site, then open **Admin → Ingestion** in the CRM. The payload is listed
+there with status `parsed` (new lead) or `duplicate` (merged), and the lead
+appears in the pipeline routed by postcode. A `401 Invalid signature` there
+means the two secrets differ.

@@ -142,44 +142,72 @@ test("duplicate request keys are accepted once", async () => {
   assert.equal((await activityList()).length, before + 1);
 });
 
-test("enquiries are forwarded to the CRM with the secret, and failures never block the customer", async () => {
+test("enquiries reach the CRM as signed structured leads, and failures never block the customer", async () => {
   const realFetch = globalThis.fetch;
   const calls = [];
-  process.env.CRM_WEBHOOK_URL = "https://crm.example/api/webhooks/website";
+  process.env.CRM_WEBHOOK_URL = "https://pentax-crm.example/api/ingest/webhook";
   process.env.CRM_WEBHOOK_SECRET = "s3cret";
   try {
     globalThis.fetch = async (url, init) => {
       calls.push({ url, init });
-      return { ok: true, status: 202, json: async () => ({}) };
+      return { ok: true, status: 200, json: async () => ({ status: "created", leadId: "uuid", reference: "PL-001042" }) };
     };
     const res = await call(leadRoute, { body: demo(), headers: { "x-forwarded-for": "203.0.113.60" } });
     assert.equal(res.status, 200);
     assert.equal(res.body.crm, "sent");
     assert.equal(calls.length, 1);
-    assert.equal(calls[0].url, "https://crm.example/api/webhooks/website");
-    assert.equal(calls[0].init.headers.Authorization, "Bearer s3cret");
+    assert.equal(calls[0].url, "https://pentax-crm.example/api/ingest/webhook");
+
+    // Signed exactly the way the CRM verifies it: hex HMAC-SHA256 over the raw body.
+    const { createHmac } = await import("node:crypto");
+    const expected = createHmac("sha256", "s3cret").update(calls[0].init.body, "utf8").digest("hex");
+    assert.equal(calls[0].init.headers["X-Pentax-Signature"], expected);
+    assert.equal(calls[0].init.headers.Authorization, undefined);
+
     const payload = JSON.parse(calls[0].init.body);
-    assert.equal(payload.source, "pentaxloupes.co.uk");
-    assert.equal(payload.event, "enquiry");
-    assert.equal(payload.topic, "Demonstration request");
-    assert.equal(payload.name, "Dr Priya Shah");
-    assert.equal(payload.email, "priya@example.com");
-    assert.equal(payload.passport, null);
-    assert.deepEqual(payload.details, { magnification_interest: "3.5×", preferred_contact: "Phone" });
-    const stored = (await activityList()).find((a) => a.id === payload.id);
+    assert.match(payload.message_id, /^website:[0-9a-f-]{36}$/);
+    assert.equal(payload.lead.full_name, "Dr Priya Shah");
+    assert.equal(payload.lead.email, "priya@example.com");
+    assert.equal(payload.lead.phone, "07700 900321");
+    assert.equal(payload.lead.postcode, "W8 5NP");
+    assert.equal(payload.lead.practice_name, "Kensington Dental Studio");
+    assert.equal(payload.lead.profession, "Dentistry");
+    assert.equal(payload.lead.country, "GB");
+    assert.equal(payload.lead.source_key, "website");
+    assert.match(payload.lead.enquiry_details, /Demonstration request via the website form/);
+    assert.match(payload.lead.enquiry_details, /Magnification interest: 3\.5×/);
+    assert.match(payload.lead.enquiry_details, /Message: Mornings are best for a demo\./);
+
+    const stored = (await activityList()).find((a) => `website:${a.id}` === payload.message_id);
     assert.equal(stored.crm_status, "sent");
+    assert.equal(stored.crm_outcome, "created");
+    assert.equal(stored.crm_reference, "PL-001042");
+
+    globalThis.fetch = async () => ({ ok: false, status: 401, json: async () => ({ error: "Invalid signature" }) });
+    const rejected = await call(leadRoute, { body: quote(), headers: { "x-forwarded-for": "203.0.113.61" } });
+    assert.equal(rejected.status, 200, "the customer still gets a success");
+    assert.equal(rejected.body.crm, "failed");
+    const failedItem = (await activityList()).find((a) => a.topic === "Quote request" && a.crm_status === "failed");
+    assert.equal(failedItem.crm_error, "Invalid signature");
 
     globalThis.fetch = async () => {
       throw new Error("connection refused");
     };
-    const failed = await call(leadRoute, { body: quote(), headers: { "x-forwarded-for": "203.0.113.61" } });
-    assert.equal(failed.status, 200, "the customer still gets a success");
-    assert.equal(failed.body.crm, "failed");
+    const down = await call(leadRoute, { body: quote(), headers: { "x-forwarded-for": "203.0.113.62" } });
+    assert.equal(down.status, 200);
+    assert.equal(down.body.crm, "failed");
   } finally {
     globalThis.fetch = realFetch;
     delete process.env.CRM_WEBHOOK_URL;
     delete process.env.CRM_WEBHOOK_SECRET;
   }
+});
+
+test("a quote request carries its postcode so the CRM can route it", async () => {
+  const res = await call(leadRoute, { body: { ...quote(), postcode: "ne1 4lp" }, headers: { "x-forwarded-for": "203.0.113.70" } });
+  assert.equal(res.status, 200);
+  const item = (await activityList()).find((a) => a.topic === "Quote request" && a.postcode === "ne1 4lp");
+  assert.ok(item, "postcode stored with the quote request");
 });
 
 test("without storage: forwarded to the CRM when configured, otherwise a clear 503", async () => {
@@ -192,8 +220,9 @@ test("without storage: forwarded to the CRM when configured, otherwise a clear 5
     assert.equal(none.status, 503);
     assert.equal(none.body.code, "unconfigured");
 
-    process.env.CRM_WEBHOOK_URL = "https://crm.example/api/webhooks/website";
-    globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({}) });
+    process.env.CRM_WEBHOOK_URL = "https://pentax-crm.example/api/ingest/webhook";
+    process.env.CRM_WEBHOOK_SECRET = "s3cret";
+    globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({ status: "created" }) });
     const sent = await call(leadRoute, { body: demo() });
     assert.equal(sent.status, 200);
     assert.deepEqual(sent.body, { ok: true, stored: false, crm: "sent" });
@@ -202,5 +231,6 @@ test("without storage: forwarded to the CRM when configured, otherwise a clear 5
     process.env.PASSPORT_DATA_DIR = saved;
     delete process.env.VERCEL;
     delete process.env.CRM_WEBHOOK_URL;
+    delete process.env.CRM_WEBHOOK_SECRET;
   }
 });

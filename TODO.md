@@ -160,3 +160,8 @@ privacy policy (`href="#"`) — a real URL stays a launch blocker.
   `CRM_WEBHOOK_URL` with a bearer secret (README "Enquiries and the CRM").
   The CRM at pentax-crm.vercel.app needs an endpoint that accepts that JSON,
   then the two variables go into the website's Vercel project.
+- [x] **CRM link built (2026-09-14):** the website posts every enquiry to the
+  CRM's own signed intake (`/api/ingest/webhook`); no CRM code change needed.
+- [ ] **Switch it on:** add `CRM_WEBHOOK_URL` and `CRM_WEBHOOK_SECRET` (= the
+  CRM's `INGEST_WEBHOOK_SECRET`) to the website's Vercel project, redeploy,
+  submit the demo form once and check **Admin → Ingestion** in the CRM.
