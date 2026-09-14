@@ -761,6 +761,10 @@
               <input type="text" id="cfgPractice" name="cfgPractice" autocomplete="organization" maxlength="160" />
             </div>
           </div>
+          <div class="honeypot" aria-hidden="true">
+            <label for="cfgWebsite">Leave this field empty</label>
+            <input type="text" id="cfgWebsite" name="cfgWebsite" tabindex="-1" autocomplete="off" />
+          </div>
           <div class="cfg__submit-row">
             <button class="btn btn-primary" type="button" id="cfg-submit">Request your quote <span class="btn__arrow" aria-hidden="true">→</span></button>
             <p class="consent-note">By requesting your quote you agree to PENTAX Loupes UK contacting you about your enquiry. Read our <a class="text-link" href="privacy.html">privacy policy</a>.</p>
@@ -1052,6 +1056,11 @@
       <div class="field">
         <label for="message">Message (optional)</label>
         <textarea id="message" name="message" rows="4" maxlength="2000"></textarea>
+      </div>
+
+      <div class="honeypot" aria-hidden="true">
+        <label for="demo-website">Leave this field empty</label>
+        <input type="text" id="demo-website" name="website" tabindex="-1" autocomplete="off" />
       </div>
 
       <div class="cfg__submit-row">
