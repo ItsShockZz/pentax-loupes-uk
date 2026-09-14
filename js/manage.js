@@ -252,9 +252,12 @@
     const badgeClass = a.kind === "checkin" && a.topic === "All good" ? "mg-badge--good" : `mg-badge--${a.kind}`;
     const crmBadge =
       a.crm_status === "sent"
-        ? C.el("span", { class: "mg-badge mg-badge--good", text: "Sent to CRM" })
+        ? C.el("span", {
+            class: "mg-badge mg-badge--good",
+            text: a.crm_reference ? `In CRM · ${a.crm_reference}` : a.crm_outcome === "merged" ? "In CRM · merged" : "Sent to CRM",
+          })
         : a.crm_status === "failed"
-          ? C.el("span", { class: "mg-badge mg-badge--off", text: "CRM failed" })
+          ? C.el("span", { class: "mg-badge mg-badge--off", text: "CRM failed", title: a.crm_error || "" })
           : null;
     const head = C.el("div", { class: "mg-item__head" }, [
       C.el("span", { class: `mg-badge ${badgeClass}`, text: kindLabel }),

@@ -845,6 +845,7 @@ function initConfigurator() {
         email: document.getElementById("cfgEmail").value.trim(),
         phone: document.getElementById("cfgPhone").value.trim(),
         practice: (document.getElementById("cfgPractice") || { value: "" }).value.trim(),
+        postcode: (document.getElementById("cfgPostcode") || { value: "" }).value.trim(),
         configuration: { ...state },
       };
       submitLead(payload)
