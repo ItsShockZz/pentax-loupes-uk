@@ -21,7 +21,15 @@ import {
   sendJson,
 } from "../lib/passport/http.js";
 import { createStore } from "../lib/passport/store.js";
-import { baseUrl, buildActivity, forwardToCrm, honeypot, notify, recordActivity } from "../lib/passport/service.js";
+import {
+  baseUrl,
+  buildActivity,
+  forwardToCrm,
+  honeypot,
+  notificationsConfigured,
+  notify,
+  recordActivity,
+} from "../lib/passport/service.js";
 import { describeDetails, leadEntry, WEBSITE_PASSPORT } from "../lib/passport/leads.js";
 
 export default handler(async (req, res) => {
@@ -48,26 +56,35 @@ export default handler(async (req, res) => {
   } else {
     activity = buildActivity(WEBSITE_PASSPORT, entry);
     crm = await forwardToCrm(activity, WEBSITE_PASSPORT);
-    const canEmail = Boolean(process.env.RESEND_API_KEY && process.env.PASSPORT_NOTIFY_TO);
-    if (crm.status !== "sent" && !canEmail) {
+    if (crm.status !== "sent" && !notificationsConfigured()) {
       throw new HttpError(503, "We couldn't send your enquiry just now. Please email the UK team instead.", { code: "unconfigured" });
     }
   }
 
+  const crmLine =
+    crm.status === "sent"
+      ? `CRM: ${crm.outcome === "merged" ? "merged into an existing lead" : "new lead created"}${crm.reference ? ` (${crm.reference})` : ""}`
+      : crm.status === "failed"
+        ? `CRM: NOT delivered (${crm.reason || "error"}) — the enquiry is kept in the passport manager`
+        : "CRM: not connected — the enquiry is kept in the passport manager";
   await notify({
-    subject: `${entry.topic} — ${entry.name}`,
+    subject: `New lead: ${entry.topic} — ${entry.name}`,
+    replyTo: entry.email,
     lines: [
-      `${entry.topic} from the website.`,
+      `A new ${entry.topic.toLowerCase()} has been submitted on pentaxloupes.co.uk.`,
+      "",
       `Name: ${entry.name}`,
-      `Contact: ${entry.email}${entry.phone ? ` / ${entry.phone}` : ""}`,
+      `Email: ${entry.email}`,
+      entry.phone ? `Phone: ${entry.phone}` : "",
       entry.practice ? `Practice: ${entry.practice}` : "",
       entry.postcode ? `Postcode: ${entry.postcode}` : "",
       entry.profession ? `Profession: ${entry.profession}` : "",
       describeDetails(entry.details) ? `Details: ${describeDetails(entry.details)}` : "",
       entry.message ? `Message: ${entry.message}` : "",
-      `CRM: ${crm.status}`,
       "",
-      `Manage: ${baseUrl(req)}/manage`,
+      crmLine,
+      `Passport manager: ${baseUrl(req)}/manage`,
+      `CRM: https://pentax-crm.vercel.app/`,
     ].filter((line) => line !== ""),
   });
 

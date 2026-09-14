@@ -165,3 +165,7 @@ privacy policy (`href="#"`) — a real URL stays a launch blocker.
 - [ ] **Switch it on:** add `CRM_WEBHOOK_URL` and `CRM_WEBHOOK_SECRET` (= the
   CRM's `INGEST_WEBHOOK_SECRET`) to the website's Vercel project, redeploy,
   submit the demo form once and check **Admin → Ingestion** in the CRM.
+- [ ] **Email alerts:** add `PASSPORT_NOTIFY_TO` plus the SMTP variables (README
+  "Email alerts for new leads") to the website's Vercel project so every new
+  lead is emailed. The first message from a new sender may land in Gmail's spam
+  folder once; mark it "not spam".
