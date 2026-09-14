@@ -228,11 +228,23 @@ an existing one. The recipient defaults to `drpuyanheydari@gmail.com`
 `PASSPORT_NOTIFY_TO` overrides it.
 
 Sending goes through [lib/passport/mail.js](lib/passport/mail.js), which has two
-transports. The simplest is a Gmail account over SMTP. Google will not accept
-the normal account password from an application, so create an **App password**
-first: Google Account → Security → 2-Step Verification (must be on) → App
-passwords → name it "PENTAX website" → copy the 16 characters. Then add to the
-website's Vercel project:
+transports.
+
+**Resend (what production uses).** In Vercel, open the project → Integrations →
+Marketplace → Resend → Install, choose the Free plan and connect it to this
+project. The add-on creates a Resend account under the Vercel login and adds
+`RESEND_API_KEY` to the project by itself; redeploy once and alerts flow.
+Until a sending domain is verified in Resend, mail goes out from
+`onboarding@resend.dev` and Resend only delivers it to the address that owns
+the Resend account, which is why the recipient is the same Gmail address the
+Vercel account uses. `PASSPORT_NOTIFY_FROM` changes the sender once a domain
+is verified.
+
+**A mailbox over SMTP** is the alternative, used whenever `SMTP_HOST` is set.
+For Gmail, Google will not accept the normal account password from an
+application, so create an **App password** first: Google Account → Security →
+2-Step Verification (must be on) → App passwords → name it "PENTAX website" →
+copy the 16 characters. Then add to the website's Vercel project:
 
 | Variable | Value |
 |---|---|
@@ -244,10 +256,9 @@ website's Vercel project:
 The SMTP client is written against `node:tls` so the site keeps its
 zero-dependency deploy; it uses implicit TLS on port 465, STARTTLS on any other
 port, and refuses to send a password over a plain connection. Any other mailbox
-works with the same four variables. The alternative transport is
-[resend.com](https://resend.com) (`RESEND_API_KEY`), used when no `SMTP_HOST`
-is set. A mail failure is logged and never fails the customer's submission;
-the enquiry is still stored, listed in `/manage` and sent to the CRM.
+works with the same four variables. A mail failure is logged and never fails
+the customer's submission; the enquiry is still stored, listed in `/manage` and
+sent to the CRM.
 
 Gmail counts messages you send to yourself as normal mail, but the first one
 from a new "sender" may land in spam once; mark it "not spam" and the rest
