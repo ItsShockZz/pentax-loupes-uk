@@ -169,3 +169,8 @@ privacy policy (`href="#"`) — a real URL stays a launch blocker.
   "Email alerts for new leads") to the website's Vercel project so every new
   lead is emailed. The first message from a new sender may land in Gmail's spam
   folder once; mark it "not spam".
+- [ ] **Email alerts go to drpuyanheydari@gmail.com** (client confirmed
+  2026-09-14; there is no domain mailbox). Send them through that Gmail
+  account with an App password — README "Email alerts for new leads". The
+  site's visible contact address stays `info@pentaxloupes.com` for now, per
+  the client, so the earlier note about confirming a UK inbox still stands.
