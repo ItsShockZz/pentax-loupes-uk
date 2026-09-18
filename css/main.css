@@ -49,6 +49,11 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+/* `clip`, not `hidden`: it clips stray horizontal overflow (decorative glows
+   etc.) without turning <main> into a scroll container, so the tour's
+   sticky stage keeps working. One over-wide element is enough to zoom a
+   phone out and leave a black strip down the right of every screen. */
+main { overflow-x: clip; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: auto; color-scheme: dark; }
 body {
   font-family: var(--font-body);
@@ -204,11 +209,23 @@ h1, h2, h3, h4, p { margin: 0; }
   border-bottom: 1px solid transparent;
   transition: background var(--dur-med) var(--ease), border-color var(--dur-med) var(--ease), backdrop-filter var(--dur-med) var(--ease);
 }
-.nav--scrolled {
+.nav--scrolled { border-color: var(--line); }
+/* The frosted backdrop lives on a pseudo-element rather than on .nav itself:
+   backdrop-filter turns its element into the containing block for fixed
+   descendants, which would pin the full-screen mobile drawer inside the
+   67px bar. */
+.nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: transparent;
+  transition: background var(--dur-med) var(--ease);
+}
+.nav--scrolled::before {
   background: rgba(10, 10, 12, 0.78);
   backdrop-filter: blur(16px) saturate(1.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.6);
-  border-color: var(--line);
 }
 .nav__inner {
   max-width: var(--content-max);
@@ -298,34 +315,50 @@ h1, h2, h3, h4, p { margin: 0; }
 @media (max-width: 900px) {
   .nav__links { display: none; }
   .nav__toggle { display: block; }
+  /* The bar's own row must sit above the full-screen drawer so the X stays
+     tappable. */
+  .nav__inner { position: relative; z-index: 2; }
   .nav__drawer {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     position: fixed;
-    inset: 0 0 0 auto;
-    width: min(320px, 82vw);
-    background: var(--bg-raised);
-    transform: translateX(100%);
+    inset: 0;
+    padding: 96px 28px 40px;
+    background: rgba(10, 10, 12, 0.96);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(-8px);
     /* visibility keeps the closed drawer's links out of the tab order;
-       delayed on close so the slide-out finishes first. */
+       delayed on close so the fade finishes first. */
     visibility: hidden;
-    transition: transform var(--dur-med) var(--ease), visibility 0s var(--dur-med);
-    padding: 88px 28px 28px;
-    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.5);
+    transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease), visibility 0s var(--dur-med);
   }
   .nav__drawer--open {
-    transform: translateX(0);
+    opacity: 1;
+    transform: none;
     visibility: visible;
-    transition: transform var(--dur-med) var(--ease), visibility 0s;
+    transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease), visibility 0s;
   }
   .nav__drawer a:not(.btn) {
     display: block;
-    padding: 14px 0;
-    font-size: 1.1rem;
+    padding: 18px 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     text-decoration: none;
     color: var(--ink);
     border-bottom: 1px solid var(--line);
   }
-  .nav__drawer .btn { margin-top: 20px; width: 100%; justify-content: center; }
+  .nav__drawer a:not(.btn):first-child { border-top: 1px solid var(--line); }
+  .nav__drawer .btn { margin-top: 32px; width: 100%; justify-content: center; padding: 16px 20px; font-size: 1rem; }
+  /* Hamburger becomes an X while the menu is open. */
+  .nav__toggle span::before, .nav__toggle span::after { transition: transform var(--dur-fast) var(--ease), top var(--dur-fast) var(--ease); }
+  .nav__toggle[aria-expanded="true"] span { background: transparent; }
+  .nav__toggle[aria-expanded="true"] span::before { top: 0; transform: rotate(45deg); }
+  .nav__toggle[aria-expanded="true"] span::after { top: 0; transform: rotate(-45deg); }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -581,6 +614,7 @@ h1, h2, h3, h4, p { margin: 0; }
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100svh; /* phones: never taller than the visible screen */
   padding: 0;
   overflow: hidden;
 }
@@ -714,48 +748,59 @@ h1, h2, h3, h4, p { margin: 0; }
 
 @media (max-width: 900px) {
   .tour--cinematic { height: 850vh; }
-  /* Frame sizing/position (width/height/left/top) is set inline by
-     `_sizeFrame()` in product-tour.js for every breakpoint, mobile
-     included — its `isMobile` branch targets 92vw × max 34vh, top-anchored
-     3vh under the fixed nav (~67px), which is what the chapter padding
-     below assumes. Copy sits below the pinned video, always left-aligned. */
+  /* Phones. The frame is an edge-to-edge 16:9 strip: never cropped, and
+     never wider than the layout, so the footage is not upscaled past its
+     own pixels. _sizeFrame() in product-tour.js centres it vertically for
+     the textless cold open, then it glides up under the nav for the copy
+     chapters (only `top` changes, hence the transition). Copy is centred,
+     horizontally and vertically, in the band below the video. */
+  .tour--cinematic .tour__frame-wrap {
+    border-radius: 0;
+    box-shadow: none;
+    transition: top 0.55s var(--ease);
+  }
+  .tour--cinematic .tour__scroll-cue { bottom: 40px; }
   .tour--cinematic .tour__chapter {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: flex-start;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     /* --tour-video-bottom is published by _sizeFrame() (the video's actual
-       bottom edge in px); the fallback matches its worst case. */
-    padding: calc(var(--tour-video-bottom, 41vh) + 24px) 6vw 4vh;
+       bottom edge in px); the fallback is nav + gap + a full-width 16:9. */
+    padding: calc(var(--tour-video-bottom, calc(79px + 56.25vw)) + 12px) 7vw 4vh;
   }
   .tour--cinematic .tour__copy {
-    text-align: left;
+    text-align: center;
     max-width: 100%;
-    margin: 0;
-    /* Explicit width: a flex item with non-visible overflow gets an
-       automatic min-width of 0 (a well-known flexbox quirk) and will
-       collapse to zero width here without one. */
     width: 100%;
-    /* Safety net: on very short/narrow devices the compact sizing below can
-       still outgrow the space between the video and the bottom of the
-       screen. Scroll internally rather than spilling silently off-screen. */
+    margin: 0 auto;
+    /* Safety net for very short screens: scroll internally rather than
+       spilling silently off-screen. */
     max-height: 100%;
     overflow-y: auto;
   }
-  .tour--cinematic .tour__chapter-index { justify-content: flex-start; }
-  .tour--cinematic .tour__chapter-index::after { display: flex; order: 0; }
-  .tour--cinematic .tour__chapter p { margin-left: 0; margin-right: 0; }
-  .tour--cinematic .tour-selector__row,
-  .tour--cinematic .colour-swatches,
-  .tour--cinematic .hero-ctas { justify-content: flex-start; }
+  .tour--cinematic .tour__chapter-index { justify-content: center; }
+  .tour--cinematic .tour__chapter-index::after { display: none; }
+  .tour--cinematic .tour__chapter p { margin-left: auto; margin-right: auto; }
+  /* Three classes deep on purpose: the desktop cinematic rules that push
+     these rows to flex-start come later in the file at two classes. */
+  .tour--cinematic .tour__chapter .tour-selector__row,
+  .tour--cinematic .tour__chapter .colour-swatches,
+  .tour--cinematic .tour__chapter .hero-ctas { justify-content: center; }
+  .tour--cinematic .tour__spec-line { justify-items: center; }
   .tour--cinematic .rail { display: none; }
   /* The hero chapter carries more content (headline + subhead + two CTAs)
-     than any other chapter — compact it specifically so it fits above the
-     fold without overlapping the nav bar. */
+     than any other chapter: compact it so it fits under the video. */
   .tour--cinematic .tour__chapter[data-chapter="overview"] .display { font-size: 1.9rem; margin-bottom: 2px; }
   .tour--cinematic .tour__chapter[data-chapter="overview"] .subhead { font-size: 0.92rem; }
   .tour--cinematic .tour__chapter[data-chapter="overview"] .eyebrow { margin-bottom: 6px; }
   .tour--cinematic .tour__chapter[data-chapter="overview"] .hero-ctas { margin-top: 14px; gap: 10px; }
   .tour--cinematic .tour__chapter[data-chapter="overview"] .hero-ctas .btn { padding: 10px 18px; font-size: 0.85rem; }
+  /* The pinned stage is a full screen but the last chapter's copy ends
+     well above the fold. product-tour.js (_fitTail) measures that spare
+     band and pulls the next section up over it with a negative margin, so
+     the tour hands straight over to "Why PENTAX" with no empty screen in
+     between. The section needs to paint above the sticky stage. */
+  #why-pentax { position: relative; z-index: 1; }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1929,7 +1974,7 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 
 /* The card: the same white A6 passport card that /manage prints, sitting
    on the dark page with a soft blue glow behind it. */
-.passport-visual { position: relative; display: grid; justify-items: center; gap: 22px; padding: 24px 0; }
+.passport-visual { position: relative; display: grid; justify-items: center; gap: 22px; padding: 24px 0; overflow: hidden; }
 .passport-visual__glow {
   position: absolute;
   left: 50%; top: 45%;
@@ -2014,3 +2059,24 @@ html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY
 /* Honeypot fields on the enquiry forms: invisible to people, tempting to
    bots. The server rejects any submission that fills one in. */
 .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ---------------------------------------------------------------------- */
+/* Phones: once media and copy stack in one column, centre the copy under  */
+/* the media. Forms and the FAQ stay left-aligned (readability).           */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 780px) {
+  .section-heading { text-align: center; margin-left: auto; margin-right: auto; }
+  .why-row__text,
+  .feature-card,
+  .discipline-card,
+  .passport-intro__copy,
+  .demo-aside__card,
+  .testimonial,
+  #magnification [data-magnification-selector] { text-align: center; }
+  .testimonial { justify-items: center; }
+  .testimonial__portrait { margin: 0 auto; }
+  .testimonial__controls,
+  .passport-intro__ctas { justify-content: center; }
+  .footer__top, .footer__cols, .footer__bottom { text-align: center; justify-content: center; }
+  .footer__col { align-items: center; }
+}

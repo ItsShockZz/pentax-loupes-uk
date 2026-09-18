@@ -154,6 +154,13 @@ class ProductTour {
     this._observeViewport();
     this._setActiveChapter(0);
     this._sizeFrame(productScenes[0]);
+    // Copy height (and so the mobile tail measurement) settles only once
+    // the web font has landed; re-run the sizing pass then.
+    const resize = () => {
+      if (this.activeIndex >= 0) this._sizeFrame(productScenes[this.activeIndex]);
+    };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+    window.addEventListener("load", resize, { once: true });
   }
 
   /**
@@ -400,94 +407,107 @@ class ProductTour {
    */
   _sizeFrame(scene) {
     if (!this.frameWrapEl) return;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    // Measure the stage the frame lives in, not window.inner*: a phone that
+    // has been zoomed out to fit an over-wide element reports the zoomed
+    // (larger) innerWidth, and a frame sized to that would itself overflow
+    // the real layout and keep the page zoomed out.
+    const stage = this.frameWrapEl.offsetParent || this.wrapperEl;
+    const vw = stage.clientWidth || window.innerWidth;
+    const vh = stage.clientHeight || window.innerHeight;
     const isMobile = vw <= 900;
     const isFull = Boolean(scene && scene.full);
-    // Full-bleed is a desktop treatment: fitting 16:9 into a portrait
-    // phone's vw×vh yields a ~26vh strip centred on black, which for the
-    // near-black intro footage read as a blank screen. Mobile uses its
-    // normal top-anchored placement for the intro as well.
-    const applyFull = isFull && !isMobile;
     const RATIO = 16 / 9;
     // Must match .tour__chapter's `padding: 0 6vw` and .tour__copy's
     // `max-width: 400px` in main.css — the video's size is derived from how
     // much room the text column actually needs.
     const CHAPTER_PADDING_FRAC = 0.06;
     const TEXT_COLUMN_WIDTH = 400;
-    let maxW;
-    let maxH;
-
     // Fixed nav is ~67px tall; keep the video's top edge clear of it.
     const NAV_CLEAR = 78;
+    // Fit 16:9 inside a (maxW, maxH) budget — never crops or stretches.
+    const fit = (maxW, maxH) => {
+      let w = maxW;
+      let h = w / RATIO;
+      if (h > maxH) {
+        h = maxH;
+        w = h * RATIO;
+      }
+      return { w, h };
+    };
 
-    if (applyFull) {
-      // The cold-open intro: no chapter copy exists for it at all, so
-      // there's nothing to leave room for — genuinely edge-to-edge (the
-      // 16:9 fit below letterboxes on other aspect ratios, invisibly,
-      // since both the page and the footage's surround are black).
-      maxW = vw;
-      maxH = vh;
-    } else if (isMobile) {
-      maxW = vw * 0.92;
-      maxH = vh * 0.34;
+    // The chapter ("normal") geometry is always computed, even during the
+    // full-bleed intro: --tour-video-bottom must describe where the video
+    // sits once copy appears, so the chapter padding (and _fitTail) are
+    // right before the first chapter change rather than after it.
+    let normal;
+    if (isMobile) {
+      // Edge-to-edge 16:9 strip directly under the fixed nav. Never wider
+      // than the layout, so the footage is not upscaled past its own
+      // pixels on a phone.
+      const { w, h } = fit(vw, vh * 0.42);
+      normal = { w, h, left: (vw - w) / 2, top: 67 + 12 };
     } else {
       const gutter = vw * 0.03;
       // Wider right-hand clearance so the progress rail dots never sit on
       // top of the video's edge.
       const edgeMargin = Math.max(vw * 0.045, 64);
       const textZone = vw * CHAPTER_PADDING_FRAC + TEXT_COLUMN_WIDTH + gutter;
-      maxW = Math.min(vw - textZone - edgeMargin, 1600);
       // Second term keeps the vertically-centred video from tucking under
       // the fixed nav on short, wide viewports where 0.88vh alone would.
-      maxH = Math.min(vh * 0.88, vh - NAV_CLEAR * 2);
-    }
-
-    // Fit 16:9 inside the (maxW, maxH) budget — never crops or stretches.
-    let w = maxW;
-    let h = w / RATIO;
-    if (h > maxH) {
-      h = maxH;
-      w = h * RATIO;
-    }
-
-    let left;
-    let top;
-    if (applyFull) {
-      left = (vw - w) / 2;
-      top = (vh - h) / 2;
-    } else if (isMobile) {
-      left = (vw - w) / 2;
-      top = vh * 0.03 + 67; // clear the fixed nav
-    } else {
+      const { w, h } = fit(Math.min(vw - textZone - edgeMargin, 1600), Math.min(vh * 0.88, vh - NAV_CLEAR * 2));
       // Copy on the left, video pinned toward the right edge — same
-      // clearance as the width budget above, so the rail dots sit in
-      // clear space rather than on the frame.
-      left = vw - Math.max(vw * 0.045, 64) - w;
-      top = (vh - h) / 2;
+      // clearance as the width budget, so the rail dots sit in clear space.
+      normal = { w, h, left: vw - edgeMargin - w, top: (vh - h) / 2 };
     }
 
-    this.frameWrapEl.style.width = `${Math.round(w)}px`;
-    this.frameWrapEl.style.height = `${Math.round(h)}px`;
-    this.frameWrapEl.style.left = `${Math.round(left)}px`;
-    this.frameWrapEl.style.top = `${Math.round(top)}px`;
+    let box = normal;
+    if (isFull) {
+      // The cold-open intro has no chapter copy at all, so there is nothing
+      // to leave room for: centred, edge to edge (the 16:9 fit letterboxes
+      // on other aspect ratios, invisibly, since both the page and the
+      // footage's surround are black). On a phone that is the full-width
+      // strip sitting in the middle of the screen.
+      const { w, h } = fit(vw, vh);
+      box = { w, h, left: (vw - w) / 2, top: (vh - h) / 2 };
+    }
+
+    this.frameWrapEl.style.width = `${Math.round(box.w)}px`;
+    this.frameWrapEl.style.height = `${Math.round(box.h)}px`;
+    this.frameWrapEl.style.left = `${Math.round(box.left)}px`;
+    this.frameWrapEl.style.top = `${Math.round(box.top)}px`;
     // Full-bleed drops the card treatment (rounded corners + shadow).
-    this.frameWrapEl.classList.toggle("tour__frame-wrap--full", applyFull);
+    this.frameWrapEl.classList.toggle("tour__frame-wrap--full", isFull);
 
     // Mobile chapter copy sits below the pinned video; publish the video's
-    // actual bottom edge so the CSS padding tracks the real height (a
-    // portrait phone's width-limited video is well short of the 34vh cap,
-    // which a fixed worst-case padding would leave as a blank band). Skip
-    // the desktop full-bleed intro: it has no copy, and overwriting the var
-    // with the intro's geometry would shift the next chapter's padding.
-    if (!applyFull) {
-      this.wrapperEl.style.setProperty("--tour-video-bottom", `${Math.round(top + h)}px`);
-    }
+    // chapter-mode bottom edge so the CSS padding tracks the real height.
+    this.wrapperEl.style.setProperty("--tour-video-bottom", `${Math.round(normal.top + normal.h)}px`);
+    this._fitTail(isMobile, stage);
 
     // Committed last, deliberately: if anything above threw, the mode stays
     // un-committed and the per-frame invariant in _updateFrame retries the
     // whole sizing pass instead of trusting a half-applied layout.
     this._sizeMode = isFull ? "full" : "normal";
+  }
+
+  /**
+   * Phones only. The pinned stage is a full screen, but the last chapter's
+   * copy ends well above the fold, which left an empty black band that the
+   * next section only reached after the band had scrolled past. Measure the
+   * band and pull the following section up over it (negative margin on the
+   * tour; #why-pentax is raised above the sticky stage in main.css), so the
+   * tour hands straight over. Desktop clears it.
+   */
+  _fitTail(isMobile, stage) {
+    if (!isMobile) {
+      this.wrapperEl.style.marginBottom = "";
+      return;
+    }
+    const last = this.chapterEls[this.chapterEls.length - 1];
+    const copy = last && last.querySelector(".tour__copy");
+    if (!copy) return;
+    const copyBottom = copy.getBoundingClientRect().bottom - stage.getBoundingClientRect().top;
+    const spare = stage.clientHeight - copyBottom - 28;
+    this.wrapperEl.style.marginBottom = spare > 0 ? `-${Math.round(spare)}px` : "";
   }
 
   _requestFrame() {
