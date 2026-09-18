@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<title>PENTAX Loupes UK brochure</title>
+<style>
+  /* Source template for brochure/PENTAX-Loupes-UK-Brochure.pdf.
+     Build with: python brochure/build.py --preview
+     Every ../ path is inlined by the build script; edit copy here, rebuild.
+     Rules: no prices, no claims beyond the verified list in js/config.js and
+     index.html, UK English, headings without trailing full stops. */
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400 800;
+    src: url("../fonts/inter-var.woff2") format("woff2");
+  }
+  @page { size: A4; margin: 0; }
+  :root {
+    --bg: #000;
+    --raised: #17181a;
+    --raised-2: #1e1f22;
+    --card-light: #fbfbfb;
+    --ink: #f5f5f6;
+    --muted: #9a9aa1;
+    --blue: #5b86ff;
+    --line: rgba(255, 255, 255, 0.12);
+    --line-strong: rgba(255, 255, 255, 0.22);
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    font-family: "Inter", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    font-size: 9.6pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  p { margin: 0; }
+  img { display: block; }
+
+  .page {
+    position: relative;
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    padding: 16mm 16mm 18mm;
+    background: var(--bg);
+    break-after: page;
+    page-break-after: always;
+  }
+  .page:last-child { break-after: auto; page-break-after: auto; }
+
+  /* ----- shared pieces ----- */
+  .brand { display: flex; align-items: baseline; gap: 2.4mm; text-decoration: none; }
+  .brand__mark { font-weight: 800; font-size: 11pt; letter-spacing: 0.14em; color: var(--ink); }
+  .brand__sub { font-weight: 500; font-size: 7pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+
+  .foot {
+    position: absolute; left: 16mm; right: 16mm; bottom: 9mm;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 7pt; color: var(--muted); letter-spacing: 0.04em;
+    border-top: 1px solid var(--line); padding-top: 2.4mm;
+  }
+
+  .eyebrow {
+    font-size: 7.4pt; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--blue); margin: 0 0 2.6mm;
+  }
+  .headline { font-size: 25pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1.06; margin: 0 0 3.4mm; }
+  .headline--sm { font-size: 18pt; margin-bottom: 2.6mm; }
+  .lead { font-size: 10.6pt; line-height: 1.5; color: var(--muted); max-width: 152mm; }
+  .body { color: var(--muted); }
+  .body strong, .lead strong { color: var(--ink); font-weight: 600; }
+  h3 { font-size: 11.5pt; font-weight: 600; letter-spacing: -0.005em; margin: 0 0 1.4mm; line-height: 1.25; }
+  .stat { font-size: 22pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .stat small { font-size: 12pt; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+  .chip {
+    display: inline-block; font-size: 7.6pt; font-weight: 600; letter-spacing: 0.02em;
+    padding: 1.1mm 2.6mm; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--ink);
+  }
+  .rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
+  .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; }
+  .cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5mm; }
+
+  .quote {
+    display: grid; grid-template-columns: 24mm 1fr; gap: 6mm; align-items: center;
+    padding: 6mm 7mm; border: 1px solid var(--line); border-radius: 4mm; background: var(--raised);
+  }
+  .quote__face { width: 24mm; height: 24mm; border-radius: 50%; object-fit: cover; object-position: 50% 18%; }
+  .quote__text { font-size: 11pt; line-height: 1.45; letter-spacing: -0.005em; }
+  .quote__who { margin-top: 2mm; font-size: 8pt; color: var(--muted); }
+
+  .photo { border-radius: 3.2mm; overflow: hidden; background: var(--raised); }
+  .photo img { width: 100%; height: 100%; object-fit: cover; }
+  .photo--light { background: var(--card-light); }
+  .photo--light img { object-fit: contain; }
+  .render { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+  /* ----- cover ----- */
+  .cover { padding: 16mm; }
+  .cover__render { position: absolute; left: 50%; top: 44mm; width: 172mm; height: 172mm; transform: translateX(-50%); object-fit: contain; }
+  .cover__text { position: absolute; left: 16mm; right: 16mm; bottom: 26mm; }
+  .cover__text .display { font-size: 42pt; font-weight: 700; letter-spacing: -0.03em; line-height: 1.0; margin: 0 0 6mm; }
+  .cover__text .lead { max-width: 128mm; }
+  .cover__note { position: absolute; right: 16mm; top: 17.2mm; font-size: 7pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+
+  /* ----- page 2 diagram ----- */
+  .diagram { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; padding: 6mm 6mm 5mm; border-radius: 4mm; background: var(--raised); border: 1px solid var(--line); margin: 7mm 0; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .diagram__cap { margin-top: 2.4mm; font-size: 7.8pt; color: var(--muted); line-height: 1.4; }
+  .diagram__cap strong { color: var(--ink); font-weight: 600; }
+
+  /* ----- page 3 fit cards ----- */
+  .fit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 7mm; }
+  .fit-card { display: grid; grid-template-rows: 58mm auto; gap: 4mm; }
+  .fit-card .photo { height: 58mm; }
+  .fit-card .stat { margin-bottom: 1.6mm; }
+  .fit-card .label { font-weight: 600; font-size: 10pt; margin-bottom: 1mm; }
+  .note { margin-top: 7mm; padding: 5mm 6mm; border-left: 2px solid var(--blue); background: var(--raised); border-radius: 0 3mm 3mm 0; color: var(--muted); }
+  .note strong { color: var(--ink); font-weight: 600; }
+
+  /* ----- page 4 feature rows ----- */
+  .feature { display: grid; grid-template-columns: 66mm 1fr; gap: 7mm; align-items: center; padding: 6mm 0; border-top: 1px solid var(--line); }
+  .feature:first-of-type { border-top: 0; padding-top: 2mm; }
+  .feature .photo { height: 46mm; }
+
+  /* ----- page 5 magnification ----- */
+  table { width: 100%; border-collapse: collapse; margin-top: 5mm; }
+  th { text-align: left; font-size: 7.2pt; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 0 0 2.4mm; border-bottom: 1px solid var(--line-strong); }
+  td { padding: 3.2mm 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--muted); font-size: 9.2pt; }
+  td.mag { font-size: 14pt; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; width: 22mm; }
+  td.fov { color: var(--ink); font-weight: 600; width: 26mm; white-space: nowrap; }
+  .samples { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 7mm; }
+  .sample { position: relative; height: 54mm; }
+  .sample__tag { position: absolute; left: 4mm; top: 4mm; font-size: 12pt; font-weight: 700; padding: 1mm 3mm; border-radius: 2mm; background: rgba(0,0,0,0.62); color: #fff; }
+  .footnote { margin-top: 2.6mm; font-size: 7.4pt; color: var(--muted); }
+
+  /* ----- page 6 ----- */
+  .half { padding: 7mm 0; }
+  .half + .half { border-top: 1px solid var(--line); }
+  .option { padding: 3.6mm 0; border-top: 1px solid var(--line); }
+  .option:first-child { border-top: 0; padding-top: 0; }
+  .option h3 { font-size: 10.4pt; }
+
+  /* ----- page 7 ----- */
+  .colour { text-align: center; }
+  .colour .render { height: 40mm; }
+  .colour__name { margin-top: 1.4mm; font-size: 8.4pt; font-weight: 600; }
+  .step { position: relative; padding-top: 4mm; border-top: 1px solid var(--line-strong); }
+  .step__num { font-size: 7.4pt; font-weight: 700; letter-spacing: 0.14em; color: var(--blue); margin-bottom: 1.6mm; }
+  .step h3 { font-size: 10.4pt; }
+  .section-gap { margin-top: 9mm; }
+
+  /* ----- back cover ----- */
+  .back { display: flex; flex-direction: column; }
+  .back__hero { font-size: 30pt; font-weight: 700; letter-spacing: -0.025em; line-height: 1.04; max-width: 160mm; margin: 12mm 0 6mm; }
+  .contact { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 9mm; }
+  .contact__box { padding: 5.4mm 6mm; border-radius: 3.6mm; background: var(--raised); border: 1px solid var(--line); }
+  .contact__k { font-size: 7.2pt; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.6mm; }
+  .contact__v { font-size: 13pt; font-weight: 600; letter-spacing: -0.01em; }
+  .spec { margin-top: 9mm; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; }
+  .spec div { padding-top: 3mm; border-top: 1px solid var(--line); }
+  .spec .k { font-size: 7pt; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1mm; }
+  .spec .v { font-size: 10pt; font-weight: 600; }
+  .back__render { position: absolute; left: 50%; bottom: 14mm; width: 150mm; height: 118mm; transform: translateX(-50%); object-fit: contain; object-position: 50% 100%; }
+  .small { font-size: 7.2pt; color: var(--muted); line-height: 1.45; }
+</style>
+</head>
+<body>
+
+<!-- ============================ 1 · COVER ============================ -->
+<section class="page cover">
+  <div class="brand"><span class="brand__mark">PENTAX</span><span class="brand__sub">Loupes UK</span></div>
+  <p class="cover__note">Information for clinicians</p>
+  <img class="cover__render" src="../images/colours/blue.jpg" alt="PENTAX Loupes, blue frame" />
+  <div class="cover__text">
+    <p class="eyebrow">Precision loupes, fitted to you in the UK</p>
+    <h1 class="display">See every detail<br />Keep your posture</h1>
+    <p class="lead">Deflection prism optics let you work looking straight ahead, on a frame adjusted to your eyes, your working distance and the way you sit or stand at work.</p>
+  </div>
+</section>
+
+<!-- ============================ 2 · POSTURE ============================ -->
+<section class="page">
+  <p class="eyebrow">Ergonomics</p>
+  <h2 class="headline">Look straight ahead, not down</h2>
+  <p class="lead">Conventional loupes converge your eyes toward a single close point, and to see the field you tip your head down and hold it there. PENTAX Loupes are built around a different idea: your eyes stay level, and the optics do the bending.</p>
+
+  <div class="diagram">
+    <div>
+      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-label="Conventional loupes: head tipped down toward the field">
+        <defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5b86ff"/></marker></defs>
+        <line x1="107" y1="132" x2="107" y2="52" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" stroke-dasharray="3 4"/>
+        <ellipse cx="248" cy="178" rx="32" ry="6" fill="rgba(91,134,255,0.16)" stroke="#5b86ff" stroke-width="1.5"/>
+        <g transform="rotate(32 107 132)">
+          <rect x="98" y="110" width="18" height="40" fill="#1e1f22" stroke="#f5f5f6" stroke-width="2"/>
+          <circle cx="112" cy="88" r="26" fill="#1e1f22" stroke="#f5f5f6" stroke-width="2"/>
+          <circle cx="131" cy="84" r="2.6" fill="#f5f5f6"/>
+          <rect x="135" y="79" width="16" height="10" rx="2" fill="#0b0b0d" stroke="#5b86ff" stroke-width="1.6"/>
+        </g>
+        <rect x="60" y="132" width="92" height="90" rx="22" fill="#1e1f22" stroke="#f5f5f6" stroke-width="2"/>
+        <line x1="171" y1="114" x2="240" y2="170" stroke="#5b86ff" stroke-width="2.2" marker-end="url(#a1)"/>
+      </svg>
+      <p class="diagram__cap"><strong>Conventional loupes.</strong> The head tips forward so the eyes can converge on one close point, and stays there for the whole procedure.</p>
+    </div>
+    <div>
+      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-label="PENTAX Loupes: head level, optical path deflected down to the field">
+        <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5b86ff"/></marker></defs>
+        <line x1="107" y1="132" x2="107" y2="52" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" stroke-dasharray="3 4"/>
+        <line x1="131" y1="84" x2="300" y2="84" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" stroke-dasharray="3 4"/>
+        <ellipse cx="248" cy="178" rx="32" ry="6" fill="rgba(91,134,255,0.16)" stroke="#5b86ff" stroke-width="1.5"/>
+        <rect x="98" y="110" width="18" height="40" fill="#1e1f22" stroke="#f5f5f6" stroke-width="2"/>
+        <circle cx="112" cy="88" r="26" fill="#1e1f22" stroke="#f5f5f6" stroke-width="2"/>
+        <rect x="60" y="132" width="92" height="90" rx="22" fill="#1e1f22" stroke="#f5f5f6" stroke-width="2"/>
+        <circle cx="131" cy="84" r="2.6" fill="#f5f5f6"/>
+        <line x1="134" y1="84" x2="152" y2="84" stroke="#5b86ff" stroke-width="2.2"/>
+        <rect x="140" y="79" width="16" height="10" rx="2" fill="#0b0b0d" stroke="#5b86ff" stroke-width="1.6"/>
+        <line x1="156" y1="86" x2="240" y2="170" stroke="#5b86ff" stroke-width="2.2" marker-end="url(#a2)"/>
+      </svg>
+      <p class="diagram__cap"><strong>PENTAX Loupes.</strong> The head stays level and the eyes look straight ahead. Prisms inside the barrels bend the optical path down to the field.</p>
+    </div>
+  </div>
+
+  <div class="cols-2">
+    <div>
+      <h3>Deflection prisms</h3>
+      <p class="body">Prisms inside each barrel redirect the optical path, much like working with a microscope. You look straight ahead at your work instead of angling your eyes down, which helps you hold a natural, upright posture through long procedures.</p>
+    </div>
+    <div>
+      <h3>Parallel viewing</h3>
+      <p class="body">Conventional loupes converge your eyes toward a single close point. PENTAX Loupes are built for parallel viewing instead, designed to reduce eye convergence and help support an upright working posture.</p>
+    </div>
+  </div>
+
+  <div class="photo" style="height: 50mm; margin-top: 8mm;"><img src="../images/stills/tour-still-inuse-profile.jpg" alt="Clinician wearing PENTAX Loupes, head level" style="object-position: 50% 42%;" /></div>
+
+  <div class="quote" style="margin-top: 7mm;">
+    <img class="quote__face" src="../images/testimonial-robotti.jpg" alt="" />
+    <div>
+      <p class="quote__text">“With PENTAX loupes, the posture of my neck really changed. I can look straight ahead, just like working with a microscope, and I enjoy parallel viewing with a very large field of view.”</p>
+      <p class="quote__who">Dr Robotti · President, The Rhinoplasty Society of Europe</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>2</span></div>
+</section>
+
+<!-- ============================ 3 · FIT ============================ -->
+<section class="page">
+  <p class="eyebrow">Fit</p>
+  <h2 class="headline">Built around you</h2>
+  <p class="lead">Every measurement that matters is adjustable. It is set once at your fitting, then revisited as your eyesight or working posture changes.</p>
+
+  <div class="fit-grid">
+    <div class="fit-card">
+      <div class="photo photo--light"><img src="../images/adjust-working-distance.jpg" alt="Working distance adjustment" /></div>
+      <div>
+        <p class="stat">25–70 <small>cm</small></p>
+        <p class="label">Working distance</p>
+        <p class="body">Set to match your height, your chair and the way you sit or stand at work.</p>
+      </div>
+    </div>
+    <div class="fit-card">
+      <div class="photo photo--light"><img src="../images/adjust-pupil-distance.jpg" alt="Pupillary distance adjustment" /></div>
+      <div>
+        <p class="stat">52–78 <small>mm</small></p>
+        <p class="label">Pupillary distance</p>
+        <p class="body">Matched to your own eyes, not a factory average.</p>
+      </div>
+    </div>
+    <div class="fit-card">
+      <div class="photo photo--light"><img src="../images/adjust-height-angle.jpg" alt="Height and angle adjustment" /></div>
+      <div>
+        <p class="stat">Height <small>&amp; angle</small></p>
+        <p class="label">Line of sight</p>
+        <p class="body">Position the barrels for a natural line of sight, then lock them in.</p>
+      </div>
+    </div>
+    <div class="fit-card">
+      <div class="photo photo--light"><img src="../images/adjust-protective-lens.jpg" alt="Protective and prescription lens options" /></div>
+      <div>
+        <p class="stat">Optional <small>lenses</small></p>
+        <p class="label">Protective &amp; prescription</p>
+        <p class="body">Wear your glasses underneath, fit a prescription insert, or use the frame on its own.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Adjustable later, too.</strong> Pupillary distance and working distance are user-adjustable, so the fit can be revisited as your eyesight or working posture changes, without returning the loupes to the factory. Magnification is the one setting that is fixed: it is set when the loupes are built, which gives a consistent, predictable image.
+  </div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>3</span></div>
+</section>
+
+<!-- ============================ 4 · COMFORT ============================ -->
+<section class="page">
+  <p class="eyebrow">Comfort</p>
+  <h2 class="headline">Comfortable through long procedures</h2>
+  <p class="lead">Posture is only part of it. The frame, the optics and the flip-up barrels are designed so the loupes stay comfortable and useful from the first case to the last.</p>
+
+  <div style="margin-top: 6mm;">
+    <div class="feature">
+      <div class="photo"><img src="../images/stills/tour-still-nosepad.jpg" alt="" /></div>
+      <div>
+        <h3>Balance point</h3>
+        <p class="body">A lightweight frame with balanced weight distribution, so the loupes sit evenly and stay comfortable through long procedures rather than dragging on your nose.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="photo"><img src="../images/stills/tour-still-optics-front.jpg" alt="" /></div>
+      <div>
+        <h3>A wide field of view</h3>
+        <p class="body">Japanese optics give a sharp, distortion-free image across a wide field, with the depth perception fine work needs. At 2.5× the field of view is 141 mm.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="photo"><img src="../images/stills/tour-still-flip.jpg" alt="" /></div>
+      <div>
+        <h3>Flip up, flip down</h3>
+        <p class="body">Flip the barrels out of the way to switch instantly between magnified and normal vision, without taking the frame off.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="quote" style="margin-top: 8mm;">
+    <img class="quote__face" src="../images/testimonial-dhooghe.jpg" alt="" />
+    <div>
+      <p class="quote__text">“With the PENTAX Loupes I have a wide field of vision and they are light to wear. You can keep your focus while looking straight ahead, which minimises strain on my neck.”</p>
+      <p class="quote__who">Dr Dhooghe · Surgeon</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>4</span></div>
+</section>
+
+<!-- ============================ 5 · MAGNIFICATION ============================ -->
+<section class="page">
+  <p class="eyebrow">Magnification</p>
+  <h2 class="headline">Choose your magnification</h2>
+  <p class="lead">Five fixed magnifications, each with its own field of view. The choice comes down to what matters more for your work, a wider field or finer detail, and your specialist helps you decide at your fitting.</p>
+
+  <table>
+    <thead><tr><th>Magnification</th><th>Field of view</th><th>Guidance</th></tr></thead>
+    <tbody>
+      <tr><td class="mag">2.5×</td><td class="fov">141 mm</td><td>For those who favour field of view and depth of vision: general surgeons, urologists and hygienists.</td></tr>
+      <tr><td class="mag">3.0×</td><td class="fov">120 mm</td><td>For general dentists and ENT surgeons.</td></tr>
+      <tr><td class="mag">3.5×</td><td class="fov">106 mm</td><td>For anyone who wants a good middle ground between field of view and magnification.</td></tr>
+      <tr><td class="mag">4.0×</td><td class="fov">98 mm</td><td>For those who need good attention to detail while maintaining a decent field of view.</td></tr>
+      <tr><td class="mag">5.0×</td><td class="fov">80 mm</td><td>For those working on very small, fine details, such as endodontics or microsurgery.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="samples">
+    <div class="photo sample"><img src="../images/mag-samples/mag-2-5.jpg" alt="Sample view at 2.5 times" /><span class="sample__tag">2.5×</span></div>
+    <div class="photo sample"><img src="../images/mag-samples/mag-5-0.jpg" alt="Sample view at 5 times" /><span class="sample__tag">5.0×</span></div>
+  </div>
+  <p class="footnote">*These are estimates, results per person may vary.</p>
+
+  <div class="cols-3" style="margin-top: 7mm;">
+    <div>
+      <span class="chip">2.5×–3.5×</span>
+      <h3 style="margin-top: 2.6mm;">Dentistry</h3>
+      <p class="body">Restorative and hygiene work at 2.5× to 3.5×. Aesthetic dentists often go to 5.0×.</p>
+    </div>
+    <div>
+      <span class="chip">3.5×–5.0×</span>
+      <h3 style="margin-top: 2.6mm;">Surgery</h3>
+      <p class="body">Fine, delicate procedures at 3.5× and above, across surgical specialities.</p>
+    </div>
+    <div>
+      <span class="chip">2.5×–3.5×</span>
+      <h3 style="margin-top: 2.6mm;">Veterinary</h3>
+      <p class="body">General and referral practice, depending on procedure and patient size.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>5</span></div>
+</section>
+
+<!-- ============================ 6 · EYES & LIGHT ============================ -->
+<section class="page">
+  <div class="half" style="padding-top: 0;">
+    <p class="eyebrow">Prescription &amp; lens options</p>
+    <h2 class="headline">Made for your eyes</h2>
+    <div class="cols-2" style="grid-template-columns: 1fr 66mm; gap: 9mm; align-items: center;">
+      <div>
+        <p class="lead" style="margin-bottom: 4mm;">Magnification is fixed and does not correct your everyday vision. There are three ways to pair PENTAX Loupes with your prescription.</p>
+        <div class="option">
+          <h3>Adjustable frame, no glasses</h3>
+          <p class="body">Many clinicians do not need separate glasses at all. The frame adjusts directly to your vision.</p>
+        </div>
+        <div class="option">
+          <h3>Your own glasses underneath</h3>
+          <p class="body">A different nose pad creates room to wear your existing glasses under the loupes.</p>
+        </div>
+        <div class="option">
+          <h3>Custom prescription insert</h3>
+          <p class="body">A clip-in insert carries your correction inside the PENTAX frame itself.</p>
+        </div>
+      </div>
+      <img class="render" style="height: 66mm;" src="../images/previews/lenses-yes.jpg" alt="PENTAX Loupes with prescription insert" />
+    </div>
+  </div>
+
+  <div class="half">
+    <p class="eyebrow">Illumination</p>
+    <h2 class="headline">Light exactly where you are looking</h2>
+    <p class="lead" style="margin-bottom: 5mm;">An optional LED headlight clips to the loupes and lights the field directly ahead of you.</p>
+    <div class="cols-2">
+      <div>
+        <img class="render" style="height: 52mm;" src="../images/led-wired.jpg" alt="Wired LED headlight" />
+        <h3 style="margin-top: 3mm;">Wired</h3>
+        <p class="body">Constant power from a beltpack, for the longest lists.</p>
+      </div>
+      <div>
+        <img class="render" style="height: 52mm;" src="../images/led-wireless.jpg" alt="Wireless LED headlight" />
+        <h3 style="margin-top: 3mm;">Wireless</h3>
+        <p class="body">Nothing to clip to your clothing, for complete freedom of movement.</p>
+      </div>
+    </div>
+    <p class="body" style="margin-top: 5mm;">Already own a light you like? Brackets are available for other LED brands. Ask us about compatibility.</p>
+  </div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>6</span></div>
+</section>
+
+<!-- ============================ 7 · COLOURS, WHO, PROCESS ============================ -->
+<section class="page">
+  <p class="eyebrow">Colour</p>
+  <h2 class="headline headline--sm">Four colours, pick yours</h2>
+  <div class="cols-4" style="margin-top: 4mm;">
+    <div class="colour"><img class="render" src="../images/colours/silvergold.jpg" alt="Silvergold" /><p class="colour__name">Silvergold</p></div>
+    <div class="colour"><img class="render" src="../images/colours/blue.jpg" alt="Blue" /><p class="colour__name">Blue</p></div>
+    <div class="colour"><img class="render" src="../images/colours/black.jpg" alt="Black" /><p class="colour__name">Black</p></div>
+    <div class="colour"><img class="render" src="../images/colours/red.jpg" alt="Red" /><p class="colour__name">Red</p></div>
+  </div>
+
+  <div class="section-gap">
+    <p class="eyebrow">UK service</p>
+    <h2 class="headline headline--sm">From enquiry to fitting</h2>
+    <div class="cols-3" style="margin-top: 4mm;">
+      <div class="step">
+        <p class="step__num">01</p>
+        <h3>Tell us what you need</h3>
+        <p class="body">Reply to this email, or build your loupes online. It takes about a minute.</p>
+      </div>
+      <div class="step">
+        <p class="step__num">02</p>
+        <h3>Talk it through</h3>
+        <p class="body">A specialist contacts you to discuss magnification, working distance and fit.</p>
+      </div>
+      <div class="step">
+        <p class="step__num">03</p>
+        <h3>Demonstration &amp; fitting</h3>
+        <p class="body">We arrange a demonstration and fitting with you in the UK.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-gap">
+    <p class="eyebrow">After your fitting</p>
+    <h2 class="headline headline--sm">Every pair comes with a passport</h2>
+    <div class="cols-2" style="align-items: start;">
+      <p class="body">A private page and a QR card in the case, holding your setup, your care guidance and a one-tap line to the UK team. Magnification, working distance and pupillary distance are recorded as they are set at your fitting, so any later adjustment starts from what was actually done.</p>
+      <p class="body">Scan the card with any phone. No app, no account, no password. Use it for a quick check-in, a support request, or to invite a colleague to see the loupes for themselves.</p>
+    </div>
+  </div>
+
+  <div class="section-gap">
+    <div class="cols-2" style="align-items: center;">
+      <div class="photo" style="height: 46mm;"><img src="../images/stills/tour-still-wear-side.jpg" alt="" /></div>
+      <div>
+        <p class="eyebrow">Who it's for</p>
+        <p class="body">Dentists, prosthodontists and dental hygienists, surgeons across specialities, veterinary surgeons, and other professionals whose work requires enhanced close-up vision.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>7</span></div>
+</section>
+
+<!-- ============================ 8 · BACK COVER ============================ -->
+<section class="page back">
+  <div class="brand"><span class="brand__mark">PENTAX</span><span class="brand__sub">Loupes UK</span></div>
+  <h2 class="back__hero">The best way to understand PENTAX Loupes is to wear them</h2>
+  <p class="lead">Request a demonstration and fitting in the UK. A specialist will talk through magnification, working distance and fit with you, and prepare a personalised quotation for your configuration.</p>
+
+  <div class="contact">
+    <div class="contact__box">
+      <p class="contact__k">Website</p>
+      <p class="contact__v">pentaxloupes.co.uk</p>
+    </div>
+    <div class="contact__box">
+      <p class="contact__k">Email</p>
+      <p class="contact__v">info@pentaxloupes.com</p>
+    </div>
+  </div>
+
+  <div class="spec">
+    <div><p class="k">Magnification</p><p class="v">2.5× to 5.0×</p></div>
+    <div><p class="k">Working distance</p><p class="v">25–70 cm</p></div>
+    <div><p class="k">Pupillary distance</p><p class="v">52–78 mm</p></div>
+    <div><p class="k">Illumination</p><p class="v">Wired or wireless LED</p></div>
+  </div>
+
+  <img class="back__render" src="../images/colours/black.jpg" alt="" />
+
+  <div class="foot">
+    <span class="small">© 2026 PENTAX Loupes UK. Product content adapted from pentaxloupes.com for the UK market. Sample views are estimates and results vary by person.</span>
+    <span>8</span>
+  </div>
+</section>
+
+</body>
+</html>
