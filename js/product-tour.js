@@ -43,6 +43,12 @@ const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 
 const VIDEO_SRC = "videos/tour-master.mp4?v=20260826";
+// Phones stream a 960x540 encode of the same 41s film (same 24fps timeline,
+// so every chapter timestamp below is unchanged): about a third of the data,
+// and the in-memory copy is ready in a fraction of the time. Falls back to
+// the master if the file is missing.
+const VIDEO_SRC_MOBILE = "videos/tour-master-mobile.mp4?v=20260918";
+const MOBILE_QUERY = "(max-width: 900px)";
 
 /* ---------------------------------------------------------------------- */
 /* Scene config                                                            */
@@ -125,6 +131,9 @@ class ProductTour {
     this._displayTime = null; // smoothed video time actually shown
     this._sizeMode = null; // "full" | "normal" — which layout _sizeFrame last applied
     this._seekIssuedAt = 0; // when the in-flight seek was written (0 = none)
+    this._lastScrollAt = 0;
+    this._blobState = "idle"; // idle | pending | active | failed
+    this._src = VIDEO_SRC;
 
     this._buildRail();
   }
@@ -164,53 +173,145 @@ class ProductTour {
   }
 
   /**
-   * Loads the tour video as an in-memory blob instead of letting the
-   * <video> stream it progressively over the network. A seek back to an
-   * earlier, no-longer-buffered byte range mid-scroll can silently land on
-   * a stale frame (same family of quirk as the readyState-4 issue in the
-   * header comment). Once the whole file is a blob URL, every seek —
-   * forward or backward — is served from memory, so it can't stall or go
-   * stale. Falls back to plain progressive streaming if the fetch fails.
+   * Streams first, then upgrades to an in-memory copy.
+   *
+   * The whole film used to be fetched as a blob before the <video> was given
+   * a src at all, so nothing responded to scrolling until all 38 MB had
+   * arrived: ten seconds on a good line, far longer on a phone, and the
+   * visitor read it as "the animation never loads". Now the element streams
+   * the file straight away (the server answers Range requests, so the first
+   * seeks land within a second) and, once the first frames are up,
+   * `_scheduleBlob()` fetches the whole file in the background; `_adoptBlob()`
+   * then swaps in a second element fed from memory, where a seek back into
+   * an unbuffered range can never land on a stale frame. If that fetch fails
+   * or times out the tour simply keeps streaming.
    */
   _loadVideoSource(onReady) {
-    const bindAndLoad = (src) => {
+    this._src = window.matchMedia(MOBILE_QUERY).matches ? VIDEO_SRC_MOBILE : VIDEO_SRC;
+    this._parked = Boolean(onReady);
+    const bind = (src) => {
       this.videoEl.addEventListener("loadedmetadata", () => this._primeVideo(onReady), { once: true });
       this.videoEl.src = src;
       this.videoEl.load();
       this.videoEl.pause();
     };
+    // Phone encode missing or undecodable: fall back to the master, once.
+    this.videoEl.addEventListener("error", () => {
+      if (this._src === VIDEO_SRC) return;
+      this._src = VIDEO_SRC;
+      bind(VIDEO_SRC);
+    });
+    bind(this._src);
+  }
 
-    // If the blob src itself fails to decode (e.g. the "video" was really
-    // an HTML error/splash page served with a 200, which fetch can't tell
-    // apart on status alone), fall back to plain progressive streaming
-    // once instead of leaving the element permanently sourceless — without
-    // this listener a decode failure meant the tour scrubbed text over a
-    // frozen poster for the whole session.
-    this.videoEl.addEventListener(
-      "error",
-      () => {
-        if (this._triedProgressive) return;
-        this._triedProgressive = true;
-        bindAndLoad(VIDEO_SRC);
+  /**
+   * Background fetch of the whole file, started once streaming is primed so
+   * the first frames win the bandwidth. Skipped for the reduced-motion
+   * parked frame and for visitors who asked to save data or are on 2G.
+   */
+  _scheduleBlob() {
+    if (this._blobState !== "idle" || this._parked) return;
+    this._blobState = "pending";
+    const conn = navigator.connection;
+    if (conn && (conn.saveData || /(^|[^a-z])2g/.test(conn.effectiveType || ""))) return;
+    setTimeout(() => {
+      const abort = new AbortController();
+      const timer = setTimeout(() => abort.abort(), 120000);
+      fetch(this._src, { signal: abort.signal })
+        .then((res) => {
+          const type = (res.headers.get("content-type") || "").toLowerCase();
+          if (!res.ok || (type && !type.startsWith("video/") && !type.startsWith("application/octet-stream"))) {
+            throw new Error(`${res.status} ${type}`);
+          }
+          return res.blob();
+        })
+        .then((blob) => this._adoptBlob(URL.createObjectURL(blob)))
+        .catch(() => {
+          this._blobState = "failed";
+        })
+        .finally(() => clearTimeout(timer));
+    }, 1500);
+  }
+
+  /**
+   * Swaps the streaming element for one fed from the in-memory copy with no
+   * visible hitch: the newcomer is stacked over the old one at opacity 0,
+   * seeked to the frame currently on screen, and only made visible (and the
+   * old one released) once that seek has genuinely landed and the visitor
+   * has paused scrolling for a moment.
+   */
+  _adoptBlob(url) {
+    const old = this.videoEl;
+    const fresh = old.cloneNode(false);
+    fresh.removeAttribute("id");
+    fresh.removeAttribute("src");
+    fresh.muted = true;
+    fresh.style.opacity = "0";
+    old.parentNode.insertBefore(fresh, old.nextSibling);
+
+    let done = false;
+    let seekTries = 0;
+    let waitTries = 0;
+    const target = () => Math.max(0.05, this._displayTime != null ? this._displayTime : old.currentTime);
+
+    const fail = () => {
+      if (done) return;
+      done = true;
+      fresh.remove();
+      URL.revokeObjectURL(url);
+      this._blobState = "failed";
+    };
+    const finish = () => {
+      done = true;
+      fresh.style.opacity = "";
+      fresh.id = old.id;
+      fresh.addEventListener("seeked", () => (this._seekIssuedAt = 0));
+      this.videoEl = fresh;
+      this._seekIssuedAt = 0;
+      old.removeAttribute("src");
+      old.load(); // abort its streaming and free the decoder
+      old.remove();
+      this._blobState = "active";
+      this._requestFrame();
+    };
+    const seekToCurrent = () => {
+      if (done) return;
+      if (seekTries++ >= 6) return fail();
+      let timer;
+      const onSeeked = () => {
+        fresh.removeEventListener("seeked", onSeeked);
+        clearTimeout(timer);
+        settle();
+      };
+      fresh.addEventListener("seeked", onSeeked);
+      fresh.currentTime = target();
+      timer = setTimeout(() => {
+        fresh.removeEventListener("seeked", onSeeked);
+        seekToCurrent();
+      }, 700);
+    };
+    // Hand over on a still frame: wait for a pause in scrolling (bounded),
+    // then re-seek if the picture moved on while we waited.
+    const settle = () => {
+      if (done) return;
+      const scrolling = this._inView && performance.now() - this._lastScrollAt < 400;
+      if (scrolling && waitTries++ < 40) {
+        setTimeout(settle, 250);
+        return;
       }
-    );
+      if (Math.abs(fresh.currentTime - target()) > 1 / 24) {
+        seekTries = 0;
+        seekToCurrent();
+        return;
+      }
+      finish();
+    };
 
-    // Bounded: a hung connection must degrade to progressive streaming,
-    // not leave the tour scrub-dead with no src forever.
-    const abort = new AbortController();
-    const timer = setTimeout(() => abort.abort(), 45000);
-
-    fetch(VIDEO_SRC, { signal: abort.signal })
-      .then((res) => {
-        const type = (res.headers.get("content-type") || "").toLowerCase();
-        if (!res.ok || (type && !type.startsWith("video/") && !type.startsWith("application/octet-stream"))) {
-          throw new Error(`${res.status} ${type}`);
-        }
-        return res.blob();
-      })
-      .then((blob) => bindAndLoad(URL.createObjectURL(blob)))
-      .catch(() => bindAndLoad(VIDEO_SRC))
-      .finally(() => clearTimeout(timer));
+    fresh.addEventListener("loadedmetadata", seekToCurrent, { once: true });
+    fresh.addEventListener("error", fail, { once: true });
+    fresh.src = url;
+    fresh.load();
+    fresh.pause();
   }
 
   /**
@@ -234,6 +335,7 @@ class ProductTour {
       this._primed = true;
       if (onReady) onReady();
       else this._requestFrame();
+      this._scheduleBlob();
     };
 
     this.videoEl.addEventListener("seeked", onSeeked);
@@ -250,6 +352,7 @@ class ProductTour {
         this._primed = true;
         if (onReady) onReady();
         else this._requestFrame();
+        this._scheduleBlob();
         return;
       }
       this._primeVideo(onReady, attemptsLeft - 1);
@@ -368,6 +471,7 @@ class ProductTour {
    * Time-gated so normal healthy scrolling still rides the smooth rAF path.
    */
   _onScroll() {
+    this._lastScrollAt = performance.now();
     if (performance.now() - this._lastUpdateAt > 250) {
       // Cancel (not just forget) any pending frame: a merely-delayed
       // callback that later fired would slip past _requestFrame's guard and

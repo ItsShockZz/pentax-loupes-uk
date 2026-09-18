@@ -2104,3 +2104,22 @@ html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY
   .brochure__text { text-align: center; }
   .brochure__actions { justify-content: center; }
 }
+
+/* Phones: wordmark centred in the bar, menu button on the right. */
+@media (max-width: 900px) {
+  .nav__inner { justify-content: flex-end; }
+  .nav__brand {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+}
+/* Phones: the remaining left-aligned copy blocks (found by a sweep at 375px). */
+@media (max-width: 780px) {
+  #prescription .eyebrow, #prescription .headline, #prescription .body-copy, .rx-option,
+  #request-demo .eyebrow, #request-demo .headline, #request-demo .body-copy, #request-demo .consent-note,
+  .steps__item, .mag-priority, .cfg__hint, .benefit { text-align: center; }
+  .consent-note { margin-left: auto; margin-right: auto; }
+}
