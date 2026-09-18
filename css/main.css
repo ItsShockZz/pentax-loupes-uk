@@ -2097,7 +2097,6 @@ html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY
 .brochure__text .eyebrow { display: block; margin-bottom: 14px; }
 .brochure__text .headline { margin-bottom: 16px; }
 .brochure__actions { display: flex; align-items: center; gap: 18px; margin-top: 28px; flex-wrap: wrap; }
-.brochure__meta { font-size: 0.82rem; color: var(--muted); letter-spacing: 0.02em; }
 @media (max-width: 860px) {
   .brochure { grid-template-columns: 1fr; gap: 36px; }
   .brochure__cover { max-width: 260px; margin: 0 auto; }
