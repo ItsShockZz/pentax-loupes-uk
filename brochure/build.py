@@ -56,8 +56,10 @@ def optional_photo(m):
 
 def inline_assets(html):
     html = re.sub(r'<img[^>]*\sdata-optional[^>]*>', optional_photo, html)
-    html = re.sub(r'(src|href)="(\.\./[^"]+)"', lambda m: f'{m.group(1)}="{data_uri(m.group(2))}"', html)
-    html = re.sub(r'url\(["\']?(\.\./[^"\')]+)["\']?\)', lambda m: f'url("{data_uri(m.group(1))}")', html)
+    # Any relative path (../images/x.jpg, photos/x.jpg) is inlined; data: URIs
+    # already produced above and absolute URLs are left alone.
+    html = re.sub(r'(src|href)="(?!data:|https?:|#)([^"]+)"', lambda m: f'{m.group(1)}="{data_uri(m.group(2))}"', html)
+    html = re.sub(r'url\(["\']?(?!data:|https?:|#)([^"\')]+)["\']?\)', lambda m: f'url("{data_uri(m.group(1))}")', html)
     return html
 
 

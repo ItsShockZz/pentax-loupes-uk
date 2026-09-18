@@ -97,6 +97,8 @@
   .photo img { width: 100%; height: 100%; object-fit: cover; }
   .photo--light { background: var(--card-light); }
   .photo--light img { object-fit: contain; }
+  .photo--contain { background: #000; }
+  .photo--contain img { object-fit: contain; }
   .render { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
   /* ----- cover ----- */
@@ -123,9 +125,9 @@
   .note strong { color: var(--ink); font-weight: 600; }
 
   /* ----- page 4 feature rows ----- */
-  .feature { display: grid; grid-template-columns: 66mm 1fr; gap: 7mm; align-items: center; padding: 6mm 0; border-top: 1px solid var(--line); }
+  .feature { display: grid; grid-template-columns: 90mm 1fr; gap: 7mm; align-items: center; padding: 5mm 0; border-top: 1px solid var(--line); }
   .feature:first-of-type { border-top: 0; padding-top: 2mm; }
-  .feature .photo { height: 46mm; }
+  .feature .photo { height: 47mm; }
 
   /* ----- page 5 magnification ----- */
   table { width: 100%; border-collapse: collapse; margin-top: 5mm; }
@@ -308,14 +310,14 @@
 
   <div style="margin-top: 6mm;">
     <div class="feature">
-      <div class="photo"><img src="../images/stills/tour-still-nosepad.jpg" alt="" /></div>
+      <div class="photo"><img src="photos/balance-point.jpg" alt="PENTAX Loupes balanced on a fingertip" style="object-position: 50% 40%;" /></div>
       <div>
         <h3>Balance point</h3>
         <p class="body">A lightweight frame with balanced weight distribution, so the loupes sit evenly and stay comfortable through long procedures rather than dragging on your nose.</p>
       </div>
     </div>
     <div class="feature">
-      <div class="photo"><img src="../images/stills/tour-still-optics-front.jpg" alt="" /></div>
+      <div class="photo photo--contain"><img src="photos/field-of-view.jpg" alt="Field of view through conventional loupes compared with PENTAX Loupes" /></div>
       <div>
         <h3>A wide field of view</h3>
         <p class="body">Japanese optics give a sharp, distortion-free image across a wide field, with the depth perception fine work needs. At 2.5× the field of view is 141 mm.</p>
