@@ -187,21 +187,31 @@ class ProductTour {
    * or times out the tour simply keeps streaming.
    */
   _loadVideoSource(onReady) {
-    this._src = window.matchMedia(MOBILE_QUERY).matches ? VIDEO_SRC_MOBILE : VIDEO_SRC;
+    const isMobile = window.matchMedia(MOBILE_QUERY).matches;
     this._parked = Boolean(onReady);
+    // What the background fetch upgrades to: full master on desktop, the
+    // 540p film on phones.
+    this._src = isMobile ? VIDEO_SRC_MOBILE : VIDEO_SRC;
+    // What streams first, on every device: the 540p film. Its frames are a
+    // few dozen KB (the master is all-keyframe, ~300 KB a frame), so seeks
+    // over the network land in a fraction of the time and scrolling
+    // responds from the first second. The parked reduced-motion frame
+    // seeks once, so it takes the full-quality file directly.
+    let streamSrc = this._parked ? this._src : VIDEO_SRC_MOBILE;
     const bind = (src) => {
       this.videoEl.addEventListener("loadedmetadata", () => this._primeVideo(onReady), { once: true });
       this.videoEl.src = src;
       this.videoEl.load();
       this.videoEl.pause();
     };
-    // Phone encode missing or undecodable: fall back to the master, once.
+    // 540p file missing or undecodable: fall back to the master, once.
     this.videoEl.addEventListener("error", () => {
-      if (this._src === VIDEO_SRC) return;
+      if (streamSrc === VIDEO_SRC) return;
+      streamSrc = VIDEO_SRC;
       this._src = VIDEO_SRC;
       bind(VIDEO_SRC);
     });
-    bind(this._src);
+    bind(streamSrc);
   }
 
   /**
@@ -319,10 +329,11 @@ class ProductTour {
    * ignoring `currentTime` writes for anywhere from under a second up to
    * several seconds. This probes with a real, several-second seek and waits
    * for the `seeked` event that only fires once the browser has genuinely
-   * completed it, retrying (~400ms apart, ~8s total) until one actually
-   * lands, then calls back.
+   * completed it, retrying (1.5s apart, ~9s total: the first probe is
+   * served over the network, not from memory) until one actually lands,
+   * then calls back.
    */
-  _primeVideo(onReady, attemptsLeft = 20) {
+  _primeVideo(onReady, attemptsLeft = 6) {
     const scene = productScenes[Math.max(0, this.activeIndex)] || productScenes[0];
     const base = scene && scene.videoStart != null ? scene.videoStart + 0.5 : 2;
     const probeTarget = Math.min(base, (this.videoEl.duration || 4) - 0.5);
@@ -356,7 +367,7 @@ class ProductTour {
         return;
       }
       this._primeVideo(onReady, attemptsLeft - 1);
-    }, 400);
+    }, 1500);
   }
 
   _buildRail() {
@@ -737,7 +748,11 @@ class ProductTour {
       // re-written — bypassing the delta gate too, because currentTime
       // reads back the issued target immediately, so at scroll rest the
       // delta is 0 and a gated retry would never fire.
-      const seekStuck = this._seekIssuedAt !== 0 && now - this._seekIssuedAt > 200;
+      // In-memory seeks that take longer than 200 ms are stuck; a seek that
+      // still has to come over the network is simply slow, and re-issuing it
+      // every 200 ms cancels the fetch each time so no frame ever lands.
+      const stuckAfter = this._blobState === "active" ? 200 : 1200;
+      const seekStuck = this._seekIssuedAt !== 0 && now - this._seekIssuedAt > stuckAfter;
       const wantsWrite = Math.abs(this.videoEl.currentTime - this._displayTime) > 1 / 48;
       if ((!this.videoEl.seeking && wantsWrite) || (this.videoEl.seeking && seekStuck)) {
         this.videoEl.currentTime = this._displayTime;
