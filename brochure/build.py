@@ -41,7 +41,21 @@ def data_uri(rel_path):
         return f"data:{mime};base64,{base64.b64encode(fh.read()).decode('ascii')}"
 
 
+def optional_photo(m):
+    """<img ... data-optional> is used when the photo exists in brochure/ and
+    becomes a marked placeholder box when it does not, so the PDF can be
+    built before every photo has been taken. Drop the file in and rebuild."""
+    tag = m.group(0)
+    src = re.search(r'src="([^"]+)"', tag).group(1)
+    if os.path.exists(os.path.join(HERE, src)):
+        return tag.replace(f'src="{src}"', f'src="{data_uri(src)}"')
+    cls = re.search(r'class="([^"]*)"', tag)
+    classes = (cls.group(1) + " " if cls else "") + "placeholder"
+    return f'<div class="{classes}">Photo to follow</div>'
+
+
 def inline_assets(html):
+    html = re.sub(r'<img[^>]*\sdata-optional[^>]*>', optional_photo, html)
     html = re.sub(r'(src|href)="(\.\./[^"]+)"', lambda m: f'{m.group(1)}="{data_uri(m.group(2))}"', html)
     html = re.sub(r'url\(["\']?(\.\./[^"\')]+)["\']?\)', lambda m: f'url("{data_uri(m.group(1))}")', html)
     return html
