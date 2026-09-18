@@ -25,7 +25,7 @@
      no third-party font CDN, so no visitor IPs leave this origin. -->
 <link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
 
-<link rel="stylesheet" href="css/main.css?v=20260826z" />
+<link rel="stylesheet" href="css/main.css?v=20260826zb" />
 
 <script type="application/ld+json">
 {
@@ -854,6 +854,30 @@
 </section>
 
 <!-- ===================================================================
+     08a — BROCHURE
+     Printable summary for leads who ask for more information. Same
+     verified copy as this page; source in brochure/brochure.html, rebuilt
+     with `python brochure/build.py` after any copy change. The cover image
+     is page 1 of the PDF (images/brochure-cover.jpg).
+     =================================================================== -->
+<section class="section" id="brochure">
+  <div class="container brochure">
+    <a class="brochure__cover" href="brochure/PENTAX-Loupes-UK-Brochure.pdf" download="PENTAX-Loupes-UK-Brochure.pdf" data-track="brochure_download" aria-label="Download the PENTAX Loupes UK brochure (PDF)">
+      <img src="images/brochure-cover.jpg" alt="Cover of the PENTAX Loupes UK brochure" loading="lazy" width="863" height="1221" />
+    </a>
+    <div class="brochure__text">
+      <span class="eyebrow">Brochure</span>
+      <h2 class="headline">Take the details with you</h2>
+      <p class="body-copy">Eight pages on posture, fit and magnification, with the full adjustment ranges and the lens and lighting options. The same information as this site, in a form you can pass to a colleague or your practice manager.</p>
+      <div class="brochure__actions">
+        <a class="btn btn-primary" href="brochure/PENTAX-Loupes-UK-Brochure.pdf" download="PENTAX-Loupes-UK-Brochure.pdf" data-track="brochure_download">Download the brochure <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+        <span class="brochure__meta">PDF &middot; 8 pages &middot; 3 MB</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================
      08b — LOUPE PASSPORT
      Every fitted pair gets a private passport page (/p/<token>) and a QR
      card for the case: setup, care guidance, fitting support, a one-tap
@@ -1211,6 +1235,7 @@
           <a href="#magnification">Magnification</a>
           <a href="#configure">Build yours</a>
           <a href="#passport">Passport</a>
+          <a href="#brochure">Brochure</a>
           <a href="#testimonials">Reviews</a>
           <a href="#faq">FAQ</a>
         </div>
@@ -1241,8 +1266,8 @@
   <img class="lightbox__img" alt="" />
 </div>
 
-<script src="js/config.js?v=20260826z"></script>
-<script src="js/product-tour.js?v=20260826z"></script>
-<script src="js/main.js?v=20260826z"></script>
+<script src="js/config.js?v=20260826zb"></script>
+<script src="js/product-tour.js?v=20260826zb"></script>
+<script src="js/main.js?v=20260826zb"></script>
 </body>
 </html>
