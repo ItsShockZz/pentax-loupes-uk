@@ -134,10 +134,12 @@
   /* ----- page 4 feature rows ----- */
   .feature { display: grid; grid-template-columns: 90mm 1fr; gap: 7mm; align-items: center; padding: 5mm 0; border-top: 1px solid var(--line); }
   .feature:first-of-type { border-top: 0; padding-top: 2mm; }
-  .feature .photo { height: 45mm; }
+  .feature .photo { height: 40mm; }
+  /* Balance point: tall enough to show the whole frame with the finger beneath it. */
+  .feature:first-of-type .photo { height: 58mm; }
   /* Two frames of the same clinician, barrels up then down, framed identically. */
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5mm; }
-  .pair .photo { height: 58mm; }
+  .pair .photo { height: 50mm; }
   .pair img { object-position: 50% 16%; }
 
   /* ----- page 5 magnification ----- */
@@ -361,7 +363,7 @@
 
   <div style="margin-top: 6mm;">
     <div class="feature">
-      <div class="photo"><img src="photos/balance-point.jpg" alt="PENTAX Loupes balanced on a fingertip" style="object-position: 50% 40%;" /></div>
+      <div class="photo"><img src="photos/balance-point.jpg" alt="PENTAX Loupes balanced on a fingertip" style="object-position: 50% 66%;" /></div>
       <div>
         <h3>Balance point</h3>
         <p class="body">A lightweight frame with balanced weight distribution, so the loupes sit evenly and stay comfortable through long procedures rather than dragging on your nose.</p>
