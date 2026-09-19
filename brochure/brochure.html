@@ -120,9 +120,12 @@
   .diagram__cap strong { color: var(--ink); font-weight: 600; }
 
   /* ----- page 3 fit cards ----- */
-  .fit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 7mm; }
-  .fit-card { display: grid; grid-template-rows: 58mm auto; gap: 4mm; }
-  .fit-card .photo { height: 58mm; }
+  .fit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm 6mm; margin-top: 7mm; align-items: start; }
+  .fit-card { display: grid; grid-template-rows: auto auto; gap: 4mm; }
+  .fit-card .photo { height: 52mm; }
+  /* The two measurements get tall frames: the working-distance shot only
+     reads with the surgeon at the top and the patient at the bottom. */
+  .fit-card--tall .photo { height: 96mm; }
   .fit-card .stat { margin-bottom: 1.6mm; }
   .fit-card .label { font-weight: 600; font-size: 10pt; margin-bottom: 1mm; }
   .note { margin-top: 7mm; padding: 5mm 6mm; border-left: 2px solid var(--blue); background: var(--raised); border-radius: 0 3mm 3mm 0; color: var(--muted); }
@@ -313,16 +316,16 @@
   <p class="lead">Every measurement that matters is adjustable, and it is set for you at your fitting.</p>
 
   <div class="fit-grid">
-    <div class="fit-card">
-      <div class="photo photo--light"><img src="../images/adjust-working-distance.jpg" alt="Working distance adjustment" /></div>
+    <div class="fit-card fit-card--tall">
+      <div class="photo"><img src="photos/working-distance.jpg" alt="Surgeon wearing PENTAX Loupes at working distance from the patient" /></div>
       <div>
         <p class="stat">25–70 <small>cm</small></p>
         <p class="label">Working distance</p>
         <p class="body">Set to match your height, your chair and the way you sit or stand at work.</p>
       </div>
     </div>
-    <div class="fit-card">
-      <div class="photo photo--light"><img src="../images/adjust-pupil-distance.jpg" alt="Pupillary distance adjustment" /></div>
+    <div class="fit-card fit-card--tall">
+      <div class="photo"><img src="photos/pupillary-distance.jpg" alt="PENTAX Loupes held front-on, showing the two barrels" /></div>
       <div>
         <p class="stat">52–78 <small>mm</small></p>
         <p class="label">Pupillary distance</p>
@@ -330,7 +333,7 @@
       </div>
     </div>
     <div class="fit-card">
-      <div class="photo photo--light"><img src="../images/adjust-height-angle.jpg" alt="Height and angle adjustment" /></div>
+      <div class="photo"><img src="photos/line-of-sight.jpg" alt="Surgeon looking straight ahead through PENTAX Loupes" /></div>
       <div>
         <p class="stat">Adjustable <small>line of sight</small></p>
         <p class="label">A neutral posture</p>
@@ -338,17 +341,13 @@
       </div>
     </div>
     <div class="fit-card">
-      <div class="photo photo--light"><img src="../images/adjust-protective-lens.jpg" alt="Protective and prescription lens options" /></div>
+      <div class="photo"><img class="render" src="../images/previews/lenses-yes.jpg" alt="PENTAX Loupes with protective lenses fitted" /></div>
       <div>
         <p class="stat">Optional <small>lenses</small></p>
         <p class="label">Protective lenses</p>
         <p class="body">Protective lenses fit inside the frame. Choose them at your fitting, or use the frame on its own.</p>
       </div>
     </div>
-  </div>
-
-  <div class="note">
-    <strong>Adjustable later, too.</strong> Pupillary distance and working distance can be reset as your eyesight or working posture changes, without returning the loupes to the factory.
   </div>
 
   <div class="foot"><span>PENTAX Loupes UK</span><span>3</span></div>
