@@ -152,9 +152,10 @@
   .light .body { max-width: 150mm; }
 
   /* ----- page 7 ----- */
+  .colours { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 8mm; margin-top: 3mm; }
   .colour { text-align: center; }
-  .colour .render { height: 40mm; }
-  .colour__name { margin-top: 1.4mm; font-size: 8.4pt; font-weight: 600; }
+  .colour .render { height: 72mm; }
+  .colour__name { margin-top: 1mm; font-size: 9pt; font-weight: 600; }
   .step { position: relative; padding-top: 4mm; border-top: 1px solid var(--line-strong); }
   .step__num { font-size: 7.4pt; font-weight: 700; letter-spacing: 0.14em; color: var(--blue); margin-bottom: 1.6mm; }
   .step h3 { font-size: 10.4pt; }
@@ -162,16 +163,17 @@
 
   /* ----- back cover ----- */
   .back { display: flex; flex-direction: column; }
-  .back__hero { font-size: 30pt; font-weight: 700; letter-spacing: -0.025em; line-height: 1.04; max-width: 160mm; margin: 12mm 0 6mm; }
-  .contact { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 9mm; }
+  .back__hero { font-size: 30pt; font-weight: 700; letter-spacing: -0.025em; line-height: 1.04; max-width: 160mm; margin: 10mm 0 5mm; }
+  .after { margin-top: 9mm; padding-top: 7mm; border-top: 1px solid var(--line); }
+  .contact { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 8mm; }
   .contact__box { padding: 5.4mm 6mm; border-radius: 3.6mm; background: var(--raised); border: 1px solid var(--line); }
   .contact__k { font-size: 7.2pt; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.6mm; }
   .contact__v { font-size: 13pt; font-weight: 600; letter-spacing: -0.01em; }
-  .spec { margin-top: 9mm; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; }
+  .spec { margin-top: 8mm; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; }
   .spec div { padding-top: 3mm; border-top: 1px solid var(--line); }
   .spec .k { font-size: 7pt; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1mm; }
   .spec .v { font-size: 10pt; font-weight: 600; }
-  .back__render { position: absolute; left: 50%; bottom: 14mm; width: 150mm; height: 118mm; transform: translateX(-50%); object-fit: contain; object-position: 50% 100%; }
+  .back__render { position: absolute; left: 50%; bottom: 22mm; width: 150mm; height: 70mm; transform: translateX(-50%); object-fit: contain; object-position: 50% 100%; }
   .small { font-size: 7.2pt; color: var(--muted); line-height: 1.45; }
 </style>
 </head>
@@ -414,11 +416,11 @@
   <div class="foot"><span>PENTAX Loupes UK</span><span>6</span></div>
 </section>
 
-<!-- ============================ 7 · COLOURS, WHO, PROCESS ============================ -->
+<!-- ============================ 7 · COLOURS & PROCESS ============================ -->
 <section class="page">
   <p class="eyebrow">Colour</p>
-  <h2 class="headline headline--sm">Four colours, pick yours</h2>
-  <div class="cols-4" style="margin-top: 4mm;">
+  <h2 class="headline">Four colours, pick yours</h2>
+  <div class="colours">
     <div class="colour"><img class="render" src="../images/colours/silvergold.jpg" alt="Silvergold" /><p class="colour__name">Silvergold</p></div>
     <div class="colour"><img class="render" src="../images/colours/blue.jpg" alt="Blue" /><p class="colour__name">Blue</p></div>
     <div class="colour"><img class="render" src="../images/colours/black.jpg" alt="Black" /><p class="colour__name">Black</p></div>
@@ -447,25 +449,6 @@
     </div>
   </div>
 
-  <div class="section-gap">
-    <p class="eyebrow">After your fitting</p>
-    <h2 class="headline headline--sm">Every pair comes with a passport</h2>
-    <div class="cols-2" style="align-items: start;">
-      <p class="body">A private page and a QR card in the case, holding your setup, your care guidance and a one-tap line to the UK team. Magnification, working distance and pupillary distance are recorded as they are set at your fitting, so any later adjustment starts from what was actually done.</p>
-      <p class="body">Scan the card with any phone. No app, no account, no password. Use it for a quick check-in, a support request, or to invite a colleague to see the loupes for themselves.</p>
-    </div>
-  </div>
-
-  <div class="section-gap">
-    <div class="cols-2" style="align-items: center;">
-      <div class="photo" style="height: 46mm;"><img src="../images/stills/tour-still-wear-side.jpg" alt="" /></div>
-      <div>
-        <p class="eyebrow">Who it's for</p>
-        <p class="body">Dentists, prosthodontists and dental hygienists, surgeons across specialities, veterinary surgeons, and other professionals whose work requires enhanced close-up vision.</p>
-      </div>
-    </div>
-  </div>
-
   <div class="foot"><span>PENTAX Loupes UK</span><span>7</span></div>
 </section>
 
@@ -483,6 +466,15 @@
     <div class="contact__box">
       <p class="contact__k">Email</p>
       <p class="contact__v">info@pentaxloupes.com</p>
+    </div>
+  </div>
+
+  <div class="after">
+    <p class="eyebrow">After your fitting</p>
+    <h2 class="headline headline--sm">Every pair comes with a passport</h2>
+    <div class="cols-2" style="align-items: start;">
+      <p class="body">A private page and a QR card in the case, holding your setup, your care guidance and a one-tap line to the UK team. Magnification, working distance and pupillary distance are recorded as they are set at your fitting.</p>
+      <p class="body">Scan the card with any phone. No app, no account, no password. Use it for a quick check-in, a support request, or to invite a colleague to see the loupes for themselves.</p>
     </div>
   </div>
 
