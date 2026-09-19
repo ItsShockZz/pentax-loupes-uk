@@ -131,7 +131,11 @@
   /* ----- page 4 feature rows ----- */
   .feature { display: grid; grid-template-columns: 90mm 1fr; gap: 7mm; align-items: center; padding: 5mm 0; border-top: 1px solid var(--line); }
   .feature:first-of-type { border-top: 0; padding-top: 2mm; }
-  .feature .photo { height: 47mm; }
+  .feature .photo { height: 45mm; }
+  /* Two frames of the same clinician, barrels up then down, framed identically. */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5mm; }
+  .pair .photo { height: 58mm; }
+  .pair img { object-position: 50% 16%; }
 
   /* ----- page 5 magnification ----- */
   table { width: 100%; border-collapse: collapse; margin-top: 5mm; }
@@ -215,7 +219,11 @@
   .spec div { padding-top: 3mm; border-top: 1px solid var(--line); }
   .spec .k { font-size: 7pt; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1mm; }
   .spec .v { font-size: 10pt; font-weight: 600; }
-  .back__render { position: absolute; left: 50%; bottom: 22mm; width: 150mm; height: 70mm; transform: translateX(-50%); object-fit: contain; object-position: 50% 100%; }
+  .back__colours {
+    position: absolute; left: 16mm; right: 16mm; bottom: 22mm;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm;
+  }
+  .back__colours .render { height: 46mm; object-position: 50% 100%; }
   .small { font-size: 7.2pt; color: var(--muted); line-height: 1.45; }
 </style>
 </head>
@@ -368,7 +376,10 @@
       </div>
     </div>
     <div class="feature">
-      <div class="photo"><img src="../images/stills/tour-still-flip.jpg" alt="" /></div>
+      <div class="pair">
+        <div class="photo"><img src="photos/flip-up.jpg" alt="PENTAX Loupes with the barrels flipped up" /></div>
+        <div class="photo"><img src="photos/flip-down.jpg" alt="PENTAX Loupes with the barrels flipped down" /></div>
+      </div>
       <div>
         <h3>Flip up, flip down</h3>
         <p class="body">Flip the barrels out of the way to switch instantly between magnified and normal vision, without taking the frame off.</p>
@@ -636,11 +647,11 @@
   <div class="contact">
     <div class="contact__box">
       <p class="contact__k">Website</p>
-      <p class="contact__v">pentaxloupes.co.uk</p>
+      <p class="contact__v">PentaxLoupes.co.uk</p>
     </div>
     <div class="contact__box">
       <p class="contact__k">Email</p>
-      <p class="contact__v">info@pentaxloupes.com</p>
+      <p class="contact__v">Info@PentaxLoupes.co.uk</p>
     </div>
   </div>
 
@@ -661,7 +672,12 @@
     <div><p class="k">Warranty</p><p class="v">Lifetime</p></div>
   </div>
 
-  <img class="back__render" src="../images/colours/black.jpg" alt="" />
+  <div class="back__colours">
+    <img class="render" src="../images/colours/silvergold.jpg" alt="Silvergold" />
+    <img class="render" src="../images/colours/blue.jpg" alt="Blue" />
+    <img class="render" src="../images/colours/black.jpg" alt="Black" />
+    <img class="render" src="../images/colours/red.jpg" alt="Red" />
+  </div>
 
   <div class="foot">
     <span class="small">© 2026 PENTAX Loupes UK. Product content adapted from pentaxloupes.com for the UK market. Sample views are estimates and results vary by person.</span>
