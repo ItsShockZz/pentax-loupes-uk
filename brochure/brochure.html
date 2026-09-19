@@ -92,6 +92,10 @@
   .quote__face { width: 24mm; height: 24mm; border-radius: 50%; object-fit: cover; object-position: 50% 18%; }
   .quote__text { font-size: 11pt; line-height: 1.45; letter-spacing: -0.005em; }
   .quote__who { margin-top: 2mm; font-size: 8pt; color: var(--muted); }
+  .quote--compact { grid-template-columns: 18mm 1fr; padding: 4.5mm 6mm; }
+  .quote--compact .quote__face { width: 18mm; height: 18mm; }
+  .quote--compact .quote__text { font-size: 10.2pt; }
+  .quote--compact .quote__who { margin-top: 1.2mm; }
 
   .photo { border-radius: 3.2mm; overflow: hidden; background: var(--raised); }
   .photo img { width: 100%; height: 100%; object-fit: cover; }
@@ -161,6 +165,44 @@
   .step h3 { font-size: 10.4pt; }
   .section-gap { margin-top: 9mm; }
 
+  /* ----- page 8 compared ----- */
+  .compare { margin-top: 6mm; }
+  .compare th { font-size: 8.6pt; text-transform: none; letter-spacing: 0; color: var(--muted); padding: 0 4mm 2.6mm 0; vertical-align: bottom; }
+  .compare th.compare__us { color: var(--blue); }
+  .compare td { font-size: 9pt; padding: 3mm 4mm 3mm 0; line-height: 1.4; }
+  .compare td.k { color: var(--ink); font-weight: 600; width: 40mm; }
+  .compare td.us { color: var(--ink); width: 66mm; }
+  .pillars { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; margin-top: 9mm; }
+  .pillars .stat { font-size: 16pt; margin-bottom: 1.8mm; }
+
+  /* ----- page 9 watch ----- */
+  .film { display: block; text-decoration: none; color: inherit; }
+  .film__thumb { display: block; position: relative; border-radius: 3.2mm; overflow: hidden; background: var(--raised); }
+  .film__thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .film__play {
+    position: absolute; left: 50%; top: 50%; width: 12mm; height: 12mm;
+    transform: translate(-50%, -50%); border-radius: 50%;
+    background: rgba(0, 0, 0, 0.62); border: 1px solid rgba(255, 255, 255, 0.55);
+  }
+  .film__play::after {
+    content: ""; position: absolute; left: 56%; top: 50%; transform: translate(-50%, -50%);
+    border-style: solid; border-width: 2.4mm 0 2.4mm 4mm; border-color: transparent transparent transparent #fff;
+  }
+  .film__meta { display: grid; grid-template-columns: 1fr 16mm; gap: 3mm; align-items: center; margin-top: 2.6mm; }
+  .film__title { display: block; font-weight: 600; font-size: 10pt; line-height: 1.3; }
+  .film__url { display: block; font-size: 7.6pt; color: var(--muted); margin-top: 0.6mm; }
+  .film__qr { width: 16mm; height: 16mm; border-radius: 1.6mm; }
+  .film-lead { margin-top: 6mm; }
+  .film--lead .film__thumb { height: 64mm; }
+  .film--lead .film__title { font-size: 12pt; }
+  .films { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm 8mm; margin-top: 7mm; }
+  .films .film__thumb { height: 38mm; }
+
+  /* ----- page 10 questions ----- */
+  .faq { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm 10mm; margin-top: 5mm; }
+  .faq div { padding-top: 4mm; border-top: 1px solid var(--line); }
+  .faq h3 { font-size: 10.4pt; }
+
   /* ----- back cover ----- */
   .back { display: flex; flex-direction: column; }
   .back__hero { font-size: 30pt; font-weight: 700; letter-spacing: -0.025em; line-height: 1.04; max-width: 160mm; margin: 10mm 0 5mm; }
@@ -169,7 +211,7 @@
   .contact__box { padding: 5.4mm 6mm; border-radius: 3.6mm; background: var(--raised); border: 1px solid var(--line); }
   .contact__k { font-size: 7.2pt; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.6mm; }
   .contact__v { font-size: 13pt; font-weight: 600; letter-spacing: -0.01em; }
-  .spec { margin-top: 8mm; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; }
+  .spec { margin-top: 8mm; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4mm; }
   .spec div { padding-top: 3mm; border-top: 1px solid var(--line); }
   .spec .k { font-size: 7pt; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1mm; }
   .spec .v { font-size: 10pt; font-weight: 600; }
@@ -452,7 +494,140 @@
   <div class="foot"><span>PENTAX Loupes UK</span><span>7</span></div>
 </section>
 
-<!-- ============================ 8 · BACK COVER ============================ -->
+<!-- ============================ 8 · COMPARED ============================ -->
+<section class="page">
+  <p class="eyebrow">Compared</p>
+  <h2 class="headline">How PENTAX Loupes compare</h2>
+  <p class="lead">Most loupes you will have seen are through-the-lens: the barrels are fixed into the lens to one set of measurements. PENTAX Loupes take a different approach.</p>
+
+  <table class="compare">
+    <thead><tr><th></th><th class="compare__us">PENTAX Loupes</th><th>Conventional through-the-lens loupes</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Pupillary distance</td><td class="us">You adjust it, 52–78 mm</td><td>Fixed at the factory</td></tr>
+      <tr><td class="k">Working distance</td><td class="us">You adjust it, 25–70 cm</td><td>Fixed at the factory</td></tr>
+      <tr><td class="k">If your eyesight changes</td><td class="us">Re-adjust at any time, without returning them to the factory</td><td>Built to one set of measurements; changes mean going back to the maker</td></tr>
+      <tr><td class="k">Line of sight</td><td class="us">Straight ahead. Prisms bend the optical path down to the field</td><td>Eyes converge and look down through angled barrels</td></tr>
+      <tr><td class="k">Normal vision mid-procedure</td><td class="us">Flip the barrels up, out of your sightline. The frame stays on</td><td>Look over the top of the fixed barrels</td></tr>
+      <tr><td class="k">Your own glasses</td><td class="us">Wear them underneath, with a different nose pad</td><td>Prescription is ground into the carrier lens</td></tr>
+      <tr><td class="k">Fitting</td><td class="us">Demonstrated and fitted on you, in the UK</td><td>Measured, then made to order</td></tr>
+      <tr><td class="k">Warranty</td><td class="us">Lifetime warranty</td><td>Varies by maker</td></tr>
+    </tbody>
+  </table>
+  <p class="footnote">The through-the-lens column describes the category in general; individual makers vary. Lifetime warranty terms are provided with your quotation.</p>
+
+  <div class="pillars">
+    <div><p class="stat">Fully adjustable</p><p class="body">Every measurement that matters is yours to set, and to reset.</p></div>
+    <div><p class="stat">Lifetime warranty</p><p class="body">On every pair, for as long as you wear them.</p></div>
+    <div><p class="stat">Fitted in the UK</p><p class="body">Demonstrated on you before you decide, then set up on your face.</p></div>
+  </div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>8</span></div>
+</section>
+
+<!-- ============================ 9 · WATCH ============================ -->
+<section class="page">
+  <p class="eyebrow">Watch</p>
+  <h2 class="headline">See them in use</h2>
+  <p class="lead">Films from PENTAX Loupes. Click a card to watch, or point your phone camera at the code.</p>
+
+  <div class="film-lead">
+    <a class="film film--lead" href="https://youtu.be/dZ84SZZZHlM">
+      <span class="film__thumb"><img src="videos/dZ84SZZZHlM.jpg" alt="" /><span class="film__play" aria-hidden="true"></span></span>
+      <span class="film__meta">
+        <span><span class="film__title">The PENTAX Loupes film</span><span class="film__url">youtu.be/dZ84SZZZHlM</span></span>
+        <img class="film__qr" src="videos/dZ84SZZZHlM-qr.png" alt="QR code for youtu.be/dZ84SZZZHlM" />
+      </span>
+    </a>
+  </div>
+
+  <div class="films">
+    <a class="film" href="https://youtu.be/2v0Diu6g2wc">
+      <span class="film__thumb"><img src="videos/2v0Diu6g2wc.jpg" alt="" /><span class="film__play" aria-hidden="true"></span></span>
+      <span class="film__meta">
+        <span><span class="film__title">Setting up your PENTAX Loupes, step by step</span><span class="film__url">youtu.be/2v0Diu6g2wc</span></span>
+        <img class="film__qr" src="videos/2v0Diu6g2wc-qr.png" alt="QR code for youtu.be/2v0Diu6g2wc" />
+      </span>
+    </a>
+    <a class="film" href="https://youtu.be/aAK3cu8YtAw">
+      <span class="film__thumb"><img src="videos/aAK3cu8YtAw.jpg" alt="" /><span class="film__play" aria-hidden="true"></span></span>
+      <span class="film__meta">
+        <span><span class="film__title">A day at PENTAX Loupes headquarters</span><span class="film__url">youtu.be/aAK3cu8YtAw</span></span>
+        <img class="film__qr" src="videos/aAK3cu8YtAw-qr.png" alt="QR code for youtu.be/aAK3cu8YtAw" />
+      </span>
+    </a>
+    <a class="film" href="https://youtu.be/KJ066v9qihg">
+      <span class="film__thumb"><img src="videos/KJ066v9qihg.jpg" alt="" /><span class="film__play" aria-hidden="true"></span></span>
+      <span class="film__meta">
+        <span><span class="film__title">Dr Cameron McIntosh on his PENTAX Loupes</span><span class="film__url">youtu.be/KJ066v9qihg</span></span>
+        <img class="film__qr" src="videos/KJ066v9qihg-qr.png" alt="QR code for youtu.be/KJ066v9qihg" />
+      </span>
+    </a>
+    <a class="film" href="https://youtu.be/WZKcJVDRXQc">
+      <span class="film__thumb"><img src="videos/WZKcJVDRXQc.jpg" alt="" /><span class="film__play" aria-hidden="true"></span></span>
+      <span class="film__meta">
+        <span><span class="film__title">Dr Enrico Robotti in theatre with PENTAX Loupes</span><span class="film__url">youtu.be/WZKcJVDRXQc</span></span>
+        <img class="film__qr" src="videos/WZKcJVDRXQc-qr.png" alt="QR code for youtu.be/WZKcJVDRXQc" />
+      </span>
+    </a>
+  </div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>9</span></div>
+</section>
+
+<!-- ============================ 10 · QUESTIONS ============================ -->
+<section class="page">
+  <p class="eyebrow">Questions</p>
+  <h2 class="headline">What clinicians ask us</h2>
+
+  <div class="faq">
+    <div>
+      <h3>Is the magnification adjustable?</h3>
+      <p class="body">No. Magnification is fixed when the loupes are built, which gives a consistent, predictable image. Pupillary distance and working distance are adjustable by you.</p>
+    </div>
+    <div>
+      <h3>Can I adjust the fit later?</h3>
+      <p class="body">Yes. Pupillary distance and working distance can be reset as your eyesight or working posture changes, without returning the loupes to the factory.</p>
+    </div>
+    <div>
+      <h3>Can I wear them with my own glasses?</h3>
+      <p class="body">Yes. Many clinicians do not need separate glasses at all. If you do, a different nose pad makes room for your own glasses underneath.</p>
+    </div>
+    <div>
+      <h3>Which magnification suits my work?</h3>
+      <p class="body">As a guide, dentists commonly use 2.5× to 3.5× (aesthetic dentists often 5.0×), surgeons 3.5× to 5.0×, veterinary surgeons 2.5× to 3.5×. Your specialist helps you choose at your fitting.</p>
+    </div>
+    <div>
+      <h3>Can I try them before I decide?</h3>
+      <p class="body">Yes. We arrange a demonstration and fitting with you in the UK, so you see the view for yourself before anything is ordered.</p>
+    </div>
+    <div>
+      <h3>What do they cost?</h3>
+      <p class="body">It depends on the magnification and on options such as LED lighting. Your specialist prepares a personalised quotation for your configuration.</p>
+    </div>
+    <div>
+      <h3>What warranty do they come with?</h3>
+      <p class="body">A lifetime warranty. The terms come with your quotation.</p>
+    </div>
+    <div>
+      <h3>Are LED lights available?</h3>
+      <p class="body">Yes, wired or wireless. If you already own a light you like, brackets are available for other LED brands.</p>
+    </div>
+  </div>
+
+  <div class="quote quote--compact" style="margin-top: 9mm;">
+    <img class="quote__face" src="../images/testimonial-hsu.jpg" alt="" />
+    <div>
+      <p class="quote__text">“These loupes are just great. I felt a difference in my posture the very first time I tried them!”</p>
+      <p class="quote__who">Dr Hsu · Dentist</p>
+    </div>
+  </div>
+
+  <div class="photo" style="height: 56mm; margin-top: 7mm;"><img src="../images/stills/tour-still-wear-side.jpg" alt="Surgeon wearing PENTAX Loupes in theatre" style="object-position: 50% 45%;" /></div>
+
+  <div class="foot"><span>PENTAX Loupes UK</span><span>10</span></div>
+</section>
+
+<!-- ============================ 11 · BACK COVER ============================ -->
 <section class="page back">
   <div class="brand"><span class="brand__mark">PENTAX</span><span class="brand__sub">Loupes UK</span></div>
   <h2 class="back__hero">The best way to understand PENTAX Loupes is to wear them</h2>
@@ -482,14 +657,15 @@
     <div><p class="k">Magnification</p><p class="v">2.5× to 5.0×</p></div>
     <div><p class="k">Working distance</p><p class="v">25–70 cm</p></div>
     <div><p class="k">Pupillary distance</p><p class="v">52–78 mm</p></div>
-    <div><p class="k">Illumination</p><p class="v">Wired or wireless LED</p></div>
+    <div><p class="k">Illumination</p><p class="v">Wired or wireless</p></div>
+    <div><p class="k">Warranty</p><p class="v">Lifetime</p></div>
   </div>
 
   <img class="back__render" src="../images/colours/black.jpg" alt="" />
 
   <div class="foot">
     <span class="small">© 2026 PENTAX Loupes UK. Product content adapted from pentaxloupes.com for the UK market. Sample views are estimates and results vary by person.</span>
-    <span>8</span>
+    <span>11</span>
   </div>
 </section>
 
