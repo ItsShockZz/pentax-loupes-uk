@@ -2080,6 +2080,9 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 }
 .benefit:hover,
 .led-option:hover { background: var(--bg-raised-2); border-color: var(--line-strong); }
+/* With an odd number of reasons the last card would sit alone in half a
+   row; let it run the full width so the block still reads as a block. */
+.benefit-grid > .benefit:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .benefit__icon,
 .led-option__icon {
   display: grid;
