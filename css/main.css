@@ -863,7 +863,11 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Portrait media (vertical product/clinician clips): a taller box so the
    9:16 source fills without a hard crop. Cover-fit keeps the subject, which
    sits centred in every clip, in frame. */
-.why-row__media--portrait { aspect-ratio: 4 / 5; }
+/* Capped rather than filling half the row: at full column width a 4:5
+   frame stood over 700px tall and swamped the copy beside it. Centred in
+   its half so the alternating rows stay balanced. Narrower than the cap
+   (phones) is unaffected. */
+.why-row__media--portrait { aspect-ratio: 4 / 5; max-width: 380px; margin-inline: auto; }
 /* Two built-around-you tiles now hold portrait clips; keep the 4:3 tile
    (so the 2x2 grid stays even) and frame the subject with object-position. */
 .feature-card__media--portrait video { object-position: 50% 32%; }
@@ -1910,7 +1914,7 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 }
 /* Why PENTAX: the wide-field row uses the same diagonal shot; give it a
    taller box anchored to the bottom so the patient stays in frame. */
-.why-row__media--tall { aspect-ratio: 2 / 3; }
+.why-row__media--tall { aspect-ratio: 2 / 3; max-width: 340px; }
 .why-row__media--tall video { object-position: 50% 100%; }
 
 /* Who it's for: a single centred call to action under the three cards
