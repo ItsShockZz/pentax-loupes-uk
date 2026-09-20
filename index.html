@@ -473,9 +473,9 @@
 
 <!-- ===================================================================
      05 — ILLUMINATION
-     The two media slots are placeholders wired to images/led-wired.jpg and
-     images/led-wireless.jpg — drop real photos in under those names and
-     they appear automatically (see initPhotoSlots() in main.js).
+     Written, not pictured: the light is still in development and the client
+     does not want it shown yet (2026-09-20). images/led-wired.jpg and
+     images/led-wireless.jpg are still in the repository for when it is.
      =================================================================== -->
 <section class="section" id="illumination-detail">
   <div class="container">
@@ -679,7 +679,9 @@
             <button type="button" class="cfg-chip" data-cfg-option="light" data-value="No light" aria-pressed="false">No light</button>
           </div>
           <p class="cfg__error" data-cfg-error="light" role="alert" hidden>Choose an option.</p>
-          <!-- Wireless -> images/led-wireless.jpg, Wired -> images/led-wired.jpg -->
+          <!-- No preview photograph while the light is in development: the
+               `light` entry in PREVIEWS (main.js) returns null, so this stays
+               hidden instead of showing a placeholder. -->
           <figure class="photo-slot cfg-preview cfg-preview--product" data-cfg-preview="light" data-zoom hidden>
             <img alt="" />
             <figcaption class="photo-slot__placeholder">
