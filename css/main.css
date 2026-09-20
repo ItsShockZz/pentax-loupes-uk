@@ -799,7 +799,7 @@ h1, h2, h3, h4, p { margin: 0; }
      band and pulls the next section up over it with a negative margin, so
      the tour hands straight over to "Why PENTAX" with no empty screen in
      between. The section needs to paint above the sticky stage. */
-  #why-pentax { position: relative; z-index: 1; }
+  .tour + section { position: relative; z-index: 1; }
 }
 
 /* ---------------------------------------------------------------------- */
