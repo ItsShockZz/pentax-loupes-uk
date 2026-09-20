@@ -2391,3 +2391,11 @@ p a:not(.btn):not(.text-link),
 .section--raised .benefit:hover,
 .section--raised .led-option:hover,
 .section--raised .feature-card:hover { background: #0e0f11; }
+
+/* This headline needs about 795px on one line and the shared heading column
+   caps at 760px, so it broke onto a second line for the sake of 35px. Freed
+   to the container width here; the paragraph under it keeps a readable
+   measure, and narrow screens still wrap because the type scales with the
+   viewport. */
+#illumination-detail .section-heading { max-width: none; }
+#illumination-detail .section-heading .body-copy { max-width: 720px; }
