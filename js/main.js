@@ -513,8 +513,12 @@ function initScrollReveals() {
 
 function initCountUps() {
   const els = Array.from(document.querySelectorAll("[data-countup]"));
-  const section = els.length && els[0].closest("section");
-  if (!els.length || !section) return;
+  // Anchored to the row of numbers, not the whole band: measured from the
+  // section the count finished while the heading was still filling the
+  // screen, so by the time the figures were actually readable they had
+  // already landed and looked static.
+  const anchor = els.length && (els[0].closest(".trust__stats") || els[0].closest("section"));
+  if (!els.length || !anchor) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   // Scroll-DRIVEN, not time-driven: the numbers climb with your scroll as
@@ -530,11 +534,12 @@ function initCountUps() {
   }));
 
   const render = () => {
-    const rect = section.getBoundingClientRect();
+    const rect = anchor.getBoundingClientRect();
     const vh = window.innerHeight;
-    // 0 when the band's top touches the bottom of the viewport, 1 once
-    // it has risen ~55% of the way up.
-    const p = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.55)));
+    // 0 when the numbers touch the bottom of the viewport, 1 once they have
+    // risen three quarters of the way up it, so the climb happens while
+    // they are on screen and being read.
+    const p = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.75)));
     const eased = easeOut(p);
     specs.forEach((s) => {
       const text = (s.target * eased).toFixed(s.decimals);
