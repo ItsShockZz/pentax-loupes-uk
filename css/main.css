@@ -1714,7 +1714,11 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   --bar-inset: 20px;
   position: fixed;
   left: 50%;
-  bottom: calc(var(--bar-inset) + env(safe-area-inset-bottom, 0px));
+  /* --bar-dock is written by initConfigurator(): it grows as the
+     configurator's bottom edge rises past the bar, so the bar stops
+     floating and rides out with the section instead of drifting on
+     over the sections below. */
+  bottom: calc(var(--bar-inset) + var(--bar-dock, 0px) + env(safe-area-inset-bottom, 0px));
   z-index: 90;
   width: min(1120px, calc(100vw - 2 * var(--bar-inset)));
   display: grid;

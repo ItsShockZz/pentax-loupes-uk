@@ -806,6 +806,27 @@ function initConfigurator() {
     } else {
       summaryBar.classList.add("is-visible");
     }
+
+    // The bar floats above the fold while there is still configurator below
+    // it, then parks on the section's bottom edge and leaves with it. Without
+    // this it carried on hovering over the passport section underneath, which
+    // read as a stuck overlay rather than part of the configurator.
+    let ticking = false;
+    const dock = () => {
+      ticking = false;
+      const bottom = section.getBoundingClientRect().bottom;
+      const overshoot = Math.max(0, Math.round(window.innerHeight - bottom));
+      summaryBar.style.setProperty("--bar-dock", `${overshoot}px`);
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      if (typeof requestAnimationFrame === "function") requestAnimationFrame(dock);
+      else dock();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    dock();
   }
 
   function validateSteps() {
