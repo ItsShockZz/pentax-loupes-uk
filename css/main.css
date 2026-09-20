@@ -797,10 +797,15 @@ h1, h2, h3, h4, p { margin: 0; }
   /* The pinned stage is a full screen but the last chapter's copy ends
      well above the fold. product-tour.js (_fitTail) measures that spare
      band and pulls the next section up over it with a negative margin, so
-     the tour hands straight over to "Why PENTAX" with no empty screen in
-     between. The section needs to paint above the sticky stage. */
-  .tour + section { position: relative; z-index: 1; }
+     the tour hands straight over with no empty screen in between. */
 }
+
+/* The section after the tour is pulled up over the sticky stage's empty
+   tail by that negative margin, so it has to paint ABOVE the stage at every
+   width. While this lived inside the phone breakpoint, desktop let the
+   stage cover the section's top 170px, hiding its heading and swallowing
+   the top padding so the band looked lopsided against its own bottom. */
+.tour + section { position: relative; z-index: 1; }
 
 /* ---------------------------------------------------------------------- */
 /* Handoff / Why PENTAX (editorial rows)                                   */
