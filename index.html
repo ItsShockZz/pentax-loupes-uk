@@ -34,7 +34,7 @@
      discover the poster early on its own. -->
 <link rel="preload" href="images/poster-tour-master.jpg?v=20260826" as="image" fetchpriority="high" />
 
-<link rel="stylesheet" href="css/main.css?v=20260920b" />
+<link rel="stylesheet" href="css/main.css?v=20260920c" />
 
 <script type="application/ld+json">
 {
@@ -478,32 +478,34 @@
      they appear automatically (see initPhotoSlots() in main.js).
      =================================================================== -->
 <section class="section" id="illumination-detail">
-  <div class="container led-section">
-    <div class="led-media">
-      <figure class="led-slot photo-slot" data-photo-slot data-zoom>
-        <img src="images/led-wired.jpg" alt="Wired LED headlight for PENTAX Loupes" hidden width="1254" height="1254" decoding="async" loading="lazy" />
-        <figcaption class="photo-slot__placeholder">
-          <span class="photo-slot__icon" aria-hidden="true">⚡</span>
-          <span class="photo-slot__label">Wired LED</span>
-          <span class="photo-slot__note">Photo coming soon</span>
-        </figcaption>
-        <span class="led-slot__tag">Wired &middot; constant power</span>
-      </figure>
-      <figure class="led-slot photo-slot" data-photo-slot data-zoom>
-        <img src="images/led-wireless.jpg" alt="Wireless LED headlight for PENTAX Loupes" hidden width="1254" height="1254" decoding="async" loading="lazy" />
-        <figcaption class="photo-slot__placeholder">
-          <span class="photo-slot__icon" aria-hidden="true">◌</span>
-          <span class="photo-slot__label">Wireless LED</span>
-          <span class="photo-slot__note">Photo coming soon</span>
-        </figcaption>
-        <span class="led-slot__tag">Wireless &middot; free to move</span>
-      </figure>
-    </div>
-    <div class="why-row__text">
+  <div class="container">
+    <div class="section-heading">
       <span class="eyebrow">Illumination</span>
-      <h2 class="headline" style="font-size:clamp(1.6rem,2.6vw,2.2rem); margin-top:12px;">Light exactly where you are looking</h2>
-      <p class="body-copy body-copy--tight">An optional LED headlight clips to the loupes and lights the field directly ahead of you. Choose <strong>wired</strong> for constant power from a beltpack, or <strong>wireless</strong> for complete freedom of movement.</p>
-      <p class="body-copy body-copy--tight">Already own a light you like? Brackets are available for other LED brands — ask us about compatibility.</p>
+      <h2 class="headline">Light exactly where you are looking</h2>
+      <p class="body-copy">An optional LED headlight clips to the loupes and lights the field from your own line of sight, so the thing you are working on is lit rather than shadowed by your head and hands.</p>
+    </div>
+    <div class="led-options">
+      <article class="led-option">
+        <span class="led-option__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v5M15 3v5"/><path d="M7 8h10v3a5 5 0 0 1-5 5 5 5 0 0 1-5-5Z"/><path d="M12 16v5"/></svg>
+        </span>
+        <h3>Wired</h3>
+        <p>Constant power from a beltpack, for long lists where you would rather not think about charge at all.</p>
+      </article>
+      <article class="led-option">
+        <span class="led-option__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="14" height="8" rx="2.5"/><path d="M20 11v2"/><path d="M6.5 12h4"/></svg>
+        </span>
+        <h3>Wireless</h3>
+        <p>Nothing running down to your belt, so you can move between chairs and rooms without unclipping anything.</p>
+      </article>
+      <article class="led-option">
+        <span class="led-option__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9a4 4 0 0 1 4 4v2"/><circle cx="19" cy="14.5" r="2.5"/><path d="M4 4.5v5"/></svg>
+        </span>
+        <h3>Already own a light</h3>
+        <p>Brackets are available for other LED brands. Tell us which light you use and we will confirm whether it fits.</p>
+      </article>
     </div>
   </div>
 </section>
@@ -561,50 +563,7 @@
   </div>
 </section>
 
-<!-- ===================================================================
-     SPEC BAND — animated key numbers
-     Every figure repeats a fact already stated in full elsewhere on the
-     page — no new claims. Numbers count up on scroll (initCountUps in
-     main.js; static under reduced motion / no JS).
-     =================================================================== -->
-<section class="trust">
-  <div class="trust__bg" aria-hidden="true">
-    <video src="videos/ambient/numbers-beam.mp4?v=pp1" data-poster="images/poster-numbers-beam.jpg" muted loop playsinline preload="none" data-ambient></video>
-  </div>
-  <div class="trust__glow" aria-hidden="true"></div>
-  <div class="container trust__inner">
-    <div class="trust__heading">
-      <span class="eyebrow">The numbers</span>
-      <h2 class="headline">Precision you can measure</h2>
-    </div>
 
-    <div class="trust__stats">
-      <div class="trust__stat">
-        <span class="trust__stat-number"><span data-countup="5.0" data-decimals="1">5.0</span>×</span>
-        <span class="trust__stat-label">Maximum magnification</span>
-      </div>
-      <div class="trust__stat">
-        <span class="trust__stat-number"><span data-countup="141">141</span><span class="trust__stat-unit">mm</span></span>
-        <span class="trust__stat-label">Field of view at 2.5×</span>
-      </div>
-      <div class="trust__stat">
-        <span class="trust__stat-number"><span data-countup="70">70</span><span class="trust__stat-unit">cm</span></span>
-        <span class="trust__stat-label">Maximum working distance</span>
-      </div>
-      <div class="trust__stat">
-        <span class="trust__stat-number"><span data-countup="78">78</span><span class="trust__stat-unit">mm</span></span>
-        <span class="trust__stat-label">Maximum pupillary distance</span>
-      </div>
-    </div>
-
-    <p class="trust__strip">5 magnifications&nbsp;&nbsp;·&nbsp;&nbsp;4 colours&nbsp;&nbsp;·&nbsp;&nbsp;wired &amp; wireless LED options</p>
-
-    <div class="trust__cta">
-      <p>The best way to understand PENTAX Loupes is to wear them.</p>
-      <a class="btn btn-primary" href="#request-demo" data-track="request_demo_nav">Request a demo <span class="btn__arrow" aria-hidden="true">→</span></a>
-    </div>
-  </div>
-</section>
 
 <!-- ===================================================================
      07 — CONFIGURATOR
@@ -980,8 +939,7 @@
     <div class="benefit-layout">
       <aside class="benefit-feature">
         <div class="benefit-feature__media">
-          <img src="images/adjust-protective-lens.jpg" alt="A pair of PENTAX Loupes with their cord, photographed against black"
-               width="1200" height="1200" loading="lazy" decoding="async" />
+          <img src="images/passport-owner.jpg" alt="A clinician wearing PENTAX Loupes, fitted to them" width="900" height="1351" loading="lazy" decoding="async" />
         </div>
         <div class="benefit-feature__body">
           <p class="benefit-feature__kicker">Yours alone</p>
@@ -1021,6 +979,51 @@
         <p>No app, no account, no password. A card in the case and a link that is yours alone, for as long as you wear them.</p>
       </article>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================
+     SPEC BAND — animated key numbers
+     Every figure repeats a fact already stated in full elsewhere on the
+     page — no new claims. Numbers count up on scroll (initCountUps in
+     main.js; static under reduced motion / no JS).
+     =================================================================== -->
+<section class="trust">
+  <div class="trust__bg" aria-hidden="true">
+    <video src="videos/ambient/numbers-beam.mp4?v=pp1" data-poster="images/poster-numbers-beam.jpg" muted loop playsinline preload="none" data-ambient></video>
+  </div>
+  <div class="trust__glow" aria-hidden="true"></div>
+  <div class="container trust__inner">
+    <div class="trust__heading">
+      <span class="eyebrow">The numbers</span>
+      <h2 class="headline">Precision you can measure</h2>
+    </div>
+
+    <div class="trust__stats">
+      <div class="trust__stat">
+        <span class="trust__stat-number"><span data-countup="5.0" data-decimals="1">5.0</span>×</span>
+        <span class="trust__stat-label">Maximum magnification</span>
+      </div>
+      <div class="trust__stat">
+        <span class="trust__stat-number"><span data-countup="141">141</span><span class="trust__stat-unit">mm</span></span>
+        <span class="trust__stat-label">Field of view at 2.5×</span>
+      </div>
+      <div class="trust__stat">
+        <span class="trust__stat-number"><span data-countup="70">70</span><span class="trust__stat-unit">cm</span></span>
+        <span class="trust__stat-label">Maximum working distance</span>
+      </div>
+      <div class="trust__stat">
+        <span class="trust__stat-number"><span data-countup="78">78</span><span class="trust__stat-unit">mm</span></span>
+        <span class="trust__stat-label">Maximum pupillary distance</span>
+      </div>
+    </div>
+
+    <p class="trust__strip">5 magnifications&nbsp;&nbsp;·&nbsp;&nbsp;4 colours&nbsp;&nbsp;·&nbsp;&nbsp;wired &amp; wireless LED options</p>
+
+    <div class="trust__cta">
+      <p>The best way to understand PENTAX Loupes is to wear them.</p>
+      <a class="btn btn-primary" href="#request-demo" data-track="request_demo_nav">Request a demo <span class="btn__arrow" aria-hidden="true">→</span></a>
     </div>
   </div>
 </section>
@@ -1296,8 +1299,8 @@
   <img class="lightbox__img" alt="" />
 </div>
 
-<script src="js/config.js?v=20260920b" defer></script>
-<script src="js/product-tour.js?v=20260920b" defer></script>
-<script src="js/main.js?v=20260920b" defer></script>
+<script src="js/config.js?v=20260920c" defer></script>
+<script src="js/product-tour.js?v=20260920c" defer></script>
+<script src="js/main.js?v=20260920c" defer></script>
 </body>
 </html>

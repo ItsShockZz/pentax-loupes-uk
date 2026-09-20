@@ -703,12 +703,11 @@ function initConfigurator() {
         : v === "No"
           ? { src: "images/previews/lenses-no.jpg", label: "Without protective lenses" }
           : null,
-    light: (v) =>
-      v === "Wireless LED"
-        ? { src: "images/led-wireless.jpg", label: "Wireless LED" }
-        : v === "Wired LED"
-          ? { src: "images/led-wired.jpg", label: "Wired LED" }
-          : null,
+    // No photograph for the light while the product is still in development
+    // (client direction, 2026-09-20). Returning null leaves the preview
+    // hidden rather than showing a "photo coming soon" placeholder; restore
+    // the two entries below when there is something to show.
+    light: () => null,
   };
 
   function updateStepPreview(key, value) {

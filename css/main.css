@@ -1269,10 +1269,9 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
 /* Product renders (colours, lenses, lights) are square subjects on pure
    black. contain shows the whole product; the black container is seamless
    with the render's own background, so there are no visible bars. */
-.led-slot img,
 .cfg-preview--product img,
 .cfg-colour__media img { object-fit: contain !important; background: #000; }
-.led-slot, .cfg-preview--product, .cfg-colour__media { background: #000; }
+.cfg-preview--product, .cfg-colour__media { background: #000; }
 [data-zoom] { cursor: zoom-in; }
 .photo-slot.has-photo { border-style: solid; border-color: var(--line); }
 .photo-slot.has-photo .photo-slot__placeholder { display: none; }
@@ -1447,16 +1446,8 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
   gap: 64px;
   align-items: center;
 }
-.led-media { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.led-slot { position: relative; aspect-ratio: 1 / 1; border: 1px solid var(--line); }
-.led-slot__tag {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  padding: 10px 12px;
-  font-size: 0.72rem; letter-spacing: 0.04em; color: var(--ink);
-  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.75));
-  text-align: center;
-}
-.led-slot.has-photo .led-slot__tag { display: block; }
+.led-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 860px) { .led-options { grid-template-columns: 1fr; } }
 
 @media (max-width: 860px) {
   .led-section { grid-template-columns: 1fr; gap: 32px; }
@@ -2058,7 +2049,8 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   border: 1px solid var(--line);
   background: linear-gradient(180deg, var(--bg-raised-2), var(--bg-raised));
 }
-.benefit-feature__media { aspect-ratio: 5 / 4; background: #000; }
+.benefit-feature__media { aspect-ratio: 4 / 5; background: #000; }
+.benefit-feature__media img { object-position: 50% 22%; }
 .benefit-feature__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .benefit-feature__body { padding: 22px 24px 26px; }
 .benefit-feature__kicker {
@@ -2079,14 +2071,17 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
 }
-.benefit {
+.benefit,
+.led-option {
   background: var(--bg-raised);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 26px 26px 28px;
 }
-.benefit:hover { background: var(--bg-raised-2); border-color: var(--line-strong); }
-.benefit__icon {
+.benefit:hover,
+.led-option:hover { background: var(--bg-raised-2); border-color: var(--line-strong); }
+.benefit__icon,
+.led-option__icon {
   display: grid;
   place-items: center;
   width: 38px;
@@ -2097,9 +2092,12 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   background: rgba(91, 134, 255, 0.12);
   box-shadow: inset 0 0 0 1px rgba(91, 134, 255, 0.22);
 }
-.benefit__icon svg { width: 19px; height: 19px; }
-.benefit h3 { font-size: 1.08rem; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 9px; }
-.benefit p { color: var(--muted); font-size: 0.93rem; line-height: 1.62; }
+.benefit__icon svg,
+.led-option__icon svg { width: 19px; height: 19px; }
+.benefit h3,
+.led-option h3 { font-size: 1.08rem; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 9px; }
+.benefit p,
+.led-option p { color: var(--muted); font-size: 0.93rem; line-height: 1.62; }
 
 /* Scroll reveal, same html:not(.no-js) guard as .why-row */
 html:not(.no-js) .benefit,
