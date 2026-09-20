@@ -1,0 +1,14 @@
+{
+  "name": "PENTAX Loupes UK",
+  "short_name": "PENTAX Loupes",
+  "description": "Precision magnification loupes for surgeons, dentists and veterinary surgeons in the UK.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

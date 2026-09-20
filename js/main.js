@@ -206,12 +206,17 @@ function initTestimonials() {
 /* ---------------------------------------------------------------------- */
 
 function initPhotoSlots() {
-  document.querySelectorAll("[data-photo-slot]").forEach((slot) => {
+  const slots = Array.from(document.querySelectorAll("[data-photo-slot]"));
+  if (!slots.length) return;
+
+  const wire = (slot) => {
     const img = slot.querySelector("img");
-    if (!img || !img.getAttribute("src")) return;
-    // Never lazy-load these: a `hidden` image has no box, so lazy loading
-    // would defer the fetch forever and the slot could never flip to its
-    // photo even once the file exists.
+    if (!img || !img.getAttribute("src") || img.dataset.slotWired) return;
+    img.dataset.slotWired = "1";
+    // `loading="lazy"` cannot be used here: the image starts `hidden`, so it
+    // has no box and the browser would defer the fetch forever, leaving the
+    // slot stuck on its placeholder. Instead the SLOT is observed (it always
+    // has a box) and the image is fetched when the slot nears the viewport.
     img.loading = "eager";
     const show = () => {
       img.hidden = false;
@@ -219,7 +224,24 @@ function initPhotoSlots() {
     };
     if (img.complete && img.naturalWidth > 0) show();
     else img.addEventListener("load", show, { once: true });
-  });
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    slots.forEach(wire);
+    return;
+  }
+  // One viewport of lead-in, so a photo is decoded before it is scrolled to.
+  const io = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        obs.unobserve(e.target);
+        wire(e.target);
+      });
+    },
+    { rootMargin: "100% 0px" }
+  );
+  slots.forEach((slot) => io.observe(slot));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -286,11 +308,26 @@ function updateMagText(value, root = document) {
 }
 
 function initMagScrollStills() {
-  // Preload all five so scroll-switching never flashes a loading frame.
-  MAG_STEPS.forEach((v) => {
-    const im = new Image();
-    im.src = magSampleSrc(v);
-  });
+  // All five are preloaded so scroll-switching never flashes a loading
+  // frame, but only once the visitor is heading for the magnification
+  // content: eagerly they put about a megabyte of photos on the critical
+  // path for a section many visitors never reach.
+  let preloaded = false;
+  const preload = () => {
+    if (preloaded) return;
+    preloaded = true;
+    MAG_STEPS.forEach((v) => { const im = new Image(); im.src = magSampleSrc(v); });
+  };
+  const anchors = [document.querySelector("#magnification"), document.querySelector("[data-chapter='magnification']")].filter(Boolean);
+  if ("IntersectionObserver" in window && anchors.length) {
+    const io = new IntersectionObserver(
+      (entries) => entries.some((e) => e.isIntersecting) && preload(),
+      { rootMargin: "300% 0px" }
+    );
+    anchors.forEach((a) => io.observe(a));
+  } else {
+    setTimeout(preload, 3000);
+  }
   let lastValue = null;
   const tourRoot = magRootFor(document.querySelector("[data-chapter='magnification']"));
   document.addEventListener("pentax:magscroll", (e) => {
@@ -538,9 +575,24 @@ function initAmbientVideos() {
     },
     { threshold: 0.15 }
   );
+  // The poster lives in data-poster until the clip is near: a <video>
+  // poster is fetched on first paint even when preload="none", which put
+  // roughly a megabyte of below-the-fold stills on the critical path.
+  const posterIo = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        obs.unobserve(e.target);
+        const p = e.target.dataset.poster;
+        if (p && !e.target.getAttribute("poster")) e.target.setAttribute("poster", p);
+      });
+    },
+    { rootMargin: "200% 0px" }
+  );
   vids.forEach((v) => {
     v.loop = true;
     io.observe(v);
+    if (v.dataset.poster) posterIo.observe(v);
   });
 }
 

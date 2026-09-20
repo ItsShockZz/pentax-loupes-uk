@@ -12,3 +12,6 @@ tests
 .env
 .env.*
 node_modules
+playwright.config.js
+test-results
+playwright-report

@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Customer passports, invites and the staff manager are private.
+Disallow: /p/
+Disallow: /invite/
+Disallow: /manage
+Disallow: /passport.html
+Disallow: /invite.html
+Disallow: /manage.html
+Disallow: /api/
+
+Sitemap: https://www.pentaxloupes.co.uk/sitemap.xml

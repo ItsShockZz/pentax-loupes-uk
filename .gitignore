@@ -18,3 +18,8 @@ _*.py
 .env.*
 !.env.example
 node_modules/
+
+# Playwright
+test-results/
+playwright-report/
+.playwright/

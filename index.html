@@ -23,9 +23,18 @@
 
 <!-- Inter is self-hosted (see the @font-face at the top of main.css) —
      no third-party font CDN, so no visitor IPs leave this origin. -->
+<meta name="theme-color" content="#0a0a0c" />
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
 <link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
+<!-- The tour's poster frame is the largest thing painted on arrival, and the
+     <video> that carries it gets its src from JS, so the browser cannot
+     discover the poster early on its own. -->
+<link rel="preload" href="images/poster-tour-master.jpg?v=20260826" as="image" fetchpriority="high" />
 
-<link rel="stylesheet" href="css/main.css?v=20260918a" />
+<link rel="stylesheet" href="css/main.css?v=20260920a" />
 
 <script type="application/ld+json">
 {
@@ -127,7 +136,7 @@
              (one per magnification), and the 2.5x-5.0x buttons scroll to
              the matching band — see initMagScrollStills in main.js. -->
         <div class="mag-overlay" aria-hidden="true">
-          <img class="mag-overlay__img" src="images/mag-samples/mag-2-5.jpg" alt="" />
+          <img class="mag-overlay__img" src="images/mag-samples/mag-2-5.jpg" alt="" width="1397" height="1126" decoding="async" />
         </div>
       </div>
     </div>
@@ -236,7 +245,7 @@
     <div class="why-rows">
     <div class="why-row">
       <div class="why-row__media why-row__media--portrait">
-        <video src="videos/features/balance.mp4?v=4" poster="images/ai-stills/ai-lens-bloom.jpg" muted loop playsinline preload="none" data-ambient aria-label="A finger balancing a pair of PENTAX Loupes"></video>
+        <video src="videos/features/balance.mp4?v=4" data-poster="images/ai-stills/ai-lens-bloom.jpg" muted loop playsinline preload="none" data-ambient aria-label="A finger balancing a pair of PENTAX Loupes"></video>
       </div>
       <div class="why-row__text">
         <p class="why-row__index">01</p>
@@ -247,7 +256,7 @@
 
     <div class="why-row why-row--reverse">
       <div class="why-row__media why-row__media--portrait why-row__media--tall">
-        <video src="videos/features/wide.mp4?v=4" poster="images/ai-stills/ai-barrels.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon wearing PENTAX Loupes in profile"></video>
+        <video src="videos/features/wide.mp4?v=4" data-poster="images/ai-stills/ai-barrels.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon wearing PENTAX Loupes in profile"></video>
       </div>
       <div class="why-row__text">
         <p class="why-row__index">02</p>
@@ -258,7 +267,7 @@
 
     <div class="why-row">
       <div class="why-row__media why-row__media--portrait">
-        <video src="videos/features/parallel.mp4?v=4" poster="images/ai-stills/ai-surgeon-upright.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon looking ahead through PENTAX Loupes under an operating light"></video>
+        <video src="videos/features/parallel.mp4?v=4" data-poster="images/ai-stills/ai-surgeon-upright.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon looking ahead through PENTAX Loupes under an operating light"></video>
       </div>
       <div class="why-row__text">
         <p class="why-row__index">03</p>
@@ -269,7 +278,7 @@
 
     <div class="why-row why-row--reverse">
       <div class="why-row__media why-row__media--portrait">
-        <video src="videos/features/flip.mp4?v=4" poster="images/ai-stills/ai-flip-hand.jpg" muted loop playsinline preload="none" data-ambient aria-label="Clinician adjusting and flipping the PENTAX Loupes barrels"></video>
+        <video src="videos/features/flip.mp4?v=4" data-poster="images/ai-stills/ai-flip-hand.jpg" muted loop playsinline preload="none" data-ambient aria-label="Clinician adjusting and flipping the PENTAX Loupes barrels"></video>
       </div>
       <div class="why-row__text">
         <p class="why-row__index">04</p>
@@ -294,25 +303,25 @@
 
     <div class="feature-grid">
       <div class="feature-card">
-        <div class="feature-card__media feature-card__media--portrait feature-card__media--wd"><video src="videos/features/wide.mp4?v=4" poster="images/ai-stills/ai-collar-rings.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon in profile wearing PENTAX Loupes at a working distance"></video></div>
+        <div class="feature-card__media feature-card__media--portrait feature-card__media--wd"><video src="videos/features/wide.mp4?v=4" data-poster="images/ai-stills/ai-collar-rings.jpg" muted loop playsinline preload="none" data-ambient aria-label="Surgeon in profile wearing PENTAX Loupes at a working distance"></video></div>
         <span class="stat-number feature-card__stat">25–70 cm</span>
         <span class="feature-card__label">Working distance</span>
         <p class="feature-card__body">Set to match your height, your chair and the way you sit or stand at work.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-card__media"><video src="videos/built/knurl.mp4?v=pp1" poster="images/ai-stills/ai-knurl.jpg" muted loop playsinline preload="none" data-ambient aria-label="Knurled height and angle adjuster on PENTAX Loupes"></video></div>
+        <div class="feature-card__media"><video src="videos/built/knurl.mp4?v=pp1" data-poster="images/ai-stills/ai-knurl.jpg" muted loop playsinline preload="none" data-ambient aria-label="Knurled height and angle adjuster on PENTAX Loupes"></video></div>
         <span class="stat-number feature-card__stat">Adjustable</span>
         <span class="feature-card__label">Height &amp; angle</span>
         <p class="feature-card__body">Position the barrels for a natural line of sight, then lock them in.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-card__media feature-card__media--portrait"><video src="videos/features/pd.mp4?v=4" poster="images/ai-stills/ai-barrels.jpg" muted loop playsinline preload="none" data-ambient aria-label="PENTAX Loupes being set up for pupillary distance"></video></div>
+        <div class="feature-card__media feature-card__media--portrait"><video src="videos/features/pd.mp4?v=4" data-poster="images/ai-stills/ai-barrels.jpg" muted loop playsinline preload="none" data-ambient aria-label="PENTAX Loupes being set up for pupillary distance"></video></div>
         <span class="stat-number feature-card__stat">52–78 mm</span>
         <span class="feature-card__label">Pupillary distance</span>
         <p class="feature-card__body">Matched to your own eyes, not a factory average.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-card__media"><img src="images/features/lenses-over-glasses.jpg" alt="Clinician wearing PENTAX Loupes over her own prescription glasses" loading="lazy" width="768" height="1024" /></div>
+        <div class="feature-card__media"><img src="images/features/lenses-over-glasses.jpg" alt="Clinician wearing PENTAX Loupes over her own prescription glasses" loading="lazy" width="768" height="1024" decoding="async" /></div>
         <span class="stat-number feature-card__stat">Optional</span>
         <span class="feature-card__label">Protective &amp; prescription lenses</span>
         <p class="feature-card__body">Wear your glasses underneath, fit a prescription insert, or use the frame on its own.</p>
@@ -346,7 +355,7 @@
       </div>
     </div>
     <div class="why-row__media why-row__media--portrait">
-      <video src="videos/features/eyes.mp4?v=4" poster="images/adjust-protective-lens.jpg" muted loop playsinline preload="none" data-ambient aria-label="PENTAX Loupes resting on an instrument tray"></video>
+      <video src="videos/features/eyes.mp4?v=4" data-poster="images/adjust-protective-lens.jpg" muted loop playsinline preload="none" data-ambient aria-label="PENTAX Loupes resting on an instrument tray"></video>
     </div>
   </div>
 </section>
@@ -404,7 +413,7 @@
            images/mag-samples/ (mag-2-5.jpg … mag-5-0.jpg), the styled
            placeholder below shows instead — see initMagSample() in main.js. -->
       <div class="mag-sample" data-mag-sample aria-live="polite">
-        <img data-mag-layer src="images/mag-samples/mag-2-5.jpg" alt="Sample view at 2.5x magnification" />
+        <img data-mag-layer src="images/mag-samples/mag-2-5.jpg" alt="Sample view at 2.5x magnification" width="1397" height="1126" decoding="async" loading="lazy" />
         <div class="mag-sample__placeholder" data-mag-sample-placeholder hidden>
           <span class="mag-sample__badge" data-mag-sample-label>2.5×</span>
           <span class="mag-sample__note">Sample view photo coming soon</span>
@@ -472,7 +481,7 @@
   <div class="container led-section">
     <div class="led-media">
       <figure class="led-slot photo-slot" data-photo-slot data-zoom>
-        <img src="images/led-wired.jpg" alt="Wired LED headlight for PENTAX Loupes" hidden />
+        <img src="images/led-wired.jpg" alt="Wired LED headlight for PENTAX Loupes" hidden width="1254" height="1254" decoding="async" loading="lazy" />
         <figcaption class="photo-slot__placeholder">
           <span class="photo-slot__icon" aria-hidden="true">⚡</span>
           <span class="photo-slot__label">Wired LED</span>
@@ -481,7 +490,7 @@
         <span class="led-slot__tag">Wired &middot; constant power</span>
       </figure>
       <figure class="led-slot photo-slot" data-photo-slot data-zoom>
-        <img src="images/led-wireless.jpg" alt="Wireless LED headlight for PENTAX Loupes" hidden />
+        <img src="images/led-wireless.jpg" alt="Wireless LED headlight for PENTAX Loupes" hidden width="1254" height="1254" decoding="async" loading="lazy" />
         <figcaption class="photo-slot__placeholder">
           <span class="photo-slot__icon" aria-hidden="true">◌</span>
           <span class="photo-slot__label">Wireless LED</span>
@@ -511,7 +520,7 @@
     <div class="discipline-grid">
       <a class="discipline-card" href="#configure" data-configure-use="Dental practice">
         <span class="discipline-card__media photo-slot" data-photo-slot>
-          <img src="images/disciplines/dentistry.jpg" alt="" hidden />
+          <img src="images/disciplines/dentistry.jpg" alt="" hidden width="1080" height="1350" decoding="async" loading="lazy" />
           <span class="photo-slot__placeholder">
             <span class="photo-slot__label">Dentistry</span>
             <span class="photo-slot__note">Photo coming soon</span>
@@ -523,7 +532,7 @@
       </a>
       <a class="discipline-card" href="#configure" data-configure-use="Medical practice">
         <span class="discipline-card__media photo-slot" data-photo-slot>
-          <img src="images/disciplines/surgery.jpg" alt="" hidden />
+          <img src="images/disciplines/surgery.jpg" alt="" hidden width="1080" height="1920" decoding="async" loading="lazy" />
           <span class="photo-slot__placeholder">
             <span class="photo-slot__label">Surgery</span>
             <span class="photo-slot__note">Photo coming soon</span>
@@ -535,7 +544,7 @@
       </a>
       <a class="discipline-card" href="#configure" data-configure-use="Other">
         <span class="discipline-card__media photo-slot" data-photo-slot>
-          <img src="images/disciplines/veterinary.jpg" alt="" hidden />
+          <img src="images/disciplines/veterinary.jpg" alt="" hidden width="382" height="510" decoding="async" loading="lazy" />
           <span class="photo-slot__placeholder">
             <span class="photo-slot__label">Veterinary</span>
             <span class="photo-slot__note">Photo coming soon</span>
@@ -560,7 +569,7 @@
      =================================================================== -->
 <section class="trust">
   <div class="trust__bg" aria-hidden="true">
-    <video src="videos/ambient/numbers-beam.mp4?v=pp1" poster="images/poster-numbers-beam.jpg" muted loop playsinline preload="none" data-ambient></video>
+    <video src="videos/ambient/numbers-beam.mp4?v=pp1" data-poster="images/poster-numbers-beam.jpg" muted loop playsinline preload="none" data-ambient></video>
   </div>
   <div class="trust__glow" aria-hidden="true"></div>
   <div class="container trust__inner">
@@ -623,28 +632,28 @@
           <div class="cfg__colours" role="group" aria-label="Frame colour">
             <button type="button" class="cfg-colour" data-cfg-option="colour" data-value="Silvergold" aria-pressed="false">
               <span class="cfg-colour__media photo-slot" data-photo-slot>
-                <img src="images/colours/silvergold.jpg?v=4" alt="" hidden />
+                <img src="images/colours/silvergold.jpg?v=4" alt="" hidden width="1254" height="1254" decoding="async" loading="lazy" />
                 <span class="photo-slot__placeholder"><span class="cfg-colour__dot" style="background:#c9b48a"></span></span>
               </span>
               <span class="cfg-colour__name">Silvergold</span>
             </button>
             <button type="button" class="cfg-colour" data-cfg-option="colour" data-value="Blue" aria-pressed="false">
               <span class="cfg-colour__media photo-slot" data-photo-slot>
-                <img src="images/colours/blue.jpg?v=4" alt="" hidden />
+                <img src="images/colours/blue.jpg?v=4" alt="" hidden width="1254" height="1254" decoding="async" loading="lazy" />
                 <span class="photo-slot__placeholder"><span class="cfg-colour__dot" style="background:#2c5fe0"></span></span>
               </span>
               <span class="cfg-colour__name">Blue</span>
             </button>
             <button type="button" class="cfg-colour" data-cfg-option="colour" data-value="Black" aria-pressed="false">
               <span class="cfg-colour__media photo-slot" data-photo-slot>
-                <img src="images/colours/black.jpg?v=4" alt="" hidden />
+                <img src="images/colours/black.jpg?v=4" alt="" hidden width="1254" height="1254" decoding="async" loading="lazy" />
                 <span class="photo-slot__placeholder"><span class="cfg-colour__dot" style="background:#1d1d1f"></span></span>
               </span>
               <span class="cfg-colour__name">Black</span>
             </button>
             <button type="button" class="cfg-colour" data-cfg-option="colour" data-value="Red" aria-pressed="false">
               <span class="cfg-colour__media photo-slot" data-photo-slot>
-                <img src="images/colours/red.jpg?v=4" alt="" hidden />
+                <img src="images/colours/red.jpg?v=4" alt="" hidden width="1254" height="1254" decoding="async" loading="lazy" />
                 <span class="photo-slot__placeholder"><span class="cfg-colour__dot" style="background:#a3231f"></span></span>
               </span>
               <span class="cfg-colour__name">Red</span>
@@ -844,7 +853,7 @@
         </li>
       </ol>
       <figure class="ambient-panel">
-        <video class="ambient-panel__video" src="videos/ambient/instrument-tray.mp4?v=pp1" poster="images/poster-instrument-tray.jpg" muted loop playsinline preload="none" data-ambient aria-label="PENTAX Loupes beside a prepared instrument tray"></video>
+        <video class="ambient-panel__video" src="videos/ambient/instrument-tray.mp4?v=pp1" data-poster="images/poster-instrument-tray.jpg" muted loop playsinline preload="none" data-ambient aria-label="PENTAX Loupes beside a prepared instrument tray"></video>
       </figure>
     </div>
     <!-- NEEDS CLIENT CONFIRMATION: no verified claim of official UK distributor/partner
@@ -866,7 +875,7 @@
 <section class="section" id="brochure" hidden>
   <div class="container brochure">
     <a class="brochure__cover" href="brochure/PENTAX-Loupes-UK-Brochure.pdf" download="PENTAX-Loupes-UK-Brochure.pdf" data-track="brochure_download" aria-label="Download the PENTAX Loupes UK brochure (PDF)">
-      <img src="images/brochure-cover.jpg" alt="Cover of the PENTAX Loupes UK brochure" loading="lazy" width="863" height="1221" />
+      <img src="images/brochure-cover.jpg" alt="Cover of the PENTAX Loupes UK brochure" loading="lazy" width="863" height="1221" decoding="async" />
     </a>
     <div class="brochure__text">
       <span class="eyebrow">Brochure</span>
@@ -1116,7 +1125,7 @@
     </div>
 
     <div class="testimonial js-only" id="testimonial-carousel">
-      <div class="testimonial__portrait"><img src="images/testimonial-robotti.jpg" alt="" /></div>
+      <div class="testimonial__portrait"><img src="images/testimonial-robotti.jpg" alt="" width="1200" height="960" decoding="async" loading="lazy" /></div>
       <div>
         <p class="testimonial__quote"></p>
         <p class="testimonial__name"></p>
@@ -1268,8 +1277,8 @@
   <img class="lightbox__img" alt="" />
 </div>
 
-<script src="js/config.js?v=20260918a"></script>
-<script src="js/product-tour.js?v=20260918b"></script>
-<script src="js/main.js?v=20260918a"></script>
+<script src="js/config.js?v=20260920a" defer></script>
+<script src="js/product-tour.js?v=20260920a" defer></script>
+<script src="js/main.js?v=20260920a" defer></script>
 </body>
 </html>

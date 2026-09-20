@@ -1998,7 +1998,7 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 }
 .passport-visual:hover .passport-card { transform: rotate(0deg) translateY(-4px); }
 .passport-card__brand { font-weight: 800; letter-spacing: 0.14em; font-size: 0.95rem; }
-.passport-card__brand span { display: block; font-weight: 500; letter-spacing: 0.16em; font-size: 0.58rem; color: #777; text-transform: uppercase; margin-top: 3px; }
+.passport-card__brand span { display: block; font-weight: 500; letter-spacing: 0.16em; font-size: 0.58rem; color: #6b6b6b; text-transform: uppercase; margin-top: 3px; }
 .passport-card__title { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
 .passport-card__name { font-size: 0.9rem; color: #333; margin-top: 4px; }
 .passport-card__qr { width: 150px; height: 150px; margin: 0 auto; }
@@ -2122,3 +2122,73 @@ html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY
   .steps__item, .mag-priority, .cfg__hint, .benefit { text-align: center; }
   .consent-note { margin-left: auto; margin-right: auto; }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Touch targets                                                           */
+/* Small visual controls (progress dots, carousel dots, swatches, pills)   */
+/* keep their size but get a 44x44 hit area on touch pointers, which is    */
+/* the WCAG 2.5.5 / platform minimum. An invisible ::after does the work   */
+/* so nothing about the design changes.                                    */
+/* ---------------------------------------------------------------------- */
+.rail__dot, .testimonial__dot, .colour-swatch { position: relative; }
+.rail__dot::after, .testimonial__dot::after, .colour-swatch::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+@media (pointer: coarse) {
+  .mag-btn { min-height: 44px; }
+  .faq-item__trigger { min-height: 48px; }
+  .nav__drawer a:not(.btn) { min-height: 48px; }
+  .testimonial__prev, .testimonial__next { width: 44px; height: 44px; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Links inside prose must not rely on colour alone to be recognisable     */
+/* (WCAG 1.4.1). Navigation, buttons and cards are excluded: they are      */
+/* distinguishable by position and shape.                                  */
+/* ---------------------------------------------------------------------- */
+.body-copy a,
+.legal a,
+p a:not(.btn):not(.text-link),
+.consent-note a,
+.faq-item__panel a,
+.footer__col a {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: from-font;
+}
+.text-link { text-decoration: underline; text-underline-offset: 0.18em; }
+.footer__col a { text-decoration-color: rgba(255, 255, 255, 0.35); }
+.footer__col a:hover { text-decoration-color: currentColor; }
+
+/* Touch pointers: bring the real controls up to a 44px target. Inline links
+   inside sentences are deliberately left alone -- WCAG 2.5.8 exempts them,
+   and padding them out would wreck the line spacing of body copy. */
+@media (pointer: coarse) {
+  /* The bars are positioned against the 34px box, so the hit area is added
+     as an overlay rather than by resizing the button. */
+  .nav__toggle::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+  .nav__brand { padding-block: 10px; }
+  .cfg-chip { padding-block: 12px; }
+  .field input, .field select, .field textarea { min-height: 44px; }
+  .footer__col a { padding-block: 12px; }
+  .mag-priority__range { height: 44px; }
+}
+
+/* Small print carries links inside sentences; a little more leading keeps
+   those links above the 24px minimum target and makes the text easier to
+   read at 0.82rem. */
+.consent-note, .demo-aside__card p, .footer__bottom { line-height: 1.95; }

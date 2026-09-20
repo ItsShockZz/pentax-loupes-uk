@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PENTAX Loupes UK">
+  <rect width="64" height="64" rx="12" fill="#0a0a0c"/>
+  <rect x="10" y="17" width="44" height="7" rx="3.5" fill="#c9cbd1"/>
+  <g fill="none" stroke="#f5f6f8" stroke-width="3.5">
+    <circle cx="23" cy="38" r="9.5"/>
+    <circle cx="41" cy="38" r="9.5"/>
+  </g>
+  <circle cx="23" cy="38" r="3.6" fill="#2c5fe0"/>
+  <circle cx="41" cy="38" r="3.6" fill="#2c5fe0"/>
+</svg>
