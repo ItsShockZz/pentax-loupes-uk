@@ -442,7 +442,11 @@ function initMagPrioritySlider() {
 /* drives the click flare animation in main.css.                           */
 /* ---------------------------------------------------------------------- */
 
-const COLOUR_VIDEO_MOMENTS = { silvergold: 38.1, blue: 40.5, black: 39.2, red: 36.9 };
+// Blue is the film's closing shot, so it runs to the final frame rather
+// than stopping at 40.5 with half a second of zoom still to play. The
+// tour clamps display to videoEnd - 1/24 (40.958), so 40.95 is the last
+// frame it will actually render.
+const COLOUR_VIDEO_MOMENTS = { silvergold: 38.1, blue: 40.95, black: 39.2, red: 36.9 };
 
 function initColourSelectors(tour) {
   const groups = document.querySelectorAll("[data-colour-selector]");
@@ -536,10 +540,10 @@ function initCountUps() {
   const render = () => {
     const rect = anchor.getBoundingClientRect();
     const vh = window.innerHeight;
-    // 0 when the numbers touch the bottom of the viewport, 1 once they have
-    // risen three quarters of the way up it, so the climb happens while
-    // they are on screen and being read.
-    const p = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.75)));
+    // 0 when the numbers touch the bottom of the viewport, 1 exactly when
+    // they reach the middle of it, so the climb is finished by the time the
+    // band is centred and being read rather than still creeping up.
+    const p = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.5)));
     const eased = easeOut(p);
     specs.forEach((s) => {
       const text = (s.target * eased).toFixed(s.decimals);

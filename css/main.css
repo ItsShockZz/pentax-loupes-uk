@@ -1908,7 +1908,10 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 /* a landscape tile can never hold it. All four tiles share a 3:4 box; on   */
 /* desktop they sit in one row so the section stays a sensible height.      */
 /* ---------------------------------------------------------------------- */
-.feature-card__media { aspect-ratio: 3 / 4; }
+/* Square, not 3:4: the protective-lens photograph is a landscape subject
+   and a portrait frame could not hold both eyes at any crop. Square also
+   shortens the tiles, which were the tallest thing in the section. */
+.feature-card__media { aspect-ratio: 1 / 1; }
 .feature-card__media--portrait video { object-position: 50% 50%; }
 .feature-card__media--wd video { object-position: 50% 100%; } /* keep the patient in */
 @media (min-width: 1100px) {
@@ -2399,3 +2402,8 @@ p a:not(.btn):not(.text-link),
    viewport. */
 #illumination-detail .section-heading { max-width: none; }
 #illumination-detail .section-heading .body-copy { max-width: 720px; }
+
+/* The prescription section is a two-column layout with a single image, not
+   a run of editorial rows, so it carries a larger frame than the 380px cap
+   the Why PENTAX rows share. */
+#prescription .why-row__media--portrait { max-width: 480px; }
