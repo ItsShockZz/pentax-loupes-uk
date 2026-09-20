@@ -596,7 +596,7 @@ class ProductTour {
     // Mobile chapter copy sits below the pinned video; publish the video's
     // chapter-mode bottom edge so the CSS padding tracks the real height.
     this.wrapperEl.style.setProperty("--tour-video-bottom", `${Math.round(normal.top + normal.h)}px`);
-    this._fitTail(isMobile, stage);
+    this._fitTail(isMobile, stage, normal);
 
     // Committed last, deliberately: if anything above threw, the mode stays
     // un-committed and the per-frame invariant in _updateFrame retries the
@@ -605,23 +605,24 @@ class ProductTour {
   }
 
   /**
-   * Phones only. The pinned stage is a full screen, but the last chapter's
+   * The pinned stage is a full screen, but the last chapter's
    * copy ends well above the fold, which left an empty black band that the
    * next section only reached after the band had scrolled past. Measure the
    * band and pull the following section up over it (negative margin on the
    * tour; #why-pentax is raised above the sticky stage in main.css), so the
    * tour hands straight over. Desktop clears it.
    */
-  _fitTail(isMobile, stage) {
-    if (!isMobile) {
-      this.wrapperEl.style.marginBottom = "";
-      return;
-    }
+  _fitTail(isMobile, stage, normal) {
     const last = this.chapterEls[this.chapterEls.length - 1];
     const copy = last && last.querySelector(".tour__copy");
     if (!copy) return;
-    const copyBottom = copy.getBoundingClientRect().bottom - stage.getBoundingClientRect().top;
-    const spare = stage.clientHeight - copyBottom - 28;
+    const stageTop = stage.getBoundingClientRect().top;
+    // Measured against the CHAPTER geometry, never the scene on screen: the
+    // full-bleed intro fills the stage, and letting that flip the margin
+    // would change the document height mid-scroll.
+    let contentBottom = copy.getBoundingClientRect().bottom - stageTop;
+    if (normal) contentBottom = Math.max(contentBottom, normal.top + normal.h);
+    const spare = stage.clientHeight - contentBottom - (isMobile ? 28 : 56);
     this.wrapperEl.style.marginBottom = spare > 0 ? `-${Math.round(spare)}px` : "";
   }
 
