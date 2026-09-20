@@ -605,7 +605,7 @@ class ProductTour {
   }
 
   /**
-   * The pinned stage is a full screen, but the last chapter's
+   * Phones only. The pinned stage is a full screen, but the last chapter's
    * copy ends well above the fold, which left an empty black band that the
    * next section only reached after the band had scrolled past. Measure the
    * band and pull the following section up over it (negative margin on the
@@ -613,6 +613,15 @@ class ProductTour {
    * tour hands straight over. Desktop clears it.
    */
   _fitTail(isMobile, stage, normal) {
+    // Desktop keeps its full pinned range. Pulling the next section up here
+    // shortens nothing about the scroll, it just slides that section into
+    // view while the stage is still pinned, so the last chapter appears to
+    // drift upward with another section already showing beneath it. The
+    // film has to finish first, then release.
+    if (!isMobile) {
+      this.wrapperEl.style.marginBottom = "";
+      return;
+    }
     const last = this.chapterEls[this.chapterEls.length - 1];
     const copy = last && last.querySelector(".tour__copy");
     if (!copy) return;
