@@ -2274,17 +2274,17 @@ p a:not(.btn):not(.text-link),
 .journey {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  margin: 0 0 46px;
+  gap: 14px;
+  margin: 0 0 34px;
   padding: 0;
   list-style: none;
   counter-reset: none;
 }
 .journey__step {
   position: relative;
-  padding: 26px 24px 24px;
+  padding: 20px 20px 18px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 14px;
   background: var(--bg-raised);
 }
 /* The rule joining one step to the next; hidden on the last, and dropped
@@ -2292,9 +2292,9 @@ p a:not(.btn):not(.text-link),
 .journey__step::after {
   content: "";
   position: absolute;
-  top: 46px;
-  right: -19px;
-  width: 19px;
+  top: 35px;
+  right: -15px;
+  width: 15px;
   height: 1px;
   background: var(--line-strong);
 }
@@ -2302,23 +2302,23 @@ p a:not(.btn):not(.text-link),
 .journey__num {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  margin-bottom: 16px;
-  font-size: 0.8rem;
+  margin-bottom: 12px;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--pentax-blue);
   background: rgba(91, 134, 255, 0.12);
   box-shadow: inset 0 0 0 1px rgba(91, 134, 255, 0.24);
 }
-.journey__step h3 { font-size: 1.05rem; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 9px; }
-.journey__step p { color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
+.journey__step h3 { font-size: 0.97rem; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 7px; }
+.journey__step p { color: var(--muted); font-size: 0.86rem; line-height: 1.55; }
 .journey__when {
   display: inline-block;
-  margin-top: 16px;
-  padding: 5px 11px;
+  margin-top: 12px;
+  padding: 4px 9px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
@@ -2330,12 +2330,12 @@ p a:not(.btn):not(.text-link),
 
 .speed {
   margin: 0;
-  padding: 30px 30px 26px;
+  padding: 24px 24px 20px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 16px;
   background: var(--bg-raised);
 }
-.speed__title { font-size: 1.02rem; font-weight: 600; color: var(--ink); margin-bottom: 22px; }
+.speed__title { font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 18px; }
 .speed__row { display: grid; gap: 9px; margin-bottom: 18px; }
 .speed__label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; font-size: 0.92rem; color: var(--muted); }
 .speed__label strong { color: var(--ink); font-weight: 600; }
@@ -2353,3 +2353,28 @@ p a:not(.btn):not(.text-link),
   .journey__step::after { display: none; }
   .speed { padding: 24px 22px; }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Card tone follows the section                                           */
+/* Sections alternate black and grey, so a card carrying the same grey as  */
+/* its section disappears into it. Inside a raised (grey) section every    */
+/* card drops to the page black instead; on black sections they keep the   */
+/* raised grey. One rule, so adding a section never silently swallows the  */
+/* cards inside it.                                                        */
+/* ---------------------------------------------------------------------- */
+.section--raised .journey__step,
+.section--raised .speed,
+.section--raised .benefit,
+.section--raised .led-option,
+.section--raised .feature-card,
+.section--raised .discipline-card,
+.section--raised .demo-aside__card,
+.section--raised .rx-option,
+.section--raised .cfg-colour,
+.section--raised .mag-row,
+.section--raised .testimonial__portrait,
+.section--raised .why-row__media { background: var(--bg); }
+.section--raised .benefit-feature { background: linear-gradient(180deg, var(--bg), #0e0f11); }
+.section--raised .benefit:hover,
+.section--raised .led-option:hover,
+.section--raised .feature-card:hover { background: #0e0f11; }
