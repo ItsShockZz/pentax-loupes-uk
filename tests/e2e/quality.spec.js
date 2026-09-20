@@ -15,7 +15,7 @@ test.describe("accessibility", () => {
       // 19.3:1 for body text on the page background.)
       await page.evaluate(() => {
         document
-          .querySelectorAll(".why-row, .feature-card, .discipline-card, .steps__item, .trust__stat, .benefit, .passport-visual, [data-reveal]")
+          .querySelectorAll(".why-row, .feature-card, .discipline-card, .steps__item, .trust__stat, .benefit, .benefit-feature, .passport-visual, [data-reveal]")
           .forEach((el) => el.classList.add("is-visible"));
       });
       await page.waitForTimeout(400);

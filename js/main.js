@@ -483,7 +483,7 @@ function initColourSelectors(tour) {
 /* ---------------------------------------------------------------------- */
 
 function initScrollReveals() {
-  const targets = document.querySelectorAll(".why-row, .trust__stat, .discipline-card, .steps__item, .benefit, .passport-visual");
+  const targets = document.querySelectorAll(".why-row, .trust__stat, .discipline-card, .steps__item, .benefit, .benefit-feature, .passport-visual");
   if (!targets.length) return;
 
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {

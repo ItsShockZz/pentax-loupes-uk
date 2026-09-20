@@ -1974,18 +1974,47 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
 
 /* The card: the same white A6 passport card that /manage prints, sitting
    on the dark page with a soft blue glow behind it. */
-.passport-visual { position: relative; display: grid; justify-items: center; gap: 22px; padding: 24px 0; overflow: hidden; }
+.passport-visual { position: relative; display: grid; justify-items: center; gap: 22px; padding: 24px 0; }
 .passport-visual__glow {
   position: absolute;
   left: 50%; top: 45%;
-  width: 520px; height: 520px;
+  /* Sized to the column rather than a fixed 520px: this used to spill past
+     the viewport on phones and zoom the whole page out. */
+  width: min(520px, 100%); height: 520px;
   transform: translate(-50%, -50%);
   background: radial-gradient(circle, rgba(91, 134, 255, 0.22), transparent 66%);
   pointer-events: none;
 }
-.passport-card {
+.passport-stack {
   position: relative;
   width: min(100%, 330px);
+  display: grid;
+}
+/* Colourways fanned out behind the passport, so the card reads as one of a
+   set rather than a single mock-up. Purely decorative: the wrapper is
+   aria-hidden, and these carry no text. */
+.passport-stack__card {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  transform-origin: 50% 90%;
+  box-shadow: 0 30px 60px -32px rgba(0, 0, 0, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  transition: transform var(--dur-slow) var(--ease);
+}
+.passport-stack__card--blue  { background: linear-gradient(150deg, #3f74ff, #1c3fa8); transform: rotate(4deg) translateY(2px) scale(0.985); }
+.passport-stack__card--red   { background: linear-gradient(150deg, #cf3b33, #8d1b18); transform: rotate(8deg) translateY(5px) scale(0.97); }
+.passport-stack__card--pink  { background: linear-gradient(150deg, #ef7fb4, #b4487d); transform: rotate(12deg) translateY(8px) scale(0.955); }
+.passport-stack__card--black { background: linear-gradient(150deg, #33343a, #131417); transform: rotate(16deg) translateY(11px) scale(0.94); }
+/* Hovering the column opens the fan a little further. */
+.passport-visual:hover .passport-stack__card--blue  { transform: rotate(6deg) translateY(3px) scale(0.985); }
+.passport-visual:hover .passport-stack__card--red   { transform: rotate(11deg) translateY(7px) scale(0.97); }
+.passport-visual:hover .passport-stack__card--pink  { transform: rotate(16deg) translateY(11px) scale(0.955); }
+.passport-visual:hover .passport-stack__card--black { transform: rotate(21deg) translateY(15px) scale(0.94); }
+
+.passport-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
   background: #fff;
   color: #111;
   border-radius: 18px;
@@ -2013,34 +2042,82 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   background: rgba(10, 10, 12, 0.6);
 }
 
+/* A personal panel sits beside the reasons, so the section opens on the
+   owner rather than on a list: the point of a passport is that it belongs
+   to one person. */
+.benefit-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 330px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.benefit-feature {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--bg-raised-2), var(--bg-raised));
+}
+.benefit-feature__media { aspect-ratio: 5 / 4; background: #000; }
+.benefit-feature__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.benefit-feature__body { padding: 22px 24px 26px; }
+.benefit-feature__kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pentax-blue);
+  margin-bottom: 12px;
+}
+.benefit-feature__text { color: var(--ink); font-size: 1.02rem; line-height: 1.5; letter-spacing: -0.01em; }
+.benefit-feature__note { color: var(--muted); font-size: 0.87rem; line-height: 1.6; margin-top: 12px; }
+
+/* Cards, not a hairline mosaic: rounded, separated and liftable reads far
+   warmer than a 1px grid, and gives each reason its own breathing room. */
 .benefit-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  overflow: hidden;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
 }
-.benefit { background: var(--bg-raised); padding: 34px 30px; }
-.benefit:hover { background: var(--bg-raised-2); }
-.benefit__index { display: block; font-size: 0.78rem; font-weight: 700; color: var(--pentax-blue); letter-spacing: 0.08em; margin-bottom: 14px; }
-.benefit h3 { font-size: 1.15rem; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 10px; }
-.benefit p { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+.benefit {
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 26px 26px 28px;
+}
+.benefit:hover { background: var(--bg-raised-2); border-color: var(--line-strong); }
+.benefit__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  margin-bottom: 15px;
+  color: var(--pentax-blue);
+  background: rgba(91, 134, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(91, 134, 255, 0.22);
+}
+.benefit__icon svg { width: 19px; height: 19px; }
+.benefit h3 { font-size: 1.08rem; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 9px; }
+.benefit p { color: var(--muted); font-size: 0.93rem; line-height: 1.62; }
 
 /* Scroll reveal, same html:not(.no-js) guard as .why-row */
 html:not(.no-js) .benefit,
+html:not(.no-js) .benefit-feature,
 html:not(.no-js) .passport-visual {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease), background var(--dur-fast) var(--ease);
 }
 html:not(.no-js) .benefit.is-visible,
+html:not(.no-js) .benefit-feature.is-visible,
 html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY(0); }
 .benefit:nth-child(2), .benefit:nth-child(5) { transition-delay: 60ms; }
 .benefit:nth-child(3), .benefit:nth-child(6) { transition-delay: 120ms; }
 
 @media (max-width: 1000px) {
+  .benefit-layout { grid-template-columns: 1fr; }
+  .benefit-feature { max-width: 520px; margin: 0 auto; }
   .benefit-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 900px) {
@@ -2049,7 +2126,8 @@ html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY
 }
 @media (max-width: 640px) {
   .benefit-grid { grid-template-columns: 1fr; }
-  .benefit { padding: 26px 22px; }
+  .benefit { padding: 24px 22px 26px; }
+  .benefit__icon { margin-left: auto; margin-right: auto; }
   .passport-intro__ctas .btn { width: 100%; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2192,3 +2270,16 @@ p a:not(.btn):not(.text-link),
    those links above the 24px minimum target and makes the text easier to
    read at 0.82rem. */
 .consent-note, .demo-aside__card p, .footer__bottom { line-height: 1.95; }
+
+/* Phones: a narrower column means a rotated card reaches further past its
+   own box, so the fan is tightened and the deck sits slightly smaller. */
+@media (max-width: 560px) {
+  .passport-stack { width: min(100%, 300px); }
+  .passport-stack__card--blue  { transform: rotate(3deg) translateY(2px) scale(0.985); }
+  .passport-stack__card--red   { transform: rotate(6deg) translateY(4px) scale(0.97); }
+  .passport-stack__card--pink  { transform: rotate(9deg) translateY(6px) scale(0.955); }
+  .passport-stack__card--black { transform: rotate(12deg) translateY(8px) scale(0.94); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .passport-stack__card { transition: none; }
+}
