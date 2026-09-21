@@ -2264,6 +2264,8 @@ p a:not(.btn):not(.text-link),
   .field input, .field select, .field textarea { min-height: 44px; }
   .footer__col a { padding-block: 12px; }
   .mag-priority__range { height: 44px; }
+  /* A standalone call to action, not a link inside a sentence. */
+  .journey__link { min-height: 44px; }
 }
 
 /* Small print carries links inside sentences; a little more leading keeps
@@ -2407,3 +2409,22 @@ p a:not(.btn):not(.text-link),
    a run of editorial rows, so it carries a larger frame than the 380px cap
    the Why PENTAX rows share. */
 #prescription .why-row__media--portrait { max-width: 480px; }
+
+/* Links that leave the site for the measurement app. The arrow marks them
+   as off-site; the scroll-spy ignores them because it only tracks hrefs
+   beginning with "#". */
+.nav__ext { display: inline-flex; align-items: center; gap: 4px; }
+.nav__ext-mark { font-size: 0.78em; opacity: 0.75; }
+.journey__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--pentax-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+.journey__link + .journey__when { margin-left: 12px; }
+.journey__link:hover { color: var(--ink); }
