@@ -34,7 +34,7 @@
      discover the poster early on its own. -->
 <link rel="preload" href="images/poster-tour-master.jpg?v=20260826" as="image" fetchpriority="high" />
 
-<link rel="stylesheet" href="css/main.css?v=20260921b" />
+<link rel="stylesheet" href="css/main.css?v=20260921c" />
 
 <script type="application/ld+json">
 {
@@ -225,7 +225,7 @@
 
     </div>
 
-    <div class="tour__scroll-cue" aria-hidden="true">Scroll to explore</div>
+    <div class="tour__scroll-cue" aria-hidden="true"><span>Scroll to explore</span></div>
   </div>
 
   <nav class="rail" id="tour-rail" aria-label="Tour chapters" hidden></nav>
@@ -386,7 +386,7 @@
         <p class="feature-card__body">Matched to your own eyes, not a factory average.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-card__media"><img src="images/features/lenses-over-glasses.jpg?v=2" alt="Clinician wearing PENTAX Loupes over her own prescription glasses" loading="lazy" width="1024" height="1024" decoding="async" /></div>
+        <div class="feature-card__media feature-card__media--lens"><img src="images/features/lenses-over-glasses.jpg?v=2" alt="Clinician wearing PENTAX Loupes over her own prescription glasses" loading="lazy" width="1024" height="1024" decoding="async" /></div>
         <span class="stat-number feature-card__stat">Optional</span>
         <span class="feature-card__label">Protective &amp; prescription lenses</span>
         <p class="feature-card__body">Wear your glasses underneath, fit a prescription insert, or use the frame on its own.</p>
@@ -437,40 +437,18 @@
     </div>
 
     <div class="mag-layout">
-      <div>
-        <div class="tour-selector" data-magnification-selector>
-          <span class="mag-display__value" data-mag-value>2.5×</span>
-          <span class="mag-display__fov" data-mag-fov>141 mm field of view</span>
-          <p data-mag-guidance>For those who favour field of view and depth of vision: general surgeons, urologists and hygienists.</p>
-          <div class="tour-selector__row" role="group" aria-label="Choose a magnification to preview">
-            <button type="button" class="mag-btn" data-magnification="2.5" aria-pressed="true">2.5×</button>
-            <button type="button" class="mag-btn" data-magnification="3.0" aria-pressed="false">3.0×</button>
-            <button type="button" class="mag-btn" data-magnification="3.5" aria-pressed="false">3.5×</button>
-            <button type="button" class="mag-btn" data-magnification="4.0" aria-pressed="false">4.0×</button>
-            <button type="button" class="mag-btn" data-magnification="5.0" aria-pressed="false">5.0×</button>
-          </div>
-          <p class="tour__footnote">*These are estimates, results per person may vary.</p>
+      <div class="tour-selector" data-magnification-selector>
+        <span class="mag-display__value" data-mag-value>2.5×</span>
+        <span class="mag-display__fov" data-mag-fov>141 mm field of view</span>
+        <p data-mag-guidance>For those who favour field of view and depth of vision: general surgeons, urologists and hygienists.</p>
+        <div class="tour-selector__row" role="group" aria-label="Choose a magnification to preview">
+          <button type="button" class="mag-btn" data-magnification="2.5" aria-pressed="true">2.5×</button>
+          <button type="button" class="mag-btn" data-magnification="3.0" aria-pressed="false">3.0×</button>
+          <button type="button" class="mag-btn" data-magnification="3.5" aria-pressed="false">3.5×</button>
+          <button type="button" class="mag-btn" data-magnification="4.0" aria-pressed="false">4.0×</button>
+          <button type="button" class="mag-btn" data-magnification="5.0" aria-pressed="false">5.0×</button>
         </div>
-
-        <!-- Priority slider: field of view on the left, magnification on the
-             right. The track splits into five equal bands (one per level in
-             js/config.js); moving the thumb recommends that magnification and
-             pushes it through the readout, buttons and sample view above.
-             See initMagPrioritySlider() in main.js. -->
-        <div class="mag-priority" data-mag-priority>
-          <label class="mag-priority__title" for="mag-priority-range">What's more important for you?</label>
-          <div class="mag-priority__scale">
-            <span class="mag-priority__end">Field of view</span>
-            <div class="mag-priority__track">
-              <input type="range" id="mag-priority-range" class="mag-priority__range" min="0" max="100" step="1" value="50" aria-describedby="mag-priority-result" />
-              <ol class="mag-priority__ticks" aria-hidden="true">
-                <li>2.5×</li><li>3.0×</li><li>3.5×</li><li>4.0×</li><li>5.0×</li>
-              </ol>
-            </div>
-            <span class="mag-priority__end">Magnification</span>
-          </div>
-          <p class="mag-priority__result" id="mag-priority-result" data-mag-priority-result aria-live="polite">Slide towards what matters most to you and we'll recommend a magnification.</p>
-        </div>
+        <p class="tour__footnote">*These are estimates, results per person may vary.</p>
       </div>
 
       <!-- Per-magnification sample view. The <img> src swaps with the
@@ -483,6 +461,26 @@
           <span class="mag-sample__badge" data-mag-sample-label>2.5×</span>
           <span class="mag-sample__note">Sample view photo coming soon</span>
         </div>
+      </div>
+
+      <!-- Priority slider: field of view on the left, magnification on the
+           right. The track splits into five equal bands (one per level in
+           js/config.js); moving the thumb recommends that magnification and
+           pushes it through the readout, buttons and sample view above.
+           See initMagPrioritySlider() in main.js. -->
+      <div class="mag-priority" data-mag-priority>
+        <label class="mag-priority__title" for="mag-priority-range">What's more important for you?</label>
+        <div class="mag-priority__scale">
+          <span class="mag-priority__end">Field of view</span>
+          <div class="mag-priority__track">
+            <input type="range" id="mag-priority-range" class="mag-priority__range" min="0" max="100" step="1" value="50" aria-describedby="mag-priority-result" />
+            <ol class="mag-priority__ticks" aria-hidden="true">
+              <li>2.5×</li><li>3.0×</li><li>3.5×</li><li>4.0×</li><li>5.0×</li>
+            </ol>
+          </div>
+          <span class="mag-priority__end">Magnification</span>
+        </div>
+        <p class="mag-priority__result" id="mag-priority-result" data-mag-priority-result aria-live="polite">Slide towards what matters most to you and we'll recommend a magnification.</p>
       </div>
     </div>
 
@@ -500,30 +498,6 @@
         <tr><td>5.0×</td><td>80 mm</td><td>For those working on very small, fine details, such as endodontics or microsurgery.</td></tr>
       </tbody>
     </table>
-
-    <!-- Mobile: expandable rows instead of a squeezed table -->
-    <div class="mag-rows">
-      <div class="mag-row">
-        <button class="mag-row__trigger" aria-controls="mag-row-panel-25">2.5× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-25"><p>Field of view: 141 mm</p><p>For those who favour field of view and depth of vision: general surgeons, urologists and hygienists.</p></div>
-      </div>
-      <div class="mag-row">
-        <button class="mag-row__trigger" aria-controls="mag-row-panel-30">3.0× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-30"><p>Field of view: 120 mm</p><p>For general dentists and ENT surgeons.</p></div>
-      </div>
-      <div class="mag-row">
-        <button class="mag-row__trigger" aria-controls="mag-row-panel-35">3.5× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-35"><p>Field of view: 106 mm</p><p>For anyone who wants a good middle ground between field of view and magnification.</p></div>
-      </div>
-      <div class="mag-row">
-        <button class="mag-row__trigger" aria-controls="mag-row-panel-40">4.0× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-40"><p>Field of view: 98 mm</p><p>For those who need good attention to detail while maintaining a decent field of view.</p></div>
-      </div>
-      <div class="mag-row">
-        <button class="mag-row__trigger" aria-controls="mag-row-panel-50">5.0× <span aria-hidden="true">＋</span></button>
-        <div class="mag-row__panel" id="mag-row-panel-50"><p>Field of view: 80 mm</p><p>For those working on very small, fine details, such as endodontics or microsurgery.</p></div>
-      </div>
-    </div>
 
     <div class="spec-strip">
       <div><strong>Working distance</strong>25–70 cm</div>
@@ -1344,8 +1318,8 @@
   <img class="lightbox__img" alt="" />
 </div>
 
-<script src="js/config.js?v=20260921b" defer></script>
-<script src="js/product-tour.js?v=20260921b" defer></script>
-<script src="js/main.js?v=20260921b" defer></script>
+<script src="js/config.js?v=20260921c" defer></script>
+<script src="js/product-tour.js?v=20260921c" defer></script>
+<script src="js/main.js?v=20260921c" defer></script>
 </body>
 </html>

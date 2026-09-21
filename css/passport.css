@@ -229,6 +229,15 @@ html:not(.no-js) .pp-enter--late.is-in { transition-delay: 80ms; }
 .pp-card__media--light { background: var(--card-light); }
 .pp-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform var(--dur-slow) var(--ease); }
 .pp-card__media--contain img { object-fit: contain; }
+/* A card with no product shot yet. The icon sits in the same box a photo
+   would fill, so a row of cards still lines up. */
+.pp-card__media--icon {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #0d0e10, #000 62%);
+  color: var(--pentax-blue);
+}
+.pp-card__media--icon svg { width: 34%; max-width: 116px; height: auto; opacity: 0.9; }
 .pp-card:hover .pp-card__media img { transform: scale(1.03); }
 .pp-card__body { padding: 22px 22px 24px; display: grid; gap: 8px; flex: 1; align-content: start; }
 .pp-card__index { font-size: 0.76rem; font-weight: 700; color: var(--pentax-blue); letter-spacing: 0.08em; }

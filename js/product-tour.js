@@ -696,7 +696,13 @@ class ProductTour {
 
     // Scroll cue: visible through the whole textless cold open, gone just
     // before the first copy chapter arrives.
-    if (this.cueEl) this.cueEl.classList.toggle("is-hidden", progress > 0.18);
+    // Three states, not two: the worded cue over the cold open, then a bare
+    // chevron for the rest of the film so it stays clear that the page is
+    // what scrolls, then nothing once the last chapter is on screen.
+    if (this.cueEl) {
+      this.cueEl.classList.toggle("is-compact", progress > 0.18);
+      this.cueEl.classList.toggle("is-hidden", progress > 0.93);
+    }
 
     // End-of-tour CTA: fades in during the colour chapter's final shots.
     if (this.endCtaEl) {

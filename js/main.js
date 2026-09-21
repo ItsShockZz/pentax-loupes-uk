@@ -605,24 +605,6 @@ function initAmbientVideos() {
   });
 }
 
-/* ---------------------------------------------------------------------- */
-/* Magnification range — mobile expandable rows (desktop uses <table>)     */
-/* ---------------------------------------------------------------------- */
-
-function initMagRows() {
-  document.querySelectorAll(".mag-row__trigger").forEach((btn) => {
-    const panel = document.getElementById(btn.getAttribute("aria-controls"));
-    // Panels are authored open so the FOV data stays readable without JS
-    // (the desktop table is display:none on mobile); collapse them here.
-    if (panel) panel.hidden = true;
-    btn.setAttribute("aria-expanded", "false");
-    btn.addEventListener("click", () => {
-      const isOpen = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", String(!isOpen));
-      if (panel) panel.hidden = isOpen;
-    });
-  });
-}
 
 /* ---------------------------------------------------------------------- */
 /* Enquiry submission — both forms POST to /api/lead (a Vercel Function,   */
@@ -1143,7 +1125,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initDemoForm();
   initScrollReveals();
   initCountUps();
-  initMagRows();
   initPhotoSlots();
   initAmbientVideos();
 
