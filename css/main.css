@@ -247,12 +247,24 @@ h1, h2, h3, h4, p { margin: 0; }
 .nav:not(.nav--scrolled) {
   background: linear-gradient(180deg, rgba(10, 10, 12, 0.6), rgba(10, 10, 12, 0));
 }
+/* Smooth Optics presents PENTAX Loupes UK. A two-line lockup rather than a
+   bar of its own: the header is sticky and already tight on a phone, and a
+   presenting company belongs above the name it presents, not beside it. */
 .nav__brand {
   display: inline-flex;
-  align-items: baseline;
-  gap: 9px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
   text-decoration: none;
   color: var(--ink);
+}
+.nav__brand-lockup { display: inline-flex; align-items: baseline; gap: 9px; }
+.nav__brand-presents {
+  font-weight: 500;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .nav__brand-mark { font-weight: 800; font-size: 1rem; letter-spacing: 0.14em; }
 .nav__brand-sub {
@@ -2244,6 +2256,7 @@ html:not(.no-js) .passport-visual.is-visible { opacity: 1; transform: translateY
     top: 50%;
     transform: translate(-50%, -50%);
     white-space: nowrap;
+    align-items: center;
   }
 }
 /* Phones: the remaining left-aligned copy blocks (found by a sweep at 375px). */
