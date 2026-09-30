@@ -20,6 +20,24 @@ const siteConfig = {
 };
 
 /* ------------------------------------------------------------------------ */
+/* Opening lines: one is picked at random on every visit and shown big over */
+/* the opening film (initOpeningLine in main.js). Chosen by the owner;       */
+/* add or remove lines here, nothing else needs changing.                   */
+/* ------------------------------------------------------------------------ */
+
+const openingLines = [
+  "Look straight ahead. Not down",
+  "Stop working with your head bowed",
+  "Great work shouldn’t cost you your posture",
+  "Your spine didn’t sign up for this",
+  "Heads up. Literally",
+  "Your eyesight changes. Your loupes can too",
+  "Back pain? That’s a thing of the past",
+  "Say goodbye to neck ache",
+  "Your neck will thank you",
+];
+
+/* ------------------------------------------------------------------------ */
 /* Product data — magnifications, ranges, colours                          */
 /* Source: pentaxloupes.com specification table + FAQ                       */
 /* ------------------------------------------------------------------------ */

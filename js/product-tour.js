@@ -119,6 +119,7 @@ class ProductTour {
 
     this.chapterEls = Array.from(document.querySelectorAll("[data-chapter]"));
     this.cueEl = wrapperEl.querySelector(".tour__scroll-cue");
+    this.taglineEl = wrapperEl.querySelector(".tour__tagline");
     this.endCtaEl = wrapperEl.querySelector(".tour__end-cta");
     this.magOverlayEl = wrapperEl.querySelector(".mag-overlay");
     this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -702,6 +703,10 @@ class ProductTour {
     if (this.cueEl) {
       this.cueEl.classList.toggle("is-compact", progress > 0.18);
       this.cueEl.classList.toggle("is-hidden", progress > 0.93);
+    }
+    // Opening line: up for the whole opening clip, gone the moment it ends.
+    if (this.taglineEl && this.taglineEl.textContent) {
+      this.taglineEl.classList.toggle("is-gone", scene.id !== "intro");
     }
 
     // End-of-tour CTA: fades in during the colour chapter's final shots.

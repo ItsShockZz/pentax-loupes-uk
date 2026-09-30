@@ -14,6 +14,15 @@
   font-display: swap;
   src: url("../fonts/inter-var.woff2") format("woff2");
 }
+/* DM Sans (SIL Open Font License), self-hosted like Inter. Used only for the
+   opening line over the film. */
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/dm-sans-var.woff2") format("woff2");
+}
 
 :root {
   --bg: #000000;
@@ -541,6 +550,95 @@ h1, h2, h3, h4, p { margin: 0; }
   0%, 100% { transform: rotate(45deg) translate(-2px, -2px); opacity: 0.4; }
   50% { transform: rotate(45deg) translate(2px, 2px); opacity: 1; }
 }
+/* Opening line: set like a film title, bottom-left over the cold open.
+   Each word comes into focus in turn (blur to sharp, a nod to the optics),
+   then a short blue rule draws in. main.js adds is-in once DM Sans has
+   loaded, so the face never swaps mid-animation; product-tour.js adds
+   is-gone the moment the opening clip ends. On phones the film is a centred
+   strip, so the line sits in the black band above it. */
+.tour__tagline { display: none; }
+.tour--cinematic .tour__tagline {
+  --focus: cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+  position: absolute;
+  left: clamp(24px, 6vw, 104px);
+  bottom: clamp(92px, 13vh, 150px);
+  width: min(48vw, 780px);
+  margin: 0;
+  z-index: 3;
+  pointer-events: none;
+  font-family: "DM Sans", var(--font-body);
+  font-weight: 600;
+  font-size: clamp(2.6rem, 4.4vw, 4.9rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  text-wrap: balance;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
+}
+.tour__tagline .tl-line { display: block; }
+.tour__tagline .tl-line + .tl-line { color: #a4a6ad; }
+.tour__tagline .tl-word {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(14px);
+  transform: translateY(0.28em);
+  transition:
+    opacity 900ms var(--focus),
+    filter 1100ms var(--focus),
+    transform 1100ms var(--focus);
+  transition-delay: calc(var(--i, 0) * 80ms + 120ms);
+}
+.tour__tagline.is-in .tl-word { opacity: 1; filter: blur(0); transform: none; }
+.tour__tagline::after {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 3px;
+  margin-top: 26px;
+  border-radius: 2px;
+  background: var(--pentax-blue);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 800ms var(--focus) 1000ms, opacity 400ms ease;
+}
+.tour__tagline.is-in::after { transform: scaleX(1); }
+/* A soft vignette behind the words, so the film can pass underneath them. */
+.tour--cinematic .tour__tagline::before {
+  content: "";
+  position: absolute;
+  left: -14vw;
+  right: -20vw;
+  top: -16vh;
+  bottom: -14vh;
+  z-index: -1;
+  background: radial-gradient(ellipse at 22% 62%, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.42) 42%, rgba(0, 0, 0, 0) 72%);
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.tour__tagline.is-in::before { opacity: 1; }
+.tour__tagline.is-gone::before { opacity: 0; transition-duration: 450ms; }
+.tour__tagline.is-gone .tl-word {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(-0.16em);
+  transition-duration: 450ms;
+  transition-delay: 0ms;
+}
+.tour__tagline.is-gone::after { opacity: 0; transition-delay: 0ms; }
+@media (max-width: 900px) {
+  .tour--cinematic .tour__tagline {
+    left: 24px;
+    right: 24px;
+    width: auto;
+    bottom: auto;
+    top: calc(50% - 28.125vw - 22px);
+    transform: translateY(-100%);
+    font-size: clamp(1.9rem, 8.2vw, 2.7rem);
+  }
+  .tour__tagline::after { margin-top: 16px; width: 44px; }
+}
+
 .tour__scroll-cue span { transition: opacity var(--dur-fast) var(--ease); }
 .tour__scroll-cue::after {
   content: "";

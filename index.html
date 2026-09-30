@@ -34,7 +34,8 @@
      discover the poster early on its own. -->
 <link rel="preload" href="images/poster-tour-master.jpg?v=20260826" as="image" fetchpriority="high" />
 
-<link rel="stylesheet" href="css/main.css?v=20260922a" />
+<link rel="preload" href="fonts/dm-sans-var.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="css/main.css?v=20260930a" />
 
 <script type="application/ld+json">
 {
@@ -228,6 +229,10 @@
 
     </div>
 
+    <!-- A random line from openingLines (js/config.js), shown over the
+         opening film and faded out as the visitor starts scrolling. Empty
+         without JavaScript, and hidden outside the cinematic tour. -->
+    <p class="tour__tagline" id="tour-tagline"></p>
     <div class="tour__scroll-cue" aria-hidden="true"><span>Scroll to explore</span></div>
   </div>
 
@@ -1321,8 +1326,8 @@
   <img class="lightbox__img" alt="" />
 </div>
 
-<script src="js/config.js?v=20260922a" defer></script>
-<script src="js/product-tour.js?v=20260922a" defer></script>
-<script src="js/main.js?v=20260922a" defer></script>
+<script src="js/config.js?v=20260930a" defer></script>
+<script src="js/product-tour.js?v=20260930a" defer></script>
+<script src="js/main.js?v=20260930a" defer></script>
 </body>
 </html>

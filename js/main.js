@@ -197,6 +197,45 @@ function initTestimonials() {
 }
 
 /* ---------------------------------------------------------------------- */
+/* Opening line — one of openingLines (config.js) at random per visit,     */
+/* shown over the opening film; product-tour.js fades it with the scroll.  */
+/* Deliberately stateless: remembering the last line would mean storing    */
+/* something on the visitor's device, and cookies.html promises we don't.  */
+/* ---------------------------------------------------------------------- */
+
+function initOpeningLine() {
+  const el = document.getElementById("tour-tagline");
+  if (!el || typeof openingLines === "undefined" || openingLines.length === 0) return;
+  const line = openingLines[Math.floor(Math.random() * openingLines.length)];
+  // "Back pain? That's a thing of the past" sets as two lines, the second
+  // softer; a line with no sentence break stays as one.
+  const split = line.match(/^(.+?[.?!])\s+(.+)$/);
+  const parts = split ? [split[1], split[2]] : [line];
+  let index = 0;
+  const nodes = [];
+  parts.forEach((part, p) => {
+    if (p) nodes.push(" "); // so screen readers hear "Back pain? That's", not "pain?That's"
+    const lineEl = document.createElement("span");
+    lineEl.className = "tl-line";
+    part.split(" ").forEach((word, n) => {
+      if (n) lineEl.append(" ");
+      const wordEl = document.createElement("span");
+      wordEl.className = "tl-word";
+      wordEl.style.setProperty("--i", String(index++));
+      wordEl.textContent = word;
+      lineEl.append(wordEl);
+    });
+    nodes.push(lineEl);
+  });
+  el.replaceChildren(...nodes);
+  // Start the focus pull once DM Sans is ready (or after 900 ms regardless),
+  // two frames later so the blurred starting state has painted first.
+  const start = () => requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("is-in")));
+  const fontReady = document.fonts && document.fonts.load ? document.fonts.load('600 48px "DM Sans"') : Promise.resolve();
+  Promise.race([fontReady, new Promise((resolve) => setTimeout(resolve, 900))]).then(start, start);
+}
+
+/* ---------------------------------------------------------------------- */
 /* Photo slots — placeholders that swap themselves for real photos the     */
 /* moment the referenced file exists. The <img> inside each slot starts    */
 /* `hidden`; if its src actually loads, the slot flips to the photo. A     */
@@ -1131,6 +1170,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Created before initColourSelectors() so its buttons can jump the tour
   // to a specific colour's real footage moment (see COLOUR_VIDEO_MOMENTS).
   let tour = null;
+  initOpeningLine();
   const wrapperEl = document.getElementById("tour");
   if (wrapperEl) {
     tour = new PentaxProductTour.ProductTour({
