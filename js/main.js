@@ -198,41 +198,175 @@ function initTestimonials() {
 
 /* ---------------------------------------------------------------------- */
 /* Opening line — one of openingLines (config.js) at random per visit,     */
-/* shown over the opening film; product-tour.js fades it with the scroll.  */
-/* Deliberately stateless: remembering the last line would mean storing    */
-/* something on the visitor's device, and cookies.html promises we don't.  */
+/* centred over the opening film; product-tour.js fades it as the film     */
+/* hands over to the first headline.                                       */
+/*                                                                         */
+/* Built so it cannot reflow once it is on screen. The typeface is chosen  */
+/* ONCE (DM Sans if it has loaded within 2.5 s, else the site face, and it */
+/* never swaps afterwards), the real text is then measured and cut into    */
+/* whole lines that fit, and only then does the animation start. An        */
+/* earlier version let the browser wrap the text, so a slow font made it   */
+/* start on 2 lines and drop to 1 mid-animation.                           */
+/* Stateless: remembering the last line would store something on the       */
+/* visitor's device, and cookies.html promises we do not.                  */
 /* ---------------------------------------------------------------------- */
 
 function initOpeningLine() {
   const el = document.getElementById("tour-tagline");
   if (!el || typeof openingLines === "undefined" || openingLines.length === 0) return;
+  // Not shown at all without the cinematic tour (reduced motion, no JS tour).
+  if (getComputedStyle(el).display === "none") return;
+
   const line = openingLines[Math.floor(Math.random() * openingLines.length)];
-  // "Back pain? That's a thing of the past" sets as two lines, the second
-  // softer; a line with no sentence break stays as one.
-  const split = line.match(/^(.+?[.?!])\s+(.+)$/);
-  const parts = split ? [split[1], split[2]] : [line];
-  let index = 0;
-  const nodes = [];
-  parts.forEach((part, p) => {
-    if (p) nodes.push(" "); // so screen readers hear "Back pain? That's", not "pain?That's"
-    const lineEl = document.createElement("span");
-    lineEl.className = "tl-line";
-    part.split(" ").forEach((word, n) => {
-      if (n) lineEl.append(" ");
-      const wordEl = document.createElement("span");
-      wordEl.className = "tl-word";
-      wordEl.style.setProperty("--i", String(index++));
-      wordEl.textContent = word;
-      lineEl.append(wordEl);
+  // "Back pain? That's a thing of the past" is two sentences: the second
+  // sits softer, on its own line(s). A line with no sentence break is one.
+  const hit = line.match(/^(.+?[.?!])\s+(.+)$/);
+  const sentences = (hit ? [hit[1], hit[2]] : [line]).map((t) => t.split(" "));
+
+  const probe = document.createElement("span");
+  probe.className = "tl-probe";
+  el.append(probe);
+  const widthOf = (text) => {
+    probe.textContent = text;
+    return probe.getBoundingClientRect().width;
+  };
+
+  // Every way of cutting n words into `lines` lines, as the index each line
+  // ends at. Lines are at most ~9 words, so this stays tiny.
+  function* cuts(n, lines, from = 0) {
+    if (lines === 1) { yield [n]; return; }
+    for (let end = from + 1; end <= n - (lines - 1); end++) {
+      for (const rest of cuts(n, lines - 1, end)) yield [end, ...rest];
+    }
+  }
+
+  // Fewest lines that fit, and of those the most even split.
+  function plan(words, maxW) {
+    const space = widthOf("a a") - widthOf("aa");
+    const w = words.map(widthOf);
+    const span = (i, j) => w.slice(i, j).reduce((x, y) => x + y, 0) + space * (j - i - 1);
+    for (let lines = 1; lines <= words.length; lines++) {
+      let best = null;
+      for (const c of cuts(words.length, lines)) {
+        let start = 0;
+        const widths = c.map((end) => { const x = span(start, end); start = end; return x; });
+        const widest = Math.max(...widths);
+        if (widest > maxW + 0.5) continue;
+        const ragged = widths.reduce((acc, x) => acc + (widest - x) ** 2, 0);
+        if (!best || widest < best.widest - 0.01 || (Math.abs(widest - best.widest) < 0.01 && ragged < best.ragged)) best = { c, widest, ragged };
+      }
+      if (best) return best.c;
+    }
+    return [words.length];
+  }
+
+  function layout() {
+    el.style.fontSize = "";
+    const maxW = el.clientWidth;
+    if (!maxW) return;
+    // A single word wider than the box (a very narrow phone): shrink to fit.
+    const widest = Math.max(...sentences.flat().map(widthOf));
+    if (widest > maxW) el.style.fontSize = `${(parseFloat(getComputedStyle(el).fontSize) * maxW) / widest}px`;
+
+    let index = 0;
+    const nodes = [];
+    sentences.forEach((words, s) => {
+      let start = 0;
+      plan(words, maxW).forEach((end) => {
+        const lineEl = document.createElement("span");
+        lineEl.className = s ? "tl-line tl-line--soft" : "tl-line";
+        words.slice(start, end).forEach((word, n) => {
+          if (n) lineEl.append(" ");
+          const wordEl = document.createElement("span");
+          wordEl.className = "tl-word";
+          wordEl.style.setProperty("--i", String(index++));
+          wordEl.textContent = word;
+          lineEl.append(wordEl);
+        });
+        nodes.push(lineEl, " "); // the space keeps the sentence readable to assistive tech
+        start = end;
+      });
     });
-    nodes.push(lineEl);
+    el.replaceChildren(...nodes, probe);
+  }
+
+  const faceLoaded = document.fonts && document.fonts.load
+    ? document.fonts.load('600 40px "DM Sans"').then(() => document.fonts.check('600 40px "DM Sans"'), () => false)
+    : Promise.resolve(false);
+  Promise.race([faceLoaded, new Promise((resolve) => setTimeout(() => resolve(false), 2500))]).then((loaded) => {
+    // Chosen here and never again: if DM Sans turns up after this, the
+    // element does not name it, so the browser has nothing to swap.
+    if (loaded) el.classList.add("is-dm");
+    layout();
+    // Two frames on, so the blurred starting state has painted first.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.classList.add("is-in");
+      setTimeout(() => el.classList.add("is-settled"), 2600);
+    }));
+    // Re-cut on a real width change (rotating a phone), never on height
+    // alone: the address bar sliding away changes the height constantly.
+    let lastW = el.clientWidth;
+    let queued = false;
+    window.addEventListener("resize", () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        if (el.clientWidth !== lastW) { lastW = el.clientWidth; layout(); }
+      });
+    }, { passive: true });
   });
-  el.replaceChildren(...nodes);
-  // Start the focus pull once DM Sans is ready (or after 900 ms regardless),
-  // two frames later so the blurred starting state has painted first.
-  const start = () => requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("is-in")));
-  const fontReady = document.fonts && document.fonts.load ? document.fonts.load('600 48px "DM Sans"') : Promise.resolve();
-  Promise.race([fontReady, new Promise((resolve) => setTimeout(resolve, 900))]).then(start, start);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Passport card fan — opens as the card scrolls into view. Sets --fan     */
+/* (0 = a neat deck, 1 = fully fanned) on .passport-visual from the        */
+/* scroll position; the CSS turns that into the card rotations. It used    */
+/* to open on :hover, which on a phone meant it only opened when tapped.  */
+/* ---------------------------------------------------------------------- */
+
+function initPassportFan() {
+  const visual = document.querySelector(".passport-visual");
+  if (!visual) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    visual.style.setProperty("--fan", "1");
+    return;
+  }
+  let queued = false;
+  const update = () => {
+    queued = false;
+    const top = visual.getBoundingClientRect().top;
+    const vh = window.innerHeight;
+    // 0 as the card's top edge reaches the bottom of the screen; 1 once 70%
+    // of a screen has scrolled past it, which is when all of it is in view.
+    const progress = Math.min(1, Math.max(0, (vh - top) / (vh * 0.7)));
+    visual.style.setProperty("--fan", progress.toFixed(3));
+  };
+  const onScroll = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(update);
+  };
+  // Only listen while the card is within a screen of the viewport: the page
+  // is long, and the rest of the time there is nothing to update.
+  let listening = false;
+  new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting && !listening) {
+        listening = true;
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll, { passive: true });
+        update();
+      } else if (!entry.isIntersecting && listening) {
+        listening = false;
+        window.removeEventListener("scroll", onScroll);
+        window.removeEventListener("resize", onScroll);
+        update(); // settle at 0 or 1 on the way out, so it is right when it comes back
+      }
+    },
+    { rootMargin: "100% 0px" }
+  ).observe(visual);
+  update();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -269,7 +403,9 @@ function initPhotoSlots() {
     slots.forEach(wire);
     return;
   }
-  // One viewport of lead-in, so a photo is decoded before it is scrolled to.
+  // Two and a half viewports of lead-in: photos are small next to the
+  // video, so they get the head start, and a quick flick down the page no
+  // longer outruns them.
   const io = new IntersectionObserver(
     (entries, obs) => {
       entries.forEach((e) => {
@@ -278,7 +414,7 @@ function initPhotoSlots() {
         wire(e.target);
       });
     },
-    { rootMargin: "100% 0px" }
+    { rootMargin: "250% 0px" }
   );
   slots.forEach((slot) => io.observe(slot));
 }
@@ -361,7 +497,7 @@ function initMagScrollStills() {
   if ("IntersectionObserver" in window && anchors.length) {
     const io = new IntersectionObserver(
       (entries) => entries.some((e) => e.isIntersecting) && preload(),
-      { rootMargin: "300% 0px" }
+      { rootMargin: "200% 0px" }
     );
     anchors.forEach((a) => io.observe(a));
   } else {
@@ -613,15 +749,40 @@ function initAmbientVideos() {
   // frames), so a native `loop` plays it seamlessly — an earlier version
   // reverse-seeked at 24fps in JS, and with several clips on screen at
   // once that decode storm visibly janked the whole page.
+  const attach = (v) => {
+    if (!v.getAttribute("src") && v.dataset.src) v.setAttribute("src", v.dataset.src);
+  };
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         const v = entry.target;
-        if (entry.isIntersecting && !reduced) v.play().catch(() => {});
-        else v.pause();
+        if (entry.isIntersecting && !reduced) {
+          attach(v);
+          v.play().catch(() => {});
+        } else v.pause();
       });
     },
     { threshold: 0.15 }
+  );
+  // A clip that has played keeps its decoder and a buffered copy until the
+  // page closes, and there are nine of them. A phone holding that many runs
+  // short of memory and starts to stutter and leave images blank, so a clip
+  // more than two screens away is released (poster stays) and given its
+  // file back when it comes near again. Nothing is fetched on re-attaching:
+  // the clips are preload="none" and only load when they play.
+  const keep = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const v = entry.target;
+        if (entry.isIntersecting) attach(v);
+        else if (v.getAttribute("src")) {
+          v.pause();
+          v.removeAttribute("src");
+          v.load();
+        }
+      });
+    },
+    { rootMargin: "200% 0px" }
   );
   // The poster lives in data-poster until the clip is near: a <video>
   // poster is fetched on first paint even when preload="none", which put
@@ -639,6 +800,8 @@ function initAmbientVideos() {
   );
   vids.forEach((v) => {
     v.loop = true;
+    v.dataset.src = v.getAttribute("src") || "";
+    keep.observe(v);
     io.observe(v);
     if (v.dataset.poster) posterIo.observe(v);
   });
@@ -1163,6 +1326,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTestimonials();
   initDemoForm();
   initScrollReveals();
+  initPassportFan();
   initCountUps();
   initPhotoSlots();
   initAmbientVideos();
@@ -1170,7 +1334,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Created before initColourSelectors() so its buttons can jump the tour
   // to a specific colour's real footage moment (see COLOUR_VIDEO_MOMENTS).
   let tour = null;
-  initOpeningLine();
   const wrapperEl = document.getElementById("tour");
   if (wrapperEl) {
     tour = new PentaxProductTour.ProductTour({
@@ -1180,6 +1343,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tour.start();
   }
+  initOpeningLine();
 
   initColourSelectors(tour);
   initMagnificationSelectors(tour);

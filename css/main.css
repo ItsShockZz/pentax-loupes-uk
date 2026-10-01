@@ -550,34 +550,40 @@ h1, h2, h3, h4, p { margin: 0; }
   0%, 100% { transform: rotate(45deg) translate(-2px, -2px); opacity: 0.4; }
   50% { transform: rotate(45deg) translate(2px, 2px); opacity: 1; }
 }
-/* Opening line: set like a film title, bottom-left over the cold open.
+/* Opening line: centred over the cold open, set like a film title.
    Each word comes into focus in turn (blur to sharp, a nod to the optics),
-   then a short blue rule draws in. main.js adds is-in once DM Sans has
-   loaded, so the face never swaps mid-animation; product-tour.js adds
-   is-gone the moment the opening clip ends. On phones the film is a centred
-   strip, so the line sits in the black band above it. */
+   then a short blue rule draws in. main.js decides the typeface ONCE
+   (DM Sans if it has loaded, otherwise the site face), measures the real
+   text and breaks it into whole lines that fit, and only then lets the
+   animation start, so nothing can re-wrap or jump after it appears.
+   product-tour.js adds is-gone as the opening film hands over to the first
+   headline. On phones the film is a centred strip, so the line sits in the
+   black band above it. */
 .tour__tagline { display: none; }
 .tour--cinematic .tour__tagline {
   --focus: cubic-bezier(0.16, 1, 0.3, 1);
   display: block;
   position: absolute;
-  left: clamp(24px, 6vw, 104px);
-  bottom: clamp(92px, 13vh, 150px);
-  width: min(48vw, 780px);
+  left: 50%;
+  top: 41%;
+  width: min(86vw, 1180px);
   margin: 0;
+  transform: translate(-50%, -50%);
   z-index: 3;
   pointer-events: none;
-  font-family: "DM Sans", var(--font-body);
+  text-align: center;
+  font-family: var(--font-body);
   font-weight: 600;
-  font-size: clamp(2.6rem, 4.4vw, 4.9rem);
-  line-height: 1.02;
-  letter-spacing: -0.035em;
+  font-size: clamp(2.4rem, 5.4vw, 5.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
   color: var(--ink);
-  text-wrap: balance;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.6);
 }
-.tour__tagline .tl-line { display: block; }
-.tour__tagline .tl-line + .tl-line { color: #a4a6ad; }
+.tour--cinematic .tour__tagline.is-dm { font-family: "DM Sans", var(--font-body); letter-spacing: -0.035em; }
+.tour__tagline .tl-line { display: block; white-space: nowrap; }
+.tour__tagline .tl-line--soft { color: #a4a6ad; }
+.tour__tagline .tl-probe { position: absolute; left: 0; top: 0; visibility: hidden; white-space: nowrap; pointer-events: none; }
 .tour__tagline .tl-word {
   display: inline-block;
   opacity: 0;
@@ -590,34 +596,37 @@ h1, h2, h3, h4, p { margin: 0; }
   transition-delay: calc(var(--i, 0) * 80ms + 120ms);
 }
 .tour__tagline.is-in .tl-word { opacity: 1; filter: blur(0); transform: none; }
+/* After the first entrance, anything that brings the words back (scrolling
+   to the top again) does it together, not word by word. */
+.tour__tagline.is-settled .tl-word { transition-delay: 0ms; transition-duration: 500ms; }
 .tour__tagline::after {
   content: "";
   display: block;
   width: 56px;
   height: 3px;
-  margin-top: 26px;
+  margin: 26px auto 0;
   border-radius: 2px;
   background: var(--pentax-blue);
   transform: scaleX(0);
-  transform-origin: left;
+  transform-origin: center;
   transition: transform 800ms var(--focus) 1000ms, opacity 400ms ease;
 }
 .tour__tagline.is-in::after { transform: scaleX(1); }
-/* A soft vignette behind the words, so the film can pass underneath them. */
+.tour__tagline.is-settled::after { transition-delay: 0ms; }
+/* A soft dark pool behind the words, so the film can pass underneath them. */
 .tour--cinematic .tour__tagline::before {
   content: "";
   position: absolute;
   left: -14vw;
-  right: -20vw;
-  top: -16vh;
-  bottom: -14vh;
+  right: -14vw;
+  top: -20vh;
+  bottom: -18vh;
   z-index: -1;
-  background: radial-gradient(ellipse at 22% 62%, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.42) 42%, rgba(0, 0, 0, 0) 72%);
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 40%, rgba(0, 0, 0, 0) 72%);
   opacity: 0;
   transition: opacity 900ms ease;
 }
 .tour__tagline.is-in::before { opacity: 1; }
-.tour__tagline.is-gone::before { opacity: 0; transition-duration: 450ms; }
 .tour__tagline.is-gone .tl-word {
   opacity: 0;
   filter: blur(8px);
@@ -625,18 +634,23 @@ h1, h2, h3, h4, p { margin: 0; }
   transition-duration: 450ms;
   transition-delay: 0ms;
 }
-.tour__tagline.is-gone::after { opacity: 0; transition-delay: 0ms; }
+.tour__tagline.is-gone::after,
+.tour__tagline.is-gone::before { opacity: 0; transition-duration: 450ms; transition-delay: 0ms; }
 @media (max-width: 900px) {
   .tour--cinematic .tour__tagline {
     left: 24px;
     right: 24px;
     width: auto;
-    bottom: auto;
-    top: calc(50% - 28.125vw - 22px);
-    transform: translateY(-100%);
-    font-size: clamp(1.9rem, 8.2vw, 2.7rem);
+    top: calc((68px + 50% - 28.125vw) / 2);
+    transform: translateY(-50%);
+    font-size: clamp(1.8rem, 7.6vw, 2.6rem);
   }
-  .tour__tagline::after { margin-top: 16px; width: 44px; }
+  .tour--cinematic .tour__tagline::before { left: -24px; right: -24px; top: -9vh; bottom: -8vh; }
+  .tour__tagline::after { margin-top: 18px; width: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour__tagline .tl-word { transition: none; filter: none; transform: none; }
+  .tour__tagline::after, .tour__tagline::before { transition: none; }
 }
 
 .tour__scroll-cue span { transition: opacity var(--dur-fast) var(--ease); }
@@ -2152,17 +2166,17 @@ html:not(.no-js) .discipline-card.is-visible:hover { transform: translateY(-4px)
   border-radius: 18px;
   transform-origin: 50% 90%;
   box-shadow: 0 30px 60px -32px rgba(0, 0, 0, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.16);
-  transition: transform var(--dur-slow) var(--ease);
+  will-change: transform;
 }
-.passport-stack__card--blue  { background: linear-gradient(150deg, #3f74ff, #1c3fa8); transform: rotate(4deg) translateY(2px) scale(0.985); }
-.passport-stack__card--red   { background: linear-gradient(150deg, #cf3b33, #8d1b18); transform: rotate(8deg) translateY(5px) scale(0.97); }
-.passport-stack__card--pink  { background: linear-gradient(150deg, #ef7fb4, #b4487d); transform: rotate(12deg) translateY(8px) scale(0.955); }
-.passport-stack__card--black { background: linear-gradient(150deg, #33343a, #131417); transform: rotate(16deg) translateY(11px) scale(0.94); }
-/* Hovering the column opens the fan a little further. */
-.passport-visual:hover .passport-stack__card--blue  { transform: rotate(6deg) translateY(3px) scale(0.985); }
-.passport-visual:hover .passport-stack__card--red   { transform: rotate(11deg) translateY(7px) scale(0.97); }
-.passport-visual:hover .passport-stack__card--pink  { transform: rotate(16deg) translateY(11px) scale(0.955); }
-.passport-visual:hover .passport-stack__card--black { transform: rotate(21deg) translateY(15px) scale(0.94); }
+/* The fan opens as the visitor scrolls the card into view, not on hover or
+   tap: --fan runs from 0 (a neat deck) to 1 (fully fanned) and is set from
+   main.js (initPassportFan). Scrolling back up closes it again. Without
+   JavaScript it rests part way open. */
+.passport-visual { --fan: 0.55; }
+.passport-stack__card--blue  { background: linear-gradient(150deg, #3f74ff, #1c3fa8); transform: rotate(calc(1deg + 5deg * var(--fan)))  translateY(calc(1px + 2px * var(--fan)))  scale(0.985); }
+.passport-stack__card--red   { background: linear-gradient(150deg, #cf3b33, #8d1b18); transform: rotate(calc(2deg + 9deg * var(--fan)))  translateY(calc(2px + 5px * var(--fan)))  scale(0.97); }
+.passport-stack__card--pink  { background: linear-gradient(150deg, #ef7fb4, #b4487d); transform: rotate(calc(3deg + 13deg * var(--fan))) translateY(calc(3px + 8px * var(--fan)))  scale(0.955); }
+.passport-stack__card--black { background: linear-gradient(150deg, #33343a, #131417); transform: rotate(calc(4deg + 17deg * var(--fan))) translateY(calc(4px + 11px * var(--fan))) scale(0.94); }
 
 .passport-card {
   position: relative;
@@ -2437,17 +2451,9 @@ p a:not(.btn):not(.text-link),
    read at 0.82rem. */
 .consent-note, .demo-aside__card p, .footer__bottom { line-height: 1.95; }
 
-/* Phones: a narrower column means a rotated card reaches further past its
-   own box, so the fan is tightened and the deck sits slightly smaller. */
+/* Phones: a narrower column, so the deck sits slightly smaller. */
 @media (max-width: 560px) {
   .passport-stack { width: min(100%, 300px); }
-  .passport-stack__card--blue  { transform: rotate(3deg) translateY(2px) scale(0.985); }
-  .passport-stack__card--red   { transform: rotate(6deg) translateY(4px) scale(0.97); }
-  .passport-stack__card--pink  { transform: rotate(9deg) translateY(6px) scale(0.955); }
-  .passport-stack__card--black { transform: rotate(12deg) translateY(8px) scale(0.94); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .passport-stack__card { transition: none; }
 }
 
 /* ---------------------------------------------------------------------- */

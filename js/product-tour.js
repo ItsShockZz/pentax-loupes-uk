@@ -43,11 +43,12 @@ const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 
 const VIDEO_SRC = "videos/tour-master.mp4?v=20260826";
-// Phones stream a 960x540 encode of the same 41s film (same 24fps timeline,
-// so every chapter timestamp below is unchanged): about a third of the data,
-// and the in-memory copy is ready in a fraction of the time. Falls back to
-// the master if the file is missing.
-const VIDEO_SRC_MOBILE = "videos/tour-master-mobile.mp4?v=20260918";
+// Everyone streams a 960x540 encode of the same 41s film first (same 24fps
+// timeline, so every chapter timestamp below is unchanged), and phones keep
+// it. Re-encoded from the master on 2026-10-01 at 4.3 MB (was 13 MB): same
+// 984 frames, a keyframe every 6, visually identical on the darkest scenes.
+// Falls back to the master if the file is missing.
+const VIDEO_SRC_MOBILE = "videos/tour-master-mobile.mp4?v=20261001";
 const MOBILE_QUERY = "(max-width: 900px)";
 
 /* ---------------------------------------------------------------------- */
@@ -225,10 +226,17 @@ class ProductTour {
     this._blobState = "pending";
     const conn = navigator.connection;
     if (conn && (conn.saveData || /(^|[^a-z])2g/.test(conn.effectiveType || ""))) return;
+    // The desktop upgrade is a 38 MB file. On a line that reports under
+    // 5 Mbps it would take over a minute and starve the page's photos, and
+    // the 540p film that is already streaming scrubs perfectly well, so keep
+    // it. (Safari does not report a speed, so it always upgrades.)
+    if (conn && conn.downlink && conn.downlink < 5 && this._src === VIDEO_SRC) return;
     setTimeout(() => {
       const abort = new AbortController();
       const timer = setTimeout(() => abort.abort(), 120000);
-      fetch(this._src, { signal: abort.signal })
+      // Low priority: this is an upgrade, so photos and the first chapters
+      // always win the bandwidth.
+      fetch(this._src, { signal: abort.signal, priority: "low" })
         .then((res) => {
           const type = (res.headers.get("content-type") || "").toLowerCase();
           if (!res.ok || (type && !type.startsWith("video/") && !type.startsWith("application/octet-stream"))) {
