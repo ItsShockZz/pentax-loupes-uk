@@ -52,6 +52,27 @@ test("a quote request uses the intended use as the profession and lists the conf
   assert.match(payload.lead.enquiry_details, /Colour: Black\nMagnification: 3\.5×\nLenses: Yes\nLight: Wireless LED\nUse: Dental practice/);
 });
 
+test("agreeing to be contacted, with a number to contact, reaches the CRM as the WhatsApp opt-in with its words", () => {
+  const consent = { version: "v1", form: "quote", statement: "By requesting your quote you agree that PENTAX Loupes UK (Smooth Optics) may contact you." };
+  const enquiry = { ...base, kind: "enquiry", topic: "Quote request", name: "Mr Tom Okafor", email: "tom@example.com", phone: "07700 900654", details: {} };
+
+  const agreed = crmLeadPayload({ ...enquiry, consent }, { id: "website", name: "Website", reference: "", token: "" });
+  assert.equal(agreed.lead.whatsapp_consent, "yes");
+  assert.equal(
+    agreed.lead.whatsapp_consent_source,
+    `Website quote form, statement v1, agreed by submitting: "${consent.statement}"`,
+  );
+
+  const demo = crmLeadPayload({ ...enquiry, topic: "Demonstration request", consent: { ...consent, form: "demo" } }, null);
+  assert.match(demo.lead.whatsapp_consent_source, /^Website demonstration form, statement v1/);
+
+  // No number, nothing to message; no statement shown, nothing agreed; passport forms never carry one.
+  assert.equal("whatsapp_consent" in crmLeadPayload({ ...enquiry, phone: "", consent }, null).lead, false);
+  assert.equal("whatsapp_consent" in crmLeadPayload({ ...enquiry, consent: null }, null).lead, false);
+  assert.equal("whatsapp_consent" in crmLeadPayload({ ...enquiry }, null).lead, false);
+  assert.equal("whatsapp_consent_source" in crmLeadPayload({ ...enquiry, consent: null }, null).lead, false);
+});
+
 test("happy check-ins stay out of the CRM; everything else goes", () => {
   assert.equal(shouldForwardToCrm({ kind: "checkin", status: "resolved", topic: "All good" }), false);
   assert.equal(shouldForwardToCrm({ kind: "checkin", status: "open", topic: "Needs a hand" }), true);

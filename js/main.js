@@ -820,6 +820,19 @@ function leadRequestKey() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 14)}`;
 }
 
+/**
+ * Which version of the consent statement is printed beside this form's submit
+ * button (the paragraph marked data-consent in index.html), or "" when there
+ * is none. Sending the version, rather than a yes, ties what is recorded to
+ * what was on the page: the server keeps its own copy of the words for each
+ * version (lib/passport/leads.js), so a form without the statement can never
+ * claim the agreement.
+ */
+function consentShown(scope) {
+  const note = scope.querySelector("[data-consent]");
+  return note ? note.getAttribute("data-consent") || "" : "";
+}
+
 async function submitLead(payload) {
   const fallback = `Please try again, or email ${siteConfig.contactEmail}.`;
   let res;
@@ -1106,6 +1119,7 @@ function initConfigurator() {
       const payload = {
         kind: "quote",
         requestKey: leadRequestKey(),
+        consent: consentShown(root),
         website: honeypot ? honeypot.value : "",
         name,
         email: document.getElementById("cfgEmail").value.trim(),
@@ -1232,6 +1246,7 @@ function initDemoForm() {
     const payload = {
       kind: "demo",
       requestKey: leadRequestKey(),
+      consent: consentShown(form),
       website: f.website ? f.website.value : "",
       fullName: f.fullName.value.trim(),
       email: f.email.value.trim(),

@@ -203,6 +203,62 @@ test("enquiries reach the CRM as signed structured leads, and failures never blo
   }
 });
 
+test("submitting beside the statement records the agreement, with the words the server holds, and sends it to the CRM", async () => {
+  const { CONSENT_STATEMENTS, CONSENT_VERSION } = await import("../lib/passport/leads.js");
+  const realFetch = globalThis.fetch;
+  const sent = [];
+  process.env.CRM_WEBHOOK_URL = "https://pentax-crm.example/api/ingest/webhook";
+  process.env.CRM_WEBHOOK_SECRET = "s3cret";
+  try {
+    globalThis.fetch = async (url, init) => {
+      sent.push(JSON.parse(init.body));
+      return { ok: true, status: 200, json: async () => ({ status: "created", reference: "PL-001043" }) };
+    };
+    const agreed = await call(leadRoute, { body: { ...demo(), consent: CONSENT_VERSION }, headers: { "x-forwarded-for": "203.0.113.80" } });
+    assert.equal(agreed.status, 200);
+    assert.equal(sent[0].lead.whatsapp_consent, "yes");
+    assert.ok(sent[0].lead.whatsapp_consent_source.includes(CONSENT_STATEMENTS.demo), "the CRM is given the exact words shown");
+    assert.match(sent[0].lead.whatsapp_consent_source, /^Website demonstration form, statement v1/);
+
+    const asked = await call(leadRoute, { body: { ...quote(), consent: CONSENT_VERSION }, headers: { "x-forwarded-for": "203.0.113.81" } });
+    assert.equal(asked.status, 200);
+    assert.ok(sent[1].lead.whatsapp_consent_source.includes(CONSENT_STATEMENTS.quote));
+
+    const stored = (await activityList()).find((a) => a.id === sent[0].message_id.replace("website:", ""));
+    assert.deepEqual(stored.consent, { version: "v1", form: "demo", statement: CONSENT_STATEMENTS.demo });
+
+    // A page that showed no statement (an older cached copy, a changed form), or a made-up version, records nothing.
+    for (const [index, consent] of [[2, undefined], [3, ""], [4, "v0"], [5, "V1"], [6, "yes"], [7, true]]) {
+      const res = await call(leadRoute, { body: { ...demo(), consent }, headers: { "x-forwarded-for": `203.0.113.${82 + index}` } });
+      assert.equal(res.status, 200, String(consent));
+      assert.equal("whatsapp_consent" in sent[index].lead, false, `consent ${JSON.stringify(consent)} is not an agreement`);
+    }
+  } finally {
+    globalThis.fetch = realFetch;
+    delete process.env.CRM_WEBHOOK_URL;
+    delete process.env.CRM_WEBHOOK_SECRET;
+  }
+});
+
+test("the words beside each submit button are the words the server records", async () => {
+  const { CONSENT_STATEMENTS, CONSENT_VERSION } = await import("../lib/passport/leads.js");
+  const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const notes = [...html.matchAll(/<p class="consent-note" data-consent="([^"]*)">([\s\S]*?)<\/p>/g)].map((m) => ({
+    version: m[1],
+    text: m[2].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim(),
+  }));
+  assert.equal(notes.length, 2, "one statement beside each of the two forms");
+  assert.ok(notes.every((n) => n.version === CONSENT_VERSION), "both pages show the version the server knows");
+  for (const statement of Object.values(CONSENT_STATEMENTS)) {
+    assert.equal(notes.filter((n) => n.text.startsWith(statement)).length, 1, `printed beside a button: ${statement}`);
+  }
+  for (const n of notes) {
+    assert.match(n.text, /WhatsApp/);
+    assert.ok(n.text.includes("PENTAX Loupes UK (Smooth Optics) may contact you"), "names the business customers know");
+    assert.match(n.text, /STOP/);
+  }
+});
+
 test("a quote request carries its postcode so the CRM can route it", async () => {
   const res = await call(leadRoute, { body: { ...quote(), postcode: "ne1 4lp" }, headers: { "x-forwarded-for": "203.0.113.70" } });
   assert.equal(res.status, 200);
