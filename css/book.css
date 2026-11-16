@@ -1,0 +1,128 @@
+/* ---------------------------------------------------------------------- */
+/* Book a discovery call (/book). Builds on main.css: same palette, type,  */
+/* buttons and nav. Mobile first: most bookings come from a phone.         */
+/* ---------------------------------------------------------------------- */
+
+/* The site's own header layout: wordmark left (centred on phones, by
+   main.css), and this link where the menu button would be. */
+.bk-back {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+  padding: 12px 0;
+  transition: color var(--dur-fast) var(--ease);
+}
+.bk-back:hover { color: var(--ink); }
+@media (max-width: 900px) {
+  .bk-back__long { display: none; }
+}
+
+.bk-section { padding-top: 120px; }
+.bk-container { max-width: 720px; }
+.bk-title { margin: 12px 0 14px; }
+.bk-lede { margin-bottom: 28px; }
+
+.bk-flow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.bk-card {
+  min-width: 0;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px 16px;
+}
+.bk-muted { color: var(--muted); }
+
+.bk-step { display: flex; align-items: center; gap: 10px; font-size: 1.06rem; font-weight: 600; margin: 0 0 16px; color: var(--ink); scroll-margin-top: 96px; }
+.bk-step__no {
+  display: inline-grid; place-items: center;
+  width: 26px; height: 26px; border-radius: 999px;
+  border: 1px solid var(--line-strong); font-size: 13px; color: var(--muted);
+}
+
+.bk-fieldset { border: 0; margin: 0 0 16px; padding: 0; min-width: 0; }
+.bk-legend { font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; padding: 0; }
+
+.bk-days {
+  display: flex; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity; margin: 0 -16px; padding: 2px 16px 6px;
+}
+.bk-chip { position: relative; cursor: pointer; }
+.bk-day { flex: 0 0 auto; scroll-snap-align: start; }
+.bk-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.bk-day__inner {
+  display: flex; flex-direction: column; align-items: flex-start; min-width: 100px;
+  padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line-strong);
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.bk-day__label { font-weight: 600; font-size: 15px; color: var(--ink); }
+.bk-day__count { font-size: 12px; color: var(--muted); }
+.bk-day input:checked + .bk-day__inner { border-color: var(--pentax-blue); background: rgba(91, 134, 255, 0.12); }
+
+.bk-times { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; }
+.bk-time__inner {
+  display: grid; place-items: center; height: 48px; border-radius: 999px;
+  border: 1px solid var(--line-strong); font-weight: 600; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.bk-time input:checked + .bk-time__inner { background: var(--ink); color: #0a0a0c; border-color: var(--ink); }
+.bk-chip input:focus-visible + span { outline: 2px solid var(--pentax-blue); outline-offset: 2px; }
+
+@media (hover: hover) {
+  .bk-chip:hover > span { border-color: var(--ink); }
+}
+
+.bk-selected { margin: -4px 0 16px; color: var(--muted); font-size: 15px; }
+.bk-selected strong { color: var(--ink); }
+
+.bk-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.bk-field { display: grid; gap: 6px; min-width: 0; }
+.bk-field label { font-size: 0.82rem; font-weight: 500; color: var(--muted); }
+.bk-input {
+  width: 100%; min-height: 48px; padding: 10px 14px; border-radius: 12px;
+  border: 1px solid var(--line-strong); background: var(--bg-raised-2); color: var(--ink);
+  font: inherit; font-size: 16px; /* 16px stops iOS zooming into the field */
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.bk-input:focus { outline: none; border-color: var(--pentax-blue); box-shadow: 0 0 0 3px rgba(91, 134, 255, 0.25); }
+.bk-input[aria-invalid="true"] { border-color: var(--danger); }
+select.bk-input {
+  appearance: none; padding-right: 40px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+
+.bk-consent {
+  display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: start;
+  margin: 20px 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; cursor: pointer;
+}
+.bk-consent input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--pentax-blue); }
+.bk-consent__label { display: block; color: var(--ink); font-size: 15px; }
+.bk-consent__hint { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+
+.bk-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+.bk-submit { width: 100%; justify-content: center; min-height: 50px; }
+.bk-submit:disabled { opacity: 0.6; cursor: progress; }
+.bk-error { display: block; margin-top: 8px; font-size: 0.85rem; color: var(--danger); }
+.bk-warn { margin: 0 0 8px; font-size: 0.9rem; color: #f5b85c; }
+.bk-note { margin: 12px 0 0; font-size: 0.82rem; color: var(--muted); }
+.bk-link { color: var(--pentax-blue); font-weight: 600; text-decoration: none; word-break: break-word; }
+.bk-link:hover { text-decoration: underline; }
+
+.bk-done__title { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 4px; color: var(--ink); outline: none; }
+.bk-done__when { font-size: 1.06rem; font-weight: 600; margin: 0 0 16px; color: var(--ink); }
+.bk-body { margin: 0 0 12px; color: var(--muted); }
+.bk-body strong { color: var(--ink); font-weight: 600; }
+.bk-again { margin-top: 8px; }
+
+@media (min-width: 640px) {
+  .bk-card { padding: 24px; }
+  .bk-days { margin: 0 -24px; padding-left: 24px; padding-right: 24px; }
+  .bk-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .bk-submit { width: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-day__inner, .bk-time__inner, .bk-input { transition: none; }
+}

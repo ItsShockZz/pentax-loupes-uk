@@ -159,13 +159,6 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/book",
-      "destination": "https://pentax-crm.vercel.app/book",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/p/:token",
@@ -178,6 +171,10 @@
     {
       "source": "/manage",
       "destination": "/manage.html"
+    },
+    {
+      "source": "/book",
+      "destination": "/book.html"
     }
   ]
 }
