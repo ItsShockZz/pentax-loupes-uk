@@ -1141,6 +1141,7 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
 }
 .trust__cta { display: flex; flex-direction: column; align-items: center; gap: 18px; }
 .trust__cta p { font-size: 1.15rem; color: var(--ink); max-width: 440px; }
+.trust__ctas { margin-top: 0; justify-content: center; }
 
 @media (max-width: 780px) {
   .trust { padding: 72px 0; }
@@ -1330,6 +1331,8 @@ html:not(.no-js) .trust__stat.is-visible { opacity: 1; transform: translateY(0);
 .demo-aside__card { border: 1px solid var(--line); border-radius: 14px; padding: 24px; background: var(--bg-raised); }
 .demo-aside__card h3 { font-size: 1rem; margin-bottom: 8px; color: var(--ink); }
 .demo-aside__card p { color: var(--muted); font-size: 0.92rem; }
+.demo-aside__btn { margin-top: 16px; }
+.demo-aside__card .demo-aside__alt { margin-top: 14px; }
 
 @media (max-width: 900px) {
   .demo-section { grid-template-columns: 1fr; gap: 36px; }

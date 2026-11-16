@@ -14,7 +14,8 @@
 function track(eventName, detail) {
   // Structured hook point per brief: quote_nav, request_demo_nav, request_demo_hero,
   // request_demo_final, magnification_select, magnification_priority, colour_select,
-  // specialist_contact, faq_open, configurator_quote, configurator_submit.
+  // specialist_contact, faq_open, configurator_quote, configurator_submit,
+  // book_call_* (the discovery-call booking links).
   // No analytics library is installed; this only logs in development.
   if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
     console.debug("[analytics]", eventName, detail || "");
@@ -1374,5 +1375,11 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   document.querySelectorAll("[data-track='request_demo_hero']").forEach((el) =>
     el.addEventListener("click", () => track("request_demo_hero"))
+  );
+  // Every "Book a discovery call" link: book_call_hero, _nav, _trust,
+  // _specialist, _magnification. They lead to /book, which redirects to the
+  // CRM's booking page (see vercel.json).
+  document.querySelectorAll("[data-track^='book_call_']").forEach((el) =>
+    el.addEventListener("click", () => track(el.getAttribute("data-track")))
   );
 });

@@ -6,6 +6,7 @@
  *    inside a ~37 MB file, so Range requests are not optional — see README)
  *  - applies the same clean-URL rewrites as vercel.json
  *    (/p/:token → passport.html, /invite/:token → invite.html, /manage)
+ *    and its /book redirect to the CRM's booking page
  *  - mounts every api/**.js handler the way Vercel does (file-based routes,
  *    [param] folders become req.query values)
  *  - reads a local .env and falls back to the development admin key
@@ -60,6 +61,13 @@ const REWRITES = [
   [/^\/manage\/?$/, "/manage.html"],
 ];
 
+// Mirrors "redirects" in vercel.json. /book is the address given out for
+// discovery-call bookings; the booking page itself lives in the CRM. Set
+// BOOKING_URL to point it at a local CRM (e.g. http://localhost:3100/book).
+const REDIRECTS = [
+  [/^\/book\/?$/, () => process.env.BOOKING_URL || "https://pentax-crm.vercel.app/book"],
+];
+
 const routes = buildRoutes(path.join(ROOT, "api"));
 const handlerCache = new Map();
 
@@ -75,6 +83,12 @@ const server = http.createServer(async (req, res) => {
       return plain(res, 400, "Bad request");
     }
     if (pathname.startsWith("/api/")) return await handleApi(req, res, pathname, url);
+    for (const [pattern, destination] of REDIRECTS) {
+      if (pattern.test(pathname)) {
+        res.writeHead(307, { Location: destination(), "Cache-Control": "no-store" });
+        return res.end();
+      }
+    }
     for (const [pattern, destination] of REWRITES) {
       if (pattern.test(pathname)) {
         pathname = destination;
@@ -108,6 +122,7 @@ server.listen(PORT, HOST, () => {
       `  Example passport  ${base}/p/example`,
       `  Example invite    ${base}/invite/example`,
       `  Passport manager  ${base}/manage   (key: ${process.env.PASSPORT_ADMIN_KEY})`,
+      `  Booking redirect  ${base}/book -> ${process.env.BOOKING_URL || "https://pentax-crm.vercel.app/book"}`,
       `  Data store        ${redis ? "Redis (REST)" : path.join(ROOT, ".data", "passport-store.json")}`,
       "",
     ].join("\n"),
