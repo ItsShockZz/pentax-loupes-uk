@@ -36,9 +36,10 @@ test("the page offers a discovery call in the hero, the menu, the closing call t
   assert.match(html, /href="#request-demo"/);
 });
 
-test("the privacy notice covers bookings and Google Workspace", () => {
+test("the privacy notice covers bookings, Zoom and the email provider", () => {
   const privacy = read("privacy.html");
   assert.match(privacy, /<h2>Booking a discovery call<\/h2>/);
-  assert.match(privacy, /Google Workspace/);
+  assert.match(privacy, /Zoom/);
+  assert.match(privacy, /Resend/);
   assert.match(privacy, /optional and unticked/);
 });
