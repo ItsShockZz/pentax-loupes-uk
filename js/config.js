@@ -12,9 +12,10 @@
 const siteConfig = {
   brandName: "PENTAX Loupes UK",
   domain: "pentaxloupes.co.uk",
-  // Source (pentaxloupes.com) only publishes a general/EU contact channel, not a
-  // UK-specific line. Do not present this as a UK phone number.
-  contactEmail: "info@pentaxloupes.com", // NEEDS CLIENT CONFIRMATION: confirm a UK-specific inbox before launch
+  // The one public sales inbox (decided 16 Nov 2026): hello@ for enquiries,
+  // bookings and every customer email; support@ for after-sale; info@ is
+  // admin only and never shown. Do not present a phone number: there is none.
+  contactEmail: "hello@smoothoptics.com",
   phone: null, // NEEDS CLIENT CONFIRMATION: no UK phone number found in source material — do not fabricate one
   demoUrl: "#request-demo",
 };

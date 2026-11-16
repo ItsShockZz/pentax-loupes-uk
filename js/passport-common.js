@@ -52,7 +52,7 @@
     return FIELD_OF_VIEW[String(value)] || null;
   }
   function contactEmail() {
-    return (window.siteConfig && window.siteConfig.contactEmail) || "info@pentaxloupes.com";
+    return (window.siteConfig && window.siteConfig.contactEmail) || "hello@smoothoptics.com";
   }
   function specSummary(p) {
     return [magLabel(p.magnification), p.colour, p.light !== "No light" ? p.light : null, p.lenses === "Yes" ? "Protective lenses" : null]
