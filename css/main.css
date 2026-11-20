@@ -2621,3 +2621,7 @@ p a:not(.btn):not(.text-link),
 /* section keeps just enough to sit the bar in, evenly.                    */
 /* ---------------------------------------------------------------------- */
 #configure { padding-bottom: 32px; }
+
+/* Who is legally behind the site, as the trading disclosure rules ask: under the bottom row of every footer. */
+.footer__legal { margin: 14px 0 0; color: rgba(255, 255, 255, 0.45); font-size: 0.75rem; line-height: 1.6; max-width: 72ch; }
+@media (max-width: 780px) { .footer__legal { margin-inline: auto; text-align: center; } }
